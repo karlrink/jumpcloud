@@ -23,6 +23,7 @@ def usage():
       list_os_version
       list_user_groups
       list_users
+      list_commands
 
     """)
 
@@ -31,25 +32,14 @@ if os.environ.get('JUMPCLOUD_API_KEY') is None:
     print("JUMPCLOUD_API_KEY=None")
     sys.exit(1)
 
-#    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
-#    # Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-#    # configuration.api_key_prefix['x-api-key'] = 'Bearer'
-#
-#    content_type = 'application/json' # str |  (default to application/json)
-#    accept = 'application/json' # str |  (default to application/json)
-#    limit = 3 # int |  (optional) (default to 10)
-#    skip = 0 # int | The offset into the records to return. (optional) (default to 0)
-#    filter = ['[]'] # list[str] | Supported operators are: eq (optional) (default to [])
-#    x_org_id = '' # str |  (optional) (default to )
-
 content_type = 'application/json' # str |  (default to application/json)
 accept = 'application/json' # str |  (default to application/json)
 limit = 3 # int |  (optional) (default to 10)
 skip = 0 # int | The offset into the records to return. (optional) (default to 0)
 filter = ['[]'] # list[str] | Supported operators are: eq (optional) (default to [])
 x_org_id = '' # str |  (optional) (default to )
-
-
+fields = '' # str | Use a space seperated string of field parameters to include the data in the response. If omitted, the default list of fields will be returned.  (optional) (default to )
+sort = '' # str | Use space separated sort parameters to sort the collection. Default sort is ascending. Prefix with `-` to sort descending.  (optional) (default to )
 
 def list_os_version():
     configuration = jcapiv2.Configuration()
@@ -83,11 +73,22 @@ def list_users():
     except ApiException1 as e:
         print("Exception when calling SystemusersApi->systemusers_list: %s\n" % err)
 
+def list_commands():
+    configuration = jcapiv1.Configuration()
+    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
+    try:
+        api_instance = jcapiv1.CommandsApi(jcapiv1.ApiClient(configuration))
+        api_response = api_instance.commands_list(content_type, accept, skip=skip, fields=fields, limit=limit, sort=sort, filter=filter, x_org_id=x_org_id)
+        pprint(api_response)
+    except ApiException1 as e:
+        print("Exception when calling CommandsApi->commands_list: %s\n" % e)
+
         
 options = {
   'list_os_version'  : list_os_version,
   'list_user_groups' : list_user_groups,
   'list_users'       : list_users,
+  'list_commands'    : list_commands,
 }
 
 if __name__ == '__main__':
