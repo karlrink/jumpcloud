@@ -10,7 +10,6 @@ from jcapiv1.rest import ApiException as ApiException1
 import jcapiv2
 from jcapiv2.rest import ApiException as ApiException2
 
-
 import os
 import sys
 import json
@@ -24,6 +23,8 @@ def usage():
       list_user_groups
       list_users
       list_commands
+
+      trigger [name]
 
     """)
 
@@ -40,6 +41,12 @@ filter = ['[]'] # list[str] | Supported operators are: eq (optional) (default to
 x_org_id = '' # str |  (optional) (default to )
 fields = '' # str | Use a space seperated string of field parameters to include the data in the response. If omitted, the default list of fields will be returned.  (optional) (default to )
 sort = '' # str | Use space separated sort parameters to sort the collection. Default sort is ascending. Prefix with `-` to sort descending.  (optional) (default to )
+
+import ssl
+if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
+    getattr(ssl, '_create_unverified_context', None)): 
+    ssl._create_default_https_context = ssl._create_unverified_context
+
 
 def list_os_version():
     configuration = jcapiv2.Configuration()
@@ -83,12 +90,32 @@ def list_commands():
     except ApiException1 as e:
         print("Exception when calling CommandsApi->commands_list: %s\n" % e)
 
-        
+def run_trigger(trigger=None):
+    import urllib3
+    urllib3.disable_warnings() #https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
+
+    #print("trigger is " + str(trigger))
+    trigger = ''.join(trigger)
+
+    URL="https://console.jumpcloud.com/api/command/trigger/" + str(trigger)
+    #print(URL)
+    encoded_body = json.dumps({}) 
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('POST', URL,
+                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY')},
+                           body=encoded_body)
+    #print(response.read())
+    print(response.data.decode('utf-8'))
+
+
+
+
 options = {
   'list_os_version'  : list_os_version,
   'list_user_groups' : list_user_groups,
   'list_users'       : list_users,
   'list_commands'    : list_commands,
+  'trigger'          : run_trigger,
 }
 
 if __name__ == '__main__':
@@ -97,6 +124,14 @@ if __name__ == '__main__':
         if sys.argv[1] == "--help":
             usage()
             sys.exit(0)
+        if sys.argv[1] == "trigger":
+            try:
+                options[sys.argv[1]](sys.argv[2:])
+                sys.exit(0)
+            except KeyError as e:
+                print("KeyError: " + str(e))
+                sys.exit(1)
+
         try:
             options[sys.argv[1]]()
         except KeyError as e:
