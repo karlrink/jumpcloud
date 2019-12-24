@@ -1,8 +1,11 @@
-#!/usr/bin/env python3
+#! python
 
 from __future__ import print_function
-import time
 from pprint import pprint
+
+import sys
+if sys.version_info[0] < 3:
+    raise Exception("Please use Python 3")
 
 import jcapiv1
 from jcapiv1.rest import ApiException as ApiException1
@@ -10,8 +13,8 @@ from jcapiv1.rest import ApiException as ApiException1
 import jcapiv2
 from jcapiv2.rest import ApiException as ApiException2
 
+import time
 import os
-import sys
 import json
 
 def usage():
