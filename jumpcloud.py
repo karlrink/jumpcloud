@@ -26,6 +26,10 @@ def usage():
       list_user_groups
       list_users
       list_commands
+      systeminsights_list_apps
+      systeminsights_list_programs
+
+      systeminsights_list_system_apps [system_id]
 
       trigger [name]
 
@@ -73,6 +77,27 @@ def list_user_groups():
     except ApiException2 as e:
         print("Exception when calling UserGroupsApi->groups_user_list: %s\n" % e)
 
+def systeminsights_list_apps():
+    configuration = jcapiv2.Configuration()
+    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
+    try:
+        api_instance = jcapiv2.SystemInsightsApi(jcapiv2.ApiClient(configuration))
+        api_response = api_instance.systeminsights_list_apps(content_type, accept, limit=limit, x_org_id=x_org_id, skip=skip, filter=filter)
+        pprint(api_response)
+    except ApiException2 as e:
+        print("Exception when calling SystemInsightsApi->systeminsights_list_apps: %s\n" % e)
+
+def systeminsights_list_programs():
+    configuration = jcapiv2.Configuration()
+    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
+    try:
+        api_instance = jcapiv2.SystemInsightsApi(jcapiv2.ApiClient(configuration))
+        api_response = api_instance.systeminsights_list_programs(content_type, accept, limit=limit, x_org_id=x_org_id, skip=skip, filter=filter)
+        pprint(api_response)
+    except ApiException2 as e:
+        print("Exception when calling SystemInsightsApi->systeminsights_list_programs: %s\n" % e)
+
+
 def list_users():
     configuration = jcapiv1.Configuration()
     configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
@@ -92,6 +117,20 @@ def list_commands():
         pprint(api_response)
     except ApiException1 as e:
         print("Exception when calling CommandsApi->commands_list: %s\n" % e)
+
+def systeminsights_list_system_apps(system_id=None):
+
+    system_id = ''.join(system_id)
+
+    configuration = jcapiv2.Configuration()
+    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
+    try:
+        api_instance = jcapiv2.SystemInsightsApi(jcapiv2.ApiClient(configuration))
+        api_response = api_instance.systeminsights_list_system_apps(system_id, content_type, accept, limit=limit, skip=skip, filter=filter, x_org_id=x_org_id)
+        pprint(api_response)
+    except ApiException2 as e:
+        print("Exception when calling SystemInsightsApi->systeminsights_list_system_apps: %s\n" % e)
+
 
 def run_trigger(trigger=None):
     import urllib3
@@ -118,6 +157,9 @@ options = {
   'list_user_groups' : list_user_groups,
   'list_users'       : list_users,
   'list_commands'    : list_commands,
+  'systeminsights_list_apps'    : systeminsights_list_apps,
+  'systeminsights_list_programs'    : systeminsights_list_programs,
+  'systeminsights_list_system_apps'    : systeminsights_list_system_apps,
   'trigger'          : run_trigger,
 }
 
@@ -134,6 +176,15 @@ if __name__ == '__main__':
             except KeyError as e:
                 print("KeyError: " + str(e))
                 sys.exit(1)
+
+        if sys.argv[1] == "systeminsights_list_system_apps":
+            try:
+                options[sys.argv[1]](sys.argv[2:])
+                sys.exit(0)
+            except KeyError as e:
+                print("KeyError: " + str(e))
+                sys.exit(1)
+
 
         try:
             options[sys.argv[1]]()
