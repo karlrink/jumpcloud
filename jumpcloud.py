@@ -1,4 +1,4 @@
-#! python
+#!/usr/bin/env python
 
 from __future__ import print_function
 from pprint import pprint
@@ -25,11 +25,14 @@ def usage():
       list_os_version
       list_user_groups
       list_users
+      list_systemusers
       list_commands
       systeminsights_list_apps
       systeminsights_list_programs
 
       systeminsights_list_system_apps [system_id]
+
+      list_system_bindings [user_id]
 
       trigger [name]
 
@@ -144,22 +147,49 @@ def run_trigger(trigger=None):
     encoded_body = json.dumps({}) 
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('POST', URL,
-                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY')},
+                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                    'Content-Type': content_type},
                            body=encoded_body)
     #print(response.read())
     print(response.data.decode('utf-8'))
 
+def list_system_bindings(user_id=None): #https://github.com/TheJumpCloud/JumpCloudAPI
+    import urllib3
+    urllib3.disable_warnings()
 
+    print("user_id is " + str(user_id))
+    user_id = ''.join(user_id)
 
+    URL="https://console.jumpcloud.com/api/systemusers/" + str(user_id) + "/systems"
+
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type})
+    print(response.data.decode('utf-8'))
+                     
+def list_systemusers():
+    import urllib3
+    urllib3.disable_warnings()
+    URL="https://console.jumpcloud.com/api/systemusers"
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type})
+    pprint(response.data.decode('utf-8'))
+
+  
 
 options = {
   'list_os_version'  : list_os_version,
   'list_user_groups' : list_user_groups,
   'list_users'       : list_users,
+  'list_systemusers'       : list_systemusers,
   'list_commands'    : list_commands,
   'systeminsights_list_apps'    : systeminsights_list_apps,
   'systeminsights_list_programs'    : systeminsights_list_programs,
   'systeminsights_list_system_apps'    : systeminsights_list_system_apps,
+  'list_system_bindings'          : list_system_bindings,
   'trigger'          : run_trigger,
 }
 
@@ -169,15 +199,10 @@ if __name__ == '__main__':
         if sys.argv[1] == "--help":
             usage()
             sys.exit(0)
-        if sys.argv[1] == "trigger":
-            try:
-                options[sys.argv[1]](sys.argv[2:])
-                sys.exit(0)
-            except KeyError as e:
-                print("KeyError: " + str(e))
-                sys.exit(1)
 
-        if sys.argv[1] == "systeminsights_list_system_apps":
+        if sys.argv[1] == "trigger" or \
+           sys.argv[1] == "systeminsights_list_system_apps" or \
+           sys.argv[1] == "list_system_bindings":
             try:
                 options[sys.argv[1]](sys.argv[2:])
                 sys.exit(0)
