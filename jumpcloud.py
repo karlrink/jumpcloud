@@ -30,6 +30,8 @@ def usage():
       list_systemusers
       list_commands
       get_systems
+      get_system_ids
+      get_user_ids
       systeminsights_list_apps
       systeminsights_list_programs
 
@@ -190,16 +192,6 @@ def list_systemusers():
     #pprint(response.data.decode('utf-8'))
     print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=True, indent=4))
 
-def get_systems_V1():
-    urllib3.disable_warnings()
-    URL="https://console.jumpcloud.com/api/systems"
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', URL,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': content_type,
-                                     'Accept': accept_type})
-    pprint(response.data.decode('utf-8'))
-
 def get_systems():
     urllib3.disable_warnings()
     URL="https://console.jumpcloud.com/api/systems"
@@ -210,17 +202,37 @@ def get_systems():
                                      'Accept': accept_type})
     #pprint(response.data.decode('utf-8'))
     jdata = json.loads(response.data.decode('utf-8'))
-
-
     #print('totalCount: ' + str(jdata['totalCount']))
-    totalCount = str(jdata['totalCount'])
-
-    #for key, value in jdata.items():
-    #    print(key, value)
     print(json.dumps(jdata, sort_keys=True, indent=4))
 
+def get_system_ids():
+    urllib3.disable_warnings()
+    URL="https://console.jumpcloud.com/api/systems"
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #pprint(response.data.decode('utf-8'))
+    jdata = json.loads(response.data.decode('utf-8'))
+    #print('totalCount: ' + str(jdata['totalCount']))
+    for data in jdata['results']:
+        print(data.get('_id') + ' ' + data.get('hostname'))
+    
+def get_user_ids():
+    urllib3.disable_warnings()
+    URL="https://console.jumpcloud.com/api/systemusers"
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #pprint(response.data.decode('utf-8'))
+    jdata = json.loads(response.data.decode('utf-8'))
+    #print('totalCount: ' + str(jdata['totalCount']))
+    for data in jdata['results']:
+        print(data.get('_id') + ' ' + data.get('email'))
 
-  
 
 options = {
   'list_os_version'                 : list_os_version,
@@ -234,6 +246,8 @@ options = {
   'systeminsights_list_system_apps' : systeminsights_list_system_apps,
   'list_system_bindings'            : list_system_bindings,
   'get_systems'                     : get_systems,
+  'get_system_ids'                  : get_system_ids,
+  'get_user_ids'                    : get_user_ids,
   'trigger'                         : run_trigger,
 }
 
