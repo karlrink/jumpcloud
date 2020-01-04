@@ -26,11 +26,14 @@ def usage():
       list_os_version
       systeminsights_os_version
       list_user_groups
+      list_system_groups
+      list_system_group_members [group_id]
       list_users
       list_systemusers
       list_commands
       get_systems
       get_system_ids
+      get_system_hostname [system_id]
       get_user_ids
       systeminsights_list_apps
       systeminsights_list_programs
@@ -95,6 +98,18 @@ def list_user_groups():
         pprint(user_groups)
     except ApiException2 as e:
         print("Exception when calling UserGroupsApi->groups_user_list: %s\n" % e)
+
+def list_system_groups():
+    urllib3.disable_warnings()
+    URL="https://console.jumpcloud.com/api/v2/systemgroups?limit=100"
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #pprint(response.data.decode('utf-8'))
+    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
+
 
 def systeminsights_list_apps():
     configuration = jcapiv2.Configuration()
@@ -181,6 +196,57 @@ def list_system_bindings(user_id=None): #https://github.com/TheJumpCloud/JumpClo
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type})
     print(response.data.decode('utf-8'))
+
+def get_system_hostname(system_id=None):
+    urllib3.disable_warnings()
+
+    #print("system_id is " + str(system_id))
+    system_id = ''.join(system_id)
+
+    URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
+
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #print(response.data.decode('utf-8'))
+    jdata = json.loads(response.data.decode('utf-8'))
+    print(jdata['hostname'])
+
+
+#https://docs.jumpcloud.com/2.0/system-group-members-and-membership/list-system-groups-group-membership
+def list_system_group_members(group_id=None):
+    urllib3.disable_warnings()
+
+    #print("group_id is " + str(group_id))
+    group_id = ''.join(group_id)
+
+    URL="https://console.jumpcloud.com/api/v2/systemgroups/" + str(group_id) + "/membership"
+
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #print(response.data.decode('utf-8'))
+    #print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=True, indent=4))
+    #jdata = json.dumps(json.loads(response.data.decode('utf-8')))
+    jdata = json.loads(response.data.decode('utf-8'))
+    #print(jdata)
+    #for item in jdata:
+    #    print(jdata.get('id'))
+    #for data in jdata['id']:
+
+    systems = []
+    for system in jdata:
+        #print(system.get('id'))
+        systems.append(system.get('id'))
+
+    #print(systems)
+    for sys in systems:
+        get_system_hostname(sys)
+
                      
 def list_systemusers():
     urllib3.disable_warnings()
@@ -238,6 +304,8 @@ options = {
   'list_os_version'                 : list_os_version,
   'systeminsights_os_version'       : systeminsights_os_version,
   'list_user_groups'                : list_user_groups,
+  'list_system_groups'              : list_system_groups,
+  'list_system_group_members'       : list_system_group_members,
   'list_users'                      : list_users,
   'list_systemusers'                : list_systemusers,
   'list_commands'                   : list_commands,
@@ -246,6 +314,7 @@ options = {
   'systeminsights_list_system_apps' : systeminsights_list_system_apps,
   'list_system_bindings'            : list_system_bindings,
   'get_systems'                     : get_systems,
+  'get_system_hostname'             : get_system_hostname,
   'get_system_ids'                  : get_system_ids,
   'get_user_ids'                    : get_user_ids,
   'trigger'                         : run_trigger,
@@ -260,6 +329,8 @@ if __name__ == '__main__':
 
         if sys.argv[1] == "trigger" or \
            sys.argv[1] == "systeminsights_list_system_apps" or \
+           sys.argv[1] == "get_system_hostname" or \
+           sys.argv[1] == "list_system_group_members" or \
            sys.argv[1] == "list_system_bindings":
             try:
                 options[sys.argv[1]](sys.argv[2:])
@@ -280,5 +351,7 @@ if __name__ == '__main__':
 
   
 
+
+# list_system_group_members
 
 
