@@ -41,6 +41,8 @@ def usage():
       systeminsights_list_apps
       systeminsights_list_programs
 
+      update_system [system_id] [key] [value]
+
       systeminsights_list_system_apps [system_id]
 
       list_system_bindings [user_id]
@@ -185,6 +187,38 @@ def run_trigger(trigger=None):
                            body=encoded_body)
     #print(response.read())
     print(response.data.decode('utf-8'))
+
+
+def update_system(system_id=None, key=None, value=None):
+    urllib3.disable_warnings()
+
+    system_id = ''.join(system_id)
+    print(system_id)
+
+    key    = ''.join(key)
+    print(key)
+
+    value    = ''.join(value)
+    print(value)
+
+    encoded_body = json.dumps({ key : value })
+
+    print(encoded_body)
+
+    URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
+    #print(URL)
+
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('PUT', URL,
+                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                    'Content-Type': content_type,
+                                    'Accept': accept_type},
+                           body=encoded_body)
+    #print(response.read())
+    print(response.data.decode('utf-8'))
+#https://docs.jumpcloud.com/1.0/systems/list-an-individual-system
+#https://github.com/TheJumpCloud/SystemContextAPI/blob/master/examples/instance-shutdown-initd
+
 
 def list_system_bindings(user_id=None): #https://github.com/TheJumpCloud/JumpCloudAPI
     urllib3.disable_warnings()
@@ -385,6 +419,7 @@ options = {
   'get_system_hostname'             : get_system_hostname,
   'get_user_email'                  : get_user_email,
   'get_user_ids'                    : get_user_ids,
+  'update_system'                   : update_system,
   'trigger'                         : run_trigger,
 }
 
@@ -394,6 +429,15 @@ if __name__ == '__main__':
         if sys.argv[1] == "--help":
             usage()
             sys.exit(0)
+
+        if sys.argv[1] == "update_system":
+            try:
+                options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
+                sys.exit(0)
+            except KeyError as e:
+                print("KeyError: " + str(e))
+                sys.exit(1)
+
 
         if sys.argv[1] == "trigger" or \
            sys.argv[1] == "systeminsights_list_system_apps" or \
