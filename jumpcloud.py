@@ -26,6 +26,7 @@ def usage():
       list_os_version
       systeminsights_os_version
       list_user_groups
+      list_user_group_members [group_id]
       list_system_groups
       list_system_group_members [group_id]
       list_users
@@ -35,6 +36,7 @@ def usage():
       get_system_ids
       get_system_hostname [system_id]
       get_user_ids
+      get_user_email [user_id]
       systeminsights_list_apps
       systeminsights_list_programs
 
@@ -94,7 +96,7 @@ def list_user_groups():
     configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
     try:
         api_instance = jcapiv2.UserGroupsApi(jcapiv2.ApiClient(configuration))
-        user_groups = api_instance.groups_user_list(content_type, accept_type)
+        user_groups = api_instance.groups_user_list(content_type, accept_type, limit=100)
         pprint(user_groups)
     except ApiException2 as e:
         print("Exception when calling UserGroupsApi->groups_user_list: %s\n" % e)
@@ -214,6 +216,22 @@ def get_system_hostname(system_id=None):
     jdata = json.loads(response.data.decode('utf-8'))
     print(jdata['hostname'])
 
+def get_user_email(user_id=None):
+    urllib3.disable_warnings()
+
+    user_id = ''.join(user_id)
+
+    URL="https://console.jumpcloud.com/api/systemusers/" + str(user_id)
+
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #print(response.data.decode('utf-8'))
+    jdata = json.loads(response.data.decode('utf-8'))
+    print(jdata['email'])
+
 
 #https://docs.jumpcloud.com/2.0/system-group-members-and-membership/list-system-groups-group-membership
 def list_system_group_members(group_id=None):
@@ -246,6 +264,35 @@ def list_system_group_members(group_id=None):
     #print(systems)
     for sys in systems:
         get_system_hostname(sys)
+
+def list_user_group_members(group_id=None):
+    urllib3.disable_warnings()
+
+    #print("group_id is " + str(group_id))
+    group_id = ''.join(group_id)
+
+    URL="https://console.jumpcloud.com/api/v2/usergroups/" + str(group_id) + "/members"
+
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #print(response.data.decode('utf-8'))
+    jdata = json.loads(response.data.decode('utf-8'))
+
+    users = []
+    for user in jdata:
+        #print(user)
+        #print(user.get('to').get('id'))
+        users.append(user.get('to').get('id'))
+
+    #print(users)
+    for user_id in users:
+        #get_system_hostname(sys)
+        #print(user_id)
+        get_user_email(user_id)
+
 
                      
 def list_systemusers():
@@ -304,6 +351,7 @@ options = {
   'list_os_version'                 : list_os_version,
   'systeminsights_os_version'       : systeminsights_os_version,
   'list_user_groups'                : list_user_groups,
+  'list_user_group_members'         : list_user_group_members,
   'list_system_groups'              : list_system_groups,
   'list_system_group_members'       : list_system_group_members,
   'list_users'                      : list_users,
@@ -315,6 +363,7 @@ options = {
   'list_system_bindings'            : list_system_bindings,
   'get_systems'                     : get_systems,
   'get_system_hostname'             : get_system_hostname,
+  'get_user_email'                  : get_user_email,
   'get_system_ids'                  : get_system_ids,
   'get_user_ids'                    : get_user_ids,
   'trigger'                         : run_trigger,
@@ -330,6 +379,8 @@ if __name__ == '__main__':
         if sys.argv[1] == "trigger" or \
            sys.argv[1] == "systeminsights_list_system_apps" or \
            sys.argv[1] == "get_system_hostname" or \
+           sys.argv[1] == "get_user_email" or \
+           sys.argv[1] == "list_user_group_members" or \
            sys.argv[1] == "list_system_group_members" or \
            sys.argv[1] == "list_system_bindings":
             try:
@@ -349,9 +400,4 @@ if __name__ == '__main__':
         usage()
         sys.exit(1)
 
-  
-
-
-# list_system_group_members
-
-
+#EOF

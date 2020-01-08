@@ -1,5 +1,5 @@
 
-jumpcloud - wrapper scripts around jcapiv2
+jumpcloud - wrapper script around jcapiv1, jcapiv2, and console rest api
 
 ----
 usage:
