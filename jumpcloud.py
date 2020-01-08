@@ -32,6 +32,7 @@ def usage():
       list_users
       list_systemusers
       list_commands
+      get_system [system_id]
       get_systems
       get_system_ids
       get_system_hostname [system_id]
@@ -216,6 +217,23 @@ def get_system_hostname(system_id=None):
     jdata = json.loads(response.data.decode('utf-8'))
     print(jdata['hostname'])
 
+def get_system(system_id=None):
+    urllib3.disable_warnings()
+
+    system_id = ''.join(system_id)
+
+    URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
+
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #print(response.data.decode('utf-8'))
+    jdata = json.loads(response.data.decode('utf-8'))
+    print(json.dumps(jdata, indent=4, sort_keys=True))
+
+
 def get_user_email(user_id=None):
     urllib3.disable_warnings()
 
@@ -361,10 +379,11 @@ options = {
   'systeminsights_list_programs'    : systeminsights_list_programs,
   'systeminsights_list_system_apps' : systeminsights_list_system_apps,
   'list_system_bindings'            : list_system_bindings,
+  'get_system'                      : get_system,
   'get_systems'                     : get_systems,
+  'get_system_ids'                  : get_system_ids,
   'get_system_hostname'             : get_system_hostname,
   'get_user_email'                  : get_user_email,
-  'get_system_ids'                  : get_system_ids,
   'get_user_ids'                    : get_user_ids,
   'trigger'                         : run_trigger,
 }
@@ -378,6 +397,7 @@ if __name__ == '__main__':
 
         if sys.argv[1] == "trigger" or \
            sys.argv[1] == "systeminsights_list_system_apps" or \
+           sys.argv[1] == "get_system" or \
            sys.argv[1] == "get_system_hostname" or \
            sys.argv[1] == "get_user_email" or \
            sys.argv[1] == "list_user_group_members" or \
