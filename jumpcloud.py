@@ -41,6 +41,7 @@ def usage():
       systeminsights_list_apps
       systeminsights_list_programs
       systeminsights_browser_plugins
+      systeminsights_firefox_addons
 
       update_system [system_id] [key] [value]
 
@@ -127,27 +128,63 @@ def systeminsights_browser_plugins():
     #pprint(response.data.decode('utf-8'))
     print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
 
+def systeminsights_firefox_addons():
+    urllib3.disable_warnings()
+    URL="https://console.jumpcloud.com/api/v2/systeminsights/firefox_addons?limit=100"
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #pprint(response.data.decode('utf-8'))
+    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
 
+
+
+#def systeminsights_list_apps():
+#    configuration = jcapiv2.Configuration()
+#    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
+#    try:
+#        api_instance = jcapiv2.SystemInsightsApi(jcapiv2.ApiClient(configuration))
+#        api_response = api_instance.systeminsights_list_apps(content_type, accept_type, limit=limit, x_org_id=x_org_id, skip=skip, filter=filter)
+#        pprint(api_response)
+#    except ApiException2 as e:
+#        print("Exception when calling SystemInsightsApi->systeminsights_list_apps: %s\n" % e)
 
 def systeminsights_list_apps():
-    configuration = jcapiv2.Configuration()
-    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
-    try:
-        api_instance = jcapiv2.SystemInsightsApi(jcapiv2.ApiClient(configuration))
-        api_response = api_instance.systeminsights_list_apps(content_type, accept_type, limit=limit, x_org_id=x_org_id, skip=skip, filter=filter)
-        pprint(api_response)
-    except ApiException2 as e:
-        print("Exception when calling SystemInsightsApi->systeminsights_list_apps: %s\n" % e)
+    urllib3.disable_warnings()
+    URL="https://console.jumpcloud.com/api/v2/systeminsights/apps?limit=100"
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #pprint(response.data.decode('utf-8'))
+    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
+
+
+
+#def systeminsights_list_programs():
+#    configuration = jcapiv2.Configuration()
+#    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
+#    try:
+#        api_instance = jcapiv2.SystemInsightsApi(jcapiv2.ApiClient(configuration))
+#        api_response = api_instance.systeminsights_list_programs(content_type, accept_type, limit=100, x_org_id=x_org_id, skip=skip, filter=filter)
+#        pprint(api_response)
+#    except ApiException2 as e:
+#        print("Exception when calling SystemInsightsApi->systeminsights_list_programs: %s\n" % e)
 
 def systeminsights_list_programs():
-    configuration = jcapiv2.Configuration()
-    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
-    try:
-        api_instance = jcapiv2.SystemInsightsApi(jcapiv2.ApiClient(configuration))
-        api_response = api_instance.systeminsights_list_programs(content_type, accept_type, limit=100, x_org_id=x_org_id, skip=skip, filter=filter)
-        pprint(api_response)
-    except ApiException2 as e:
-        print("Exception when calling SystemInsightsApi->systeminsights_list_programs: %s\n" % e)
+    urllib3.disable_warnings()
+    URL="https://console.jumpcloud.com/api/v2/systeminsights/programs?limit=100"
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #pprint(response.data.decode('utf-8'))
+    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
+
 
 
 def list_users():
@@ -428,6 +465,7 @@ options = {
   'systeminsights_browser_plugins'  : systeminsights_browser_plugins,
   'systeminsights_list_programs'    : systeminsights_list_programs,
   'systeminsights_list_system_apps' : systeminsights_list_system_apps,
+  'systeminsights_firefox_addons'   : systeminsights_firefox_addons,
   'list_system_bindings'            : list_system_bindings,
   'get_system'                      : get_system,
   'get_systems'                     : get_systems,
