@@ -50,6 +50,9 @@ def usage():
       dump_systeminsights_apps [system_id]
       dump_systeminsights_programs [system_id]
 
+      get_app [bundle_name]
+      get_program [name]
+
       list_system_bindings [user_id]
 
       trigger [name]
@@ -352,6 +355,99 @@ def get_systeminsights_programs_json(system_id=None, skip=0, limit=100): #GET /s
     return json.loads(response.data.decode('utf-8'))
 
 
+# api/v2/systeminsights/apps?limit=100&skip=0&filter=bundle_name:eq:Maps
+def get_app(name=None): #GET /systeminsights/apps
+
+    name = ''.join(name)
+    #print(str(name) + ' my name is')
+
+    count=0
+    skip=0
+    limit=100
+
+    response = get_systeminsights_app_json(name, skip, limit)
+    responseList = response
+
+    #print(len(responseList))
+
+    while len(response) > 0:
+        skip += 100
+        response = get_systeminsights_app_json(name, skip, limit)
+        responseList = responseList + response
+        #print(str(len(responseList)) + ' ' + str(len(response)))
+
+    #print(str(len(responseList)))
+
+    for line in responseList:
+        count += 1
+        print(line['system_id']  + ' ' + line['name'] + ' (' + line['bundle_name'] + ') Version: ' + line['bundle_short_version'])
+        #print(str(count) + str(line))
+
+
+
+# api/v2/systeminsights/apps?limit=100&skip=0&filter=bundle_name:eq:Maps
+def get_systeminsights_app_json(name=None, skip=0, limit=100): #GET /systeminsights/apps
+    urllib3.disable_warnings()
+
+    #name = ''.join(name)
+    #print('Name is ' + str(name))
+    URL="https://console.jumpcloud.com/api/v2/systeminsights/apps?limit=" + str(limit) + "&skip=" + str(skip) + "&filter=bundle_name:eq:" + str(name)
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    return json.loads(response.data.decode('utf-8'))
+
+
+# api/v2/systeminsights/programs?limit=100&skip=0&filter=name:eq:Microsoft Teams
+def get_program(name=None): #GET /systeminsights/programs
+
+    name = ''.join(name)
+    #print(str(name) + ' my name is')
+
+    count=0
+    skip=0
+    limit=100
+
+    response = get_systeminsights_program_json(name, skip, limit)
+    responseList = response
+
+    #print(len(responseList))
+
+    while len(response) > 0:
+        skip += 100
+        response = get_systeminsights_program_json(name, skip, limit)
+        responseList = responseList + response
+        #print(str(len(responseList)) + ' ' + str(len(response)))
+
+    #print(str(len(responseList)))
+
+    for line in responseList:
+        count += 1
+        print(line['system_id']  + ' ' + line['name'] + ' (' + line['publisher'] + ') Version: ' + line['version'])
+        #print(str(count) + str(line))
+
+
+
+# api/v2/systeminsights/programs?limit=100&skip=0&filter=name:eq:Microsoft Teams
+def get_systeminsights_program_json(name=None, skip=0, limit=100): #GET /systeminsights/programs
+    urllib3.disable_warnings()
+
+    #name = ''.join(name)
+    #print('Name is ' + str(name))
+    URL="https://console.jumpcloud.com/api/v2/systeminsights/programs?limit=" + str(limit) + "&skip=" + str(skip) + "&filter=name:eq:" + str(name)
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    return json.loads(response.data.decode('utf-8'))
+
+
+
+
+
 
 def run_trigger(trigger=None):
     urllib3.disable_warnings() #https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
@@ -608,6 +704,8 @@ options = {
   'update_system'                   : update_system,
   'dump_systeminsights_apps'        : dump_systeminsights_apps,
   'dump_systeminsights_programs'    : dump_systeminsights_programs,
+  'get_app'                         : get_app,
+  'get_program'                     : get_program,
   'trigger'                         : run_trigger,
 }
 
@@ -636,6 +734,8 @@ if __name__ == '__main__':
            sys.argv[1] == "list_system_group_members" or \
            sys.argv[1] == "dump_systeminsights_apps" or \
            sys.argv[1] == "dump_systeminsights_programs" or \
+           sys.argv[1] == "get_app" or \
+           sys.argv[1] == "get_program" or \
            sys.argv[1] == "list_system_bindings":
             try:
                 options[sys.argv[1]](sys.argv[2:])
