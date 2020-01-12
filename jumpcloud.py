@@ -295,12 +295,55 @@ def dump_systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/a
 #    },
 
 
+def dump_systeminsights_programs(system_id=None): #GET /systeminsights/{system_id}/programs
+
+    system_id = ''.join(system_id)
+    #print(system_id)
+
+    count=0
+    skip=0
+    limit=100
+
+    response = get_systeminsights_programs_json(system_id, skip, limit)
+    responseList = response
+
+    #print(len(responseList))
+
+    while len(response) > 0:
+        skip += 100
+        response = get_systeminsights_programs_json(system_id, skip, limit)
+        responseList = responseList + response
+        #print(str(len(responseList)) + ' ' + str(len(response)))
+
+    #print(str(len(responseList)))
+
+    for line in responseList:
+        count += 1
+        print(str(count) + ' ' + line['name'] + ' (' + line['publisher'] + ') Version: ' + line['version'])
+        #print(str(count) + ' ' + str(line))
+
+
+
+
 def get_systeminsights_apps_json(system_id=None, skip=0, limit=100): #GET /systeminsights/{system_id}/apps
     urllib3.disable_warnings()
 
     system_id = ''.join(system_id)
     #print(system_id)
     URL="https://console.jumpcloud.com/api/v2/systeminsights/" + str(system_id) + "/apps?limit=" + str(limit) + "&skip=" + str(skip)
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    return json.loads(response.data.decode('utf-8'))
+
+def get_systeminsights_programs_json(system_id=None, skip=0, limit=100): #GET /systeminsights/{system_id}/programs
+    urllib3.disable_warnings()
+
+    system_id = ''.join(system_id)
+    #print(system_id)
+    URL="https://console.jumpcloud.com/api/v2/systeminsights/" + str(system_id) + "/programs?limit=" + str(limit) + "&skip=" + str(skip)
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
@@ -564,7 +607,7 @@ options = {
   'get_user_ids'                    : get_user_ids,
   'update_system'                   : update_system,
   'dump_systeminsights_apps'        : dump_systeminsights_apps,
-  #'dump_systeminsights_programs'    : dump_systeminsights_programs,
+  'dump_systeminsights_programs'    : dump_systeminsights_programs,
   'trigger'                         : run_trigger,
 }
 
