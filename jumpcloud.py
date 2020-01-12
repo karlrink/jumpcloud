@@ -64,6 +64,8 @@ if os.environ.get('JUMPCLOUD_API_KEY') is None:
     print("JUMPCLOUD_API_KEY=None")
     sys.exit(1)
 
+debug=True
+
 content_type = 'application/json' # str |  (default to application/json)
 accept_type  = 'application/json' # str |  (default to application/json)
 limit = 0 # int |  (optional) (default 10) (100 max)
@@ -157,16 +159,113 @@ def systeminsights_firefox_addons():
 #    except ApiException2 as e:
 #        print("Exception when calling SystemInsightsApi->systeminsights_list_apps: %s\n" % e)
 
-def systeminsights_list_apps():
+#def systeminsights_list_apps():
+#    urllib3.disable_warnings()
+#    URL="https://console.jumpcloud.com/api/v2/systeminsights/apps?limit=100"
+#    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+#    response = http.request('GET', URL,
+#                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+#                                     'Content-Type': content_type,
+#                                     'Accept': accept_type})
+#    #pprint(response.data.decode('utf-8'))
+#    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
+
+def systeminsights_list_apps(system_id=None): #GET /systeminsights/{system_id}/apps
+
+    print('system_id type: ' + str(type(system_id)))
+    print('system_id len: ' + str(len(system_id)))
+
+    if len(system_id) != 0:
+        system_id = ''.join(system_id)
+        if debug: print('Using system_id (' + system_id + ')')
+    else:
+        #print('0 out.here')
+        #sys.exit(99)
+        system_id = None
+
+    count=0
+    skip=0
+    limit=100
+
+    response = get_systeminsights_list_apps_json(system_id, skip, limit)
+    print(json.dumps(response, sort_keys=False, indent=4))
+
+    #print('CHECK.FOR.RETURN.HERE')
+    #print(response['message'])
+
+    #if 'Bad' in response['message']:
+    #    print('Bail.Bad')
+    #    sys.exit(0)
+
+    #if 'Bad' in response.get('message'):
+    #    print('Bail.Bad')
+    #    sys.exit(0)
+
+#{
+#    "message": "Bad Request: invalid object id \"5df3efcdf2d66c6f6a287\""
+#}
+
+    if len(response) == 1:
+        if debug: print('I have spoken. 1')
+        sys.exit(0)
+
+    responseList = response
+    if debug: print(len(responseList))
+
+    while len(response) > 0:
+        skip += 100
+        response = get_systeminsights_list_apps_json(system_id, skip, limit)
+        responseList = responseList + response
+        if debug: print(str(len(responseList)) + ' ' + str(len(response)))
+        print(json.dumps(response, sort_keys=False, indent=4))
+
+    if debug: print(str(len(responseList)))
+
+    #for line in responseList:
+    #    count += 1
+    #    #print(str(count) + ' ' + line['name'] + ' (' + line['bundle_name'] + ') Version: ' + line['bundle_short_version'])
+    #    print(str(count) + ' ' + str(line) )
+    #print(json.dumps(json.loads(responseList), sort_keys=False, indent=4))
+    #for line in responseList:
+    #    count += 1
+    #    print(json.dumps(line, sort_keys=False, indent=4))
+    
+
+
+def get_systeminsights_list_apps_json(system_id=None, skip=0, limit=100): #GET /systeminsights/{system_id}/apps
     urllib3.disable_warnings()
-    URL="https://console.jumpcloud.com/api/v2/systeminsights/apps?limit=100"
+
+    if debug: print('get_systeminsights_list_apps_json')
+
+    #system_id = ''.join(system_id)
+
+    if system_id is None:
+        #system_id = ''
+        #if debug: print('Now Using system_id (' + str(system_id) + ')')
+        URL="https://console.jumpcloud.com/api/v2/systeminsights/apps?limit=" + str(limit) + "&skip=" + str(skip)
+    else:
+        URL="https://console.jumpcloud.com/api/v2/systeminsights/" + str(system_id) + "/apps?limit=" + str(limit) + "&skip=" + str(skip)
+
+    #print('get.system_id type: ' + str(type(system_id)))
+    #print('get.system_id len: ' + str(len(system_id)))
+    #print('get.system_id ' + str(system_id))
+
+    if debug: print(str(URL))
+
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
-    #pprint(response.data.decode('utf-8'))
-    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
+    return json.loads(response.data.decode('utf-8'))
+
+
+
+
+
+
+########################
+########################
 
 
 
@@ -297,6 +396,20 @@ def dump_systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/a
 #        "collection_time": "2020-01-11T21:37:29.541Z"
 #    },
 
+def get_systeminsights_apps_json(system_id=None, skip=0, limit=100): #GET /systeminsights/{system_id}/apps
+    urllib3.disable_warnings()
+
+    system_id = ''.join(system_id)
+    #print(system_id)
+    URL="https://console.jumpcloud.com/api/v2/systeminsights/" + str(system_id) + "/apps?limit=" + str(limit) + "&skip=" + str(skip)
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    return json.loads(response.data.decode('utf-8'))
+
+
 
 def dump_systeminsights_programs(system_id=None): #GET /systeminsights/{system_id}/programs
 
@@ -325,22 +438,6 @@ def dump_systeminsights_programs(system_id=None): #GET /systeminsights/{system_i
         print(str(count) + ' ' + line['name'] + ' (' + line['publisher'] + ') Version: ' + line['version'])
         #print(str(count) + ' ' + str(line))
 
-
-
-
-def get_systeminsights_apps_json(system_id=None, skip=0, limit=100): #GET /systeminsights/{system_id}/apps
-    urllib3.disable_warnings()
-
-    system_id = ''.join(system_id)
-    #print(system_id)
-    URL="https://console.jumpcloud.com/api/v2/systeminsights/" + str(system_id) + "/apps?limit=" + str(limit) + "&skip=" + str(skip)
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', URL,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': content_type,
-                                     'Accept': accept_type})
-    return json.loads(response.data.decode('utf-8'))
-
 def get_systeminsights_programs_json(system_id=None, skip=0, limit=100): #GET /systeminsights/{system_id}/programs
     urllib3.disable_warnings()
 
@@ -353,6 +450,10 @@ def get_systeminsights_programs_json(system_id=None, skip=0, limit=100): #GET /s
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
     return json.loads(response.data.decode('utf-8'))
+
+
+
+
 
 
 # api/v2/systeminsights/apps?limit=100&skip=0&filter=bundle_name:eq:Maps
@@ -726,6 +827,7 @@ if __name__ == '__main__':
 
 
         if sys.argv[1] == "trigger" or \
+           sys.argv[1] == "systeminsights_list_apps" or \
            sys.argv[1] == "systeminsights_list_system_apps" or \
            sys.argv[1] == "get_system" or \
            sys.argv[1] == "get_system_hostname" or \
