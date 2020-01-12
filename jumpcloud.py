@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-from pprint import pprint
+__version__='0.1'
+
+#from __future__ import print_function
+#from pprint import pprint
 
 import sys
 if sys.version_info[0] < 3:
@@ -25,6 +27,7 @@ def usage():
 
       list_os_version
       systeminsights_os_version
+
       list_user_groups
       list_user_group_members [group_id]
       list_system_groups
@@ -32,28 +35,29 @@ def usage():
       list_users
       list_systemusers
       list_commands
+
       get_system [system_id]
       get_systems
       get_system_ids
       get_system_hostname [system_id]
       get_user_ids
       get_user_email [user_id]
-      systeminsights_list_apps
-      systeminsights_list_programs
+
+      systeminsights_apps [system_id]
+      systeminsights_programs [system_id]
+
       systeminsights_browser_plugins
       systeminsights_firefox_addons
 
-      update_system [system_id] [key] [value]
-
-      systeminsights_list_system_apps [system_id]
-
-      dump_systeminsights_apps [system_id]
-      dump_systeminsights_programs [system_id]
+      list_systeminsights_apps [system_id]
+      list_systeminsights_programs [system_id]
 
       get_app [bundle_name]
       get_program [name]
 
       list_system_bindings [user_id]
+`
+      update_system [system_id] [key] [value]
 
       trigger [name]
 
@@ -64,7 +68,7 @@ if os.environ.get('JUMPCLOUD_API_KEY') is None:
     print("JUMPCLOUD_API_KEY=None")
     sys.exit(1)
 
-debug=True
+debug=False
 
 content_type = 'application/json' # str |  (default to application/json)
 accept_type  = 'application/json' # str |  (default to application/json)
@@ -110,7 +114,8 @@ def list_user_groups():
     try:
         api_instance = jcapiv2.UserGroupsApi(jcapiv2.ApiClient(configuration))
         user_groups = api_instance.groups_user_list(content_type, accept_type, limit=100)
-        pprint(user_groups)
+        #pprint(user_groups)
+        print(user_groups)
     except ApiException2 as e:
         print("Exception when calling UserGroupsApi->groups_user_list: %s\n" % e)
 
@@ -170,10 +175,10 @@ def systeminsights_firefox_addons():
 #    #pprint(response.data.decode('utf-8'))
 #    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
 
-def systeminsights_list_apps(system_id=None): #GET /systeminsights/{system_id}/apps
+def systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
 
-    print('system_id type: ' + str(type(system_id)))
-    print('system_id len: ' + str(len(system_id)))
+    if debug: print('system_id type: ' + str(type(system_id)))
+    if debug: print('system_id len: ' + str(len(system_id)))
 
     if len(system_id) != 0:
         system_id = ''.join(system_id)
@@ -209,17 +214,23 @@ def systeminsights_list_apps(system_id=None): #GET /systeminsights/{system_id}/a
         if debug: print('I have spoken. 1')
         sys.exit(0)
 
-    responseList = response
-    if debug: print(len(responseList))
+    #responseList = response
+    #if debug: print(len(responseList))
+    count += len(response)
 
     while len(response) > 0:
         skip += 100
         response = get_systeminsights_list_apps_json(system_id, skip, limit)
-        responseList = responseList + response
-        if debug: print(str(len(responseList)) + ' ' + str(len(response)))
+        #responseList = responseList + response
+        count += len(response)
+        #if debug: print(str(len(responseList)) + ' ' + str(len(response)))
         print(json.dumps(response, sort_keys=False, indent=4))
+        if system_id is None:
+            print('Count: ' + str(count))
+        
 
-    if debug: print(str(len(responseList)))
+    #print(str(len(responseList)))
+    print('Count: ' + str(count))
 
     #for line in responseList:
     #    count += 1
@@ -279,16 +290,70 @@ def get_systeminsights_list_apps_json(system_id=None, skip=0, limit=100): #GET /
 #    except ApiException2 as e:
 #        print("Exception when calling SystemInsightsApi->systeminsights_list_programs: %s\n" % e)
 
-def systeminsights_list_programs():
+#def systeminsights_list_programs():
+#    urllib3.disable_warnings()
+#    URL="https://console.jumpcloud.com/api/v2/systeminsights/programs?limit=100"
+#    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+#    response = http.request('GET', URL,
+#                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+#                                     'Content-Type': content_type,
+#                                     'Accept': accept_type})
+#    #pprint(response.data.decode('utf-8'))
+#    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
+
+def systeminsights_programs(system_id=None): #GET /systeminsights/{system_id}/programs
+
+    if debug: print('system_id type: ' + str(type(system_id)))
+    if debug: print('system_id len: ' + str(len(system_id)))
+
+    if len(system_id) != 0:
+        system_id = ''.join(system_id)
+        if debug: print('Using system_id (' + system_id + ')')
+    else:
+        system_id = None
+
+    count=0
+    skip=0
+    limit=100
+
+    response = get_systeminsights_list_programs_json(system_id, skip, limit)
+    print(json.dumps(response, sort_keys=False, indent=4))
+
+    if len(response) == 1:
+        if debug: print('I have spoken. 1')
+        sys.exit(0)
+
+    count += len(response)
+
+    while len(response) > 0:
+        skip += 100
+        response = get_systeminsights_list_programs_json(system_id, skip, limit)
+        count += len(response)
+        print(json.dumps(response, sort_keys=False, indent=4))
+        if system_id is None:
+            print('Count: ' + str(count))
+
+    print('Count: ' + str(count))
+
+def get_systeminsights_list_programs_json(system_id=None, skip=0, limit=100): #GET /systeminsights/{system_id}/programs
     urllib3.disable_warnings()
-    URL="https://console.jumpcloud.com/api/v2/systeminsights/programs?limit=100"
+
+    if debug: print('get_systeminsights_list_programs_json')
+
+    if system_id is None:
+        URL="https://console.jumpcloud.com/api/v2/systeminsights/programs?limit=" + str(limit) + "&skip=" + str(skip)
+    else:
+        URL="https://console.jumpcloud.com/api/v2/systeminsights/" + str(system_id) + "/programs?limit=" + str(limit) + "&skip=" + str(skip)
+
+    if debug: print(str(URL))
+
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
-    #pprint(response.data.decode('utf-8'))
-    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
+    return json.loads(response.data.decode('utf-8'))
+
 
 
 
@@ -298,7 +363,8 @@ def list_users():
     try:
         api_instance = jcapiv1.SystemusersApi(jcapiv1.ApiClient(configuration))
         users = api_instance.systemusers_list(content_type, accept_type)
-        pprint(users)
+        #pprint(users)
+        print(users)
     except ApiException1 as e:
         print("Exception when calling SystemusersApi->systemusers_list: %s\n" % err)
 
@@ -308,7 +374,8 @@ def list_commands():
     try:
         api_instance = jcapiv1.CommandsApi(jcapiv1.ApiClient(configuration))
         api_response = api_instance.commands_list(content_type, accept_type, skip=skip, fields=fields, limit=limit, sort=sort, filter=filter, x_org_id=x_org_id)
-        pprint(api_response)
+        #pprint(api_response)
+        print(api_response)
     except ApiException1 as e:
         print("Exception when calling CommandsApi->commands_list: %s\n" % e)
 
@@ -323,7 +390,8 @@ def systeminsights_list_system_apps_jcapiv2(system_id=None): #GET /systeminsight
     try:
         api_instance = jcapiv2.SystemInsightsApi(jcapiv2.ApiClient(configuration))
         api_response = api_instance.systeminsights_list_system_apps(system_id=system_id, content_type=content_type, accept=accept_type, limit=100, skip=skip, filter=filter, x_org_id=x_org_id)
-        pprint(api_response)
+        #pprint(api_response)
+        print(api_response)
     except ApiException2 as e:
         print("Exception when calling SystemInsightsApi->systeminsights_list_system_apps: %s\n" % e)
 #https://github.com/TheJumpCloud/jcapi-python/blob/master/jcapiv2/docs/SystemInsightsApi.md#systeminsights_list_apps
@@ -345,7 +413,7 @@ def systeminsights_list_system_apps(system_id=None): #GET /systeminsights/{syste
     print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
 
 
-def dump_systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
+def list_systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
 
     system_id = ''.join(system_id)
     #print(system_id)
@@ -411,7 +479,7 @@ def get_systeminsights_apps_json(system_id=None, skip=0, limit=100): #GET /syste
 
 
 
-def dump_systeminsights_programs(system_id=None): #GET /systeminsights/{system_id}/programs
+def list_systeminsights_programs(system_id=None): #GET /systeminsights/{system_id}/programs
 
     system_id = ''.join(system_id)
     #print(system_id)
@@ -790,10 +858,10 @@ options = {
   'list_users'                      : list_users,
   'list_systemusers'                : list_systemusers,
   'list_commands'                   : list_commands,
-  'systeminsights_list_apps'        : systeminsights_list_apps,
+  'systeminsights_apps'             : systeminsights_apps,
+  'systeminsights_programs'         : systeminsights_programs,
   'systeminsights_browser_plugins'  : systeminsights_browser_plugins,
-  'systeminsights_list_programs'    : systeminsights_list_programs,
-  'systeminsights_list_system_apps' : systeminsights_list_system_apps,
+  #'systeminsights_list_system_apps' : systeminsights_list_system_apps,
   'systeminsights_firefox_addons'   : systeminsights_firefox_addons,
   'list_system_bindings'            : list_system_bindings,
   'get_system'                      : get_system,
@@ -803,8 +871,8 @@ options = {
   'get_user_email'                  : get_user_email,
   'get_user_ids'                    : get_user_ids,
   'update_system'                   : update_system,
-  'dump_systeminsights_apps'        : dump_systeminsights_apps,
-  'dump_systeminsights_programs'    : dump_systeminsights_programs,
+  'list_systeminsights_apps'        : list_systeminsights_apps,
+  'list_systeminsights_programs'    : list_systeminsights_programs,
   'get_app'                         : get_app,
   'get_program'                     : get_program,
   'trigger'                         : run_trigger,
@@ -827,15 +895,15 @@ if __name__ == '__main__':
 
 
         if sys.argv[1] == "trigger" or \
-           sys.argv[1] == "systeminsights_list_apps" or \
-           sys.argv[1] == "systeminsights_list_system_apps" or \
+           sys.argv[1] == "systeminsights_apps" or \
+           sys.argv[1] == "systeminsights_programs" or \
            sys.argv[1] == "get_system" or \
            sys.argv[1] == "get_system_hostname" or \
            sys.argv[1] == "get_user_email" or \
            sys.argv[1] == "list_user_group_members" or \
            sys.argv[1] == "list_system_group_members" or \
-           sys.argv[1] == "dump_systeminsights_apps" or \
-           sys.argv[1] == "dump_systeminsights_programs" or \
+           sys.argv[1] == "list_systeminsights_apps" or \
+           sys.argv[1] == "list_systeminsights_programs" or \
            sys.argv[1] == "get_app" or \
            sys.argv[1] == "get_program" or \
            sys.argv[1] == "list_system_bindings":
