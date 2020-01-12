@@ -5,7 +5,7 @@ from pprint import pprint
 
 import sys
 if sys.version_info[0] < 3:
-    raise Exception("Please use Python 3")
+    raise Exception("Please use Python 3 ")
 
 import jcapiv1
 from jcapiv1.rest import ApiException as ApiException1
@@ -46,6 +46,9 @@ def usage():
       update_system [system_id] [key] [value]
 
       systeminsights_list_system_apps [system_id]
+
+      dump_systeminsights_apps [system_id]
+      dump_systeminsights_programs [system_id]
 
       list_system_bindings [user_id]
 
@@ -207,18 +210,104 @@ def list_commands():
     except ApiException1 as e:
         print("Exception when calling CommandsApi->commands_list: %s\n" % e)
 
-def systeminsights_list_system_apps(system_id=None):
+def systeminsights_list_system_apps_jcapiv2(system_id=None): #GET /systeminsights/{system_id}/apps
 
     system_id = ''.join(system_id)
+    print(system_id)
 
     configuration = jcapiv2.Configuration()
     configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
+
     try:
         api_instance = jcapiv2.SystemInsightsApi(jcapiv2.ApiClient(configuration))
-        api_response = api_instance.systeminsights_list_system_apps(system_id, content_type, accept_type, limit=100, skip=skip, filter=filter, x_org_id=x_org_id)
+        api_response = api_instance.systeminsights_list_system_apps(system_id=system_id, content_type=content_type, accept=accept_type, limit=100, skip=skip, filter=filter, x_org_id=x_org_id)
         pprint(api_response)
     except ApiException2 as e:
         print("Exception when calling SystemInsightsApi->systeminsights_list_system_apps: %s\n" % e)
+#https://github.com/TheJumpCloud/jcapi-python/blob/master/jcapiv2/docs/SystemInsightsApi.md#systeminsights_list_apps
+
+#https://docs.jumpcloud.com/2.0/traits/filter
+#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&filter=bundle_name:eq:ControlStrip
+def systeminsights_list_system_apps(system_id=None): #GET /systeminsights/{system_id}/apps
+    urllib3.disable_warnings()
+
+    system_id = ''.join(system_id)
+    #print(system_id)
+    URL="https://console.jumpcloud.com/api/v2/systeminsights/" + str(system_id) + "/apps?limit=100"
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #pprint(response.data.decode('utf-8'))
+    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
+
+
+def dump_systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
+
+    system_id = ''.join(system_id)
+    #print(system_id)
+
+    count=0
+    skip=0
+    limit=100
+
+    response = get_systeminsights_apps_json(system_id, skip, limit)
+    responseList = response
+
+    #print(len(responseList))
+
+    while len(response) > 0:
+        skip += 100
+        response = get_systeminsights_apps_json(system_id, skip, limit)
+        responseList = responseList + response
+        #print(str(len(responseList)) + ' ' + str(len(response)))
+
+    #print(str(len(responseList)))
+
+    for line in responseList:
+        count += 1
+        print(str(count) + ' ' + line['name'] + ' (' + line['bundle_name'] + ') Version: ' + line['bundle_short_version'])
+
+
+#    {
+#        "name": "Python.app",
+#        "path": "/System/Library/Frameworks/Python.framework/Versions/2.7/Resources/Python.app",
+#        "bundle_executable": "Python",
+#        "bundle_identifier": "org.python.python",
+#        "bundle_name": "Python",
+#        "bundle_short_version": "2.7.16",
+#        "bundle_version": "2.7.16",
+#        "bundle_package_type": "APPL",
+#        "environment": "",
+#        "element": "",
+#        "compiler": "",
+#        "development_region": "English",
+#        "display_name": "",
+#        "info_string": "2.7.16, (c) 2001-2016 Python Software Foundation.",
+#        "minimum_system_version": "",
+#        "category": "",
+#        "applescript_enabled": "1",
+#        "copyright": "(c) 2001-2016 Python Software Foundation.",
+#        "last_opened_time": -1,
+#        "system_id": "5df3efcdf2d66c6f6a287136",
+#        "collection_time": "2020-01-11T21:37:29.541Z"
+#    },
+
+
+def get_systeminsights_apps_json(system_id=None, skip=0, limit=100): #GET /systeminsights/{system_id}/apps
+    urllib3.disable_warnings()
+
+    system_id = ''.join(system_id)
+    #print(system_id)
+    URL="https://console.jumpcloud.com/api/v2/systeminsights/" + str(system_id) + "/apps?limit=" + str(limit) + "&skip=" + str(skip)
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    return json.loads(response.data.decode('utf-8'))
+
 
 
 def run_trigger(trigger=None):
@@ -474,6 +563,8 @@ options = {
   'get_user_email'                  : get_user_email,
   'get_user_ids'                    : get_user_ids,
   'update_system'                   : update_system,
+  'dump_systeminsights_apps'        : dump_systeminsights_apps,
+  #'dump_systeminsights_programs'    : dump_systeminsights_programs,
   'trigger'                         : run_trigger,
 }
 
@@ -500,6 +591,8 @@ if __name__ == '__main__':
            sys.argv[1] == "get_user_email" or \
            sys.argv[1] == "list_user_group_members" or \
            sys.argv[1] == "list_system_group_members" or \
+           sys.argv[1] == "dump_systeminsights_apps" or \
+           sys.argv[1] == "dump_systeminsights_programs" or \
            sys.argv[1] == "list_system_bindings":
             try:
                 options[sys.argv[1]](sys.argv[2:])
@@ -519,3 +612,15 @@ if __name__ == '__main__':
         sys.exit(1)
 
 #EOF
+
+# page through...
+#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&skip=0
+#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&skip=99
+
+#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&filter=bundle_name:eq:Microsoft%20Teams
+#https://console.jumpcloud.com/api/v2/systeminsights/apps?limit=100&filter=bundle_name:eq:Safari
+
+#https://console.jumpcloud.com/api/v2/systeminsights/programs?limit=100&filter=name:eq:Microsoft%20Teams
+#https://console.jumpcloud.com/api/v2/systeminsights/apps?limit=100&filter=bundle_name:eq:Microsoft%20Teams
+
+
