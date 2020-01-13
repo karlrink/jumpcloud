@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.2.1'
+__version__='0.1.2.2'
 
 import sys
 if sys.version_info[0] < 3:
@@ -43,6 +43,8 @@ def usage():
       get_systems_version
       get_systems_id
       get_systems_hostname [system_id]
+      get_systems_users [system_id]
+      get_systems_state [system_id]
       get_user_ids
       get_user_email [user_id]
 
@@ -127,6 +129,71 @@ def systeminsights_os_version(system_id=None):
     #and after 100...
     #is also limited by systeminsights being enabled
     if debug: print('all done.')
+
+def get_systems_users_json(system_id=None):
+    urllib3.disable_warnings()
+
+    skip=0
+    limit=100
+
+    if debug: print('system_id is ' + str(system_id))
+    if debug: print('system_id type ' + str(type(system_id)))
+
+    system_id = ''.join(system_id)
+    URL="https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/users?limit=" + str(limit) + "&skip=" + str(skip)
+
+    if debug: print(str(URL))
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+
+    count = len(json.loads(response.data.decode('utf-8')))
+    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
+    print(str(count))
+
+    #and after 100...
+    #is also limited by systeminsights being enabled
+    if debug: print('all done.')
+
+def get_systems_users(system_id=None):
+    urllib3.disable_warnings()
+
+    skip=0
+    limit=100
+
+    system_id = ''.join(system_id)
+    URL="https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/users?limit=" + str(limit) + "&skip=" + str(skip)
+
+    if debug: print(str(URL))
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+
+    count = len(json.loads(response.data.decode('utf-8')))
+    jdata = json.loads(response.data.decode('utf-8'))
+
+    #print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
+
+    c=0
+    for line in jdata:
+        c+=1
+        #print(str(c) + ' ' + str(line))
+        #print(str(c) + ' ' + str(line['id']) + ' ' + str(line['type']))
+        user_id = str(line['id'])
+        user_email = get_user_email(user_id)
+
+        #print(str(user_id) + ' ' + get_user_email(user_id))
+        print(str(user_id) + ' ' + str(user_email))
+
+    if debug: print(str(count))
+    #and after 100...
+    #is also limited by systeminsights being enabled
+    if debug: print('all done.')
+
 
 
 def list_user_groups():
@@ -737,6 +804,101 @@ def get_systems(system_id=None):
     jdata = json.loads(response.data.decode('utf-8'))
     print(json.dumps(jdata, indent=4, sort_keys=True))
 
+def get_systems_state(system_id=None):
+    urllib3.disable_warnings()
+
+    system_id = ''.join(system_id)
+
+    URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
+
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    jdata = json.loads(response.data.decode('utf-8'))
+    jsize = len(jdata)
+
+    #print(json.dumps(jdata, indent=4, sort_keys=True))
+    #print(str(jsize))
+    print(jdata.get('_id') + ' ' + jdata.get('displayName') + ' (' + jdata.get('hostname')  + ') active:' + str(jdata.get('active')) + ' lastContact:' + jdata.get('lastContact') )
+
+#{
+#    "_id": "5dc094e91b6c344c321f5bd5",
+#    "active": false,
+#    "agentVersion": "0.10.108",
+#    "allowMultiFactorAuthentication": false,
+#    "allowPublicKeyAuthentication": false,
+#    "allowSshPasswordAuthentication": false,
+#    "allowSshRootLogin": false,
+#    "arch": "64-bit",
+#    "connectionHistory": [],
+#    "created": "2019-11-04T21:15:21.074Z",
+#    "displayName": "LAPTOP-FF7SJ1K1",
+#    "fde": {
+#        "active": false,
+#        "keyPresent": false
+#    },
+#    "fileSystem": null,
+#    "hasServiceAccount": false,
+#    "hostname": "LAPTOP-FF7SJ1K1",
+#    "id": "5dc094e91b6c344c321f5bd5",
+#    "lastContact": "2020-01-06T20:44:24.082Z",
+#    "modifySSHDConfig": false,
+#    "networkInterfaces": [
+#        {
+#            "address": "2607:fea8:4d20:3b04::7",
+#            "family": "IPv6",
+#            "internal": false,
+#            "name": "Ethernet"
+#        },
+#        {
+#            "address": "2607:fea8:4d20:3b04:7dab:2645:5ee8:30ab",
+#            "family": "IPv6",
+#            "internal": false,
+#            "name": "Ethernet"
+#        },
+#        {
+#            "address": "fd00:688f:2e2f:40e2:7dab:2645:5ee8:30ab",
+#            "family": "IPv6",
+#            "internal": false,
+#            "name": "Ethernet"
+#        },
+#        {
+#            "address": "2607:fea8:4d20:3b04:81a8:7947:da11:948d",
+#            "family": "IPv6",
+#            "internal": false,
+#            "name": "Ethernet"
+#        },
+#        {
+#            "address": "fd00:688f:2e2f:40e2:81a8:7947:da11:948d",
+#            "family": "IPv6",
+#            "internal": false,
+#            "name": "Ethernet"
+#        },
+#        {
+#            "address": "192.168.0.19",
+#            "family": "IPv4",
+#            "internal": false,
+#            "name": "Ethernet"
+#        }
+#    ],
+#    "organization": "5cdc7f3c95a60d5c14488d5f",
+#    "os": "Windows",
+#    "remoteIP": "99.245.147.130",
+#    "serialNumber": "MP17U84L",
+#    "sshRootEnabled": true,
+#    "sshdParams": [],
+#    "systemInsights": {
+#        "state": "enabled"
+#    },
+#    "systemTimezone": -8,
+#    "systemToken": "4caade1c-37de-47be-8afc-5d7caa927c96",
+#    "templateName": "windows-windows-x86_64",
+#    "version": "10 Home"
+#}
+
+
 
 def get_user_email(user_id=None):
     urllib3.disable_warnings()
@@ -752,7 +914,8 @@ def get_user_email(user_id=None):
                                      'Accept': accept_type})
     #print(response.data.decode('utf-8'))
     jdata = json.loads(response.data.decode('utf-8'))
-    print(jdata['email'])
+    #print(jdata['email'])
+    return str(jdata['email'])
 
 
 #https://docs.jumpcloud.com/2.0/system-group-members-and-membership/list-system-groups-group-membership
@@ -813,7 +976,9 @@ def list_user_group_members(group_id=None):
     for user_id in users:
         #get_systems_hostname(sys)
         #print(user_id)
-        get_user_email(user_id)
+        #get_user_email(user_id)
+        user_email = get_user_email(user_id)
+        print(str(user_id) + ' ' + str(user_email))
 
 
                      
@@ -1072,6 +1237,8 @@ options = {
   'systeminsights_firefox_addons'   : systeminsights_firefox_addons,
   'list_system_bindings'            : list_system_bindings,
   'get_systems'                     : get_systems,
+  'get_systems_users'               : get_systems_users,
+  'get_systems_state'               : get_systems_state,
   'get_systems_version'             : get_systems_version,
   'get_systems_id'                  : get_systems_id,
   'get_systems_hostname'            : get_systems_hostname,
@@ -1106,6 +1273,8 @@ if __name__ == '__main__':
            sys.argv[1] == "systeminsights_apps" or \
            sys.argv[1] == "systeminsights_programs" or \
            sys.argv[1] == "get_systems" or \
+           sys.argv[1] == "get_systems_users" or \
+           sys.argv[1] == "get_systems_state" or \
            sys.argv[1] == "get_systems_hostname" or \
            sys.argv[1] == "get_user_email" or \
            sys.argv[1] == "list_systems_id" or \
@@ -1144,5 +1313,11 @@ if __name__ == '__main__':
 
 #https://console.jumpcloud.com/api/v2/systeminsights/programs?limit=100&filter=name:eq:Microsoft%20Teams
 #https://console.jumpcloud.com/api/v2/systeminsights/apps?limit=100&filter=bundle_name:eq:Microsoft%20Teams
+
+#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/firefox_addons?limit=100&skip=0
+#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/browser_plugins?limit=100&skip=0
+#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&skip=0
+#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&skip=100
+#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&skip=200
 
 
