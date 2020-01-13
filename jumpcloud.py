@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.0a'
+__version__='0.1.1'
 
 import sys
 if sys.version_info[0] < 3:
@@ -27,6 +27,7 @@ def usage():
       list_systems_id
       list_systems_hostname
       list_systems_serial
+      list_systems_version
       systeminsights_os_version [system_id]
 
       list_user_groups
@@ -38,7 +39,7 @@ def usage():
       list_commands
 
       get_systems [system_id]
-      get_systems_versions
+      get_systems_version
       get_systems_id
       get_systems_hostname [system_id]
       get_user_ids
@@ -873,6 +874,28 @@ def get_systems_id():
         print(data.get('_id'))
     #print('totalCount: ' + str(jdata['totalCount']))
 
+def list_systems_id():
+    urllib3.disable_warnings()
+    URL="https://console.jumpcloud.com/api/systems"
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #pprint(response.data.decode('utf-8'))
+    jdata = json.loads(response.data.decode('utf-8'))
+    #print('totalCount: ' + str(jdata['totalCount']))
+    #for data in jdata['results']:
+    #    print(data.get('_id') + ' ' + data.get('hostname'))
+    #print(str(jdata))
+
+    for data in jdata['results']:
+        #print(data.get('_id') + ' ' + data.get('hostname'))
+        print(data.get('_id'))
+    #print('totalCount: ' + str(jdata['totalCount']))
+
+
+
 def list_systems_hostname():
     urllib3.disable_warnings()
     URL="https://console.jumpcloud.com/api/systems"
@@ -934,7 +957,7 @@ def list_systems_list():
 
 
 
-def get_systems_versions():
+def get_systems_version():
     urllib3.disable_warnings()
     URL="https://console.jumpcloud.com/api/systems"
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
@@ -952,6 +975,26 @@ def get_systems_versions():
     for data in jdata['results']:
         print(data.get('_id') + ' ' + data.get('displayName') + ' (' + data.get('hostname')  + ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch'))
     #print('totalCount: ' + str(jdata['totalCount']))
+
+def list_systems_version():
+    urllib3.disable_warnings()
+    URL="https://console.jumpcloud.com/api/systems"
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #pprint(response.data.decode('utf-8'))
+    jdata = json.loads(response.data.decode('utf-8'))
+    #print('totalCount: ' + str(jdata['totalCount']))
+    #for data in jdata['results']:
+    #    print(data.get('_id') + ' ' + data.get('hostname'))
+    #print(str(jdata))
+
+    for data in jdata['results']:
+        print(data.get('_id') + ' ' + data.get('displayName') + ' (' + data.get('hostname')  + ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch'))
+    #print('totalCount: ' + str(jdata['totalCount']))
+
 
 
     
@@ -972,10 +1015,11 @@ def get_user_ids():
 
 options = {
   'list_systems'                    : list_systems_list,
-  'list_systems_id'                 : get_systems_id,
+  'list_systems_id'                 : list_systems_id,
   'list_systems_hostname'           : list_systems_hostname,
   'list_systems_serial'             : list_systems_serial,
   'list_systems_json'               : list_systems_json,
+  'list_systems_version'            : list_systems_version,
   'systeminsights_os_version'       : systeminsights_os_version,
   'list_user_groups'                : list_user_groups,
   'list_user_group_members'         : list_user_group_members,
@@ -990,7 +1034,7 @@ options = {
   'systeminsights_firefox_addons'   : systeminsights_firefox_addons,
   'list_system_bindings'            : list_system_bindings,
   'get_systems'                     : get_systems,
-  'get_systems_versions'            : get_systems_versions,
+  'get_systems_version'             : get_systems_version,
   'get_systems_id'                  : get_systems_id,
   'get_systems_hostname'            : get_systems_hostname,
   'get_user_email'                  : get_user_email,
