@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.0'
+__version__='0.1.0a'
 
 import sys
 if sys.version_info[0] < 3:
@@ -26,6 +26,7 @@ def usage():
       list_systems_json
       list_systems_id
       list_systems_hostname
+      list_systems_serial
       systeminsights_os_version [system_id]
 
       list_user_groups
@@ -891,6 +892,46 @@ def list_systems_hostname():
         print(data.get('_id') + ' ' + data.get('hostname'))
     #print('totalCount: ' + str(jdata['totalCount']))
 
+def list_systems_serial():
+    urllib3.disable_warnings()
+    URL="https://console.jumpcloud.com/api/systems"
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #pprint(response.data.decode('utf-8'))
+    jdata = json.loads(response.data.decode('utf-8'))
+    #print('totalCount: ' + str(jdata['totalCount']))
+    #for data in jdata['results']:
+    #    print(data.get('_id') + ' ' + data.get('hostname'))
+    #print(str(jdata))
+
+    for data in jdata['results']:
+        print(data.get('_id') + ' ' + data.get('hostname') + ' ("' + data.get('serialNumber') + '") ')
+    #print('totalCount: ' + str(jdata['totalCount']))
+
+
+
+def list_systems_list():
+    urllib3.disable_warnings()
+    URL="https://console.jumpcloud.com/api/systems"
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #pprint(response.data.decode('utf-8'))
+    jdata = json.loads(response.data.decode('utf-8'))
+    #print('totalCount: ' + str(jdata['totalCount']))
+    #for data in jdata['results']:
+    #    print(data.get('_id') + ' ' + data.get('hostname'))
+    #print(str(jdata))
+
+    for data in jdata['results']:
+        print(data.get('_id') + ' ' + data.get('displayName') + ' (' + data.get('hostname')  + ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch'))
+    #print('totalCount: ' + str(jdata['totalCount']))
+
 
 
 def get_systems_versions():
@@ -930,9 +971,10 @@ def get_user_ids():
 
 
 options = {
-  'list_systems'                    : get_systems_versions,
+  'list_systems'                    : list_systems_list,
   'list_systems_id'                 : get_systems_id,
   'list_systems_hostname'           : list_systems_hostname,
+  'list_systems_serial'             : list_systems_serial,
   'list_systems_json'               : list_systems_json,
   'systeminsights_os_version'       : systeminsights_os_version,
   'list_user_groups'                : list_user_groups,
