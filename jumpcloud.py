@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.2'
+__version__='0.1.2.1'
 
 import sys
 if sys.version_info[0] < 3:
@@ -26,7 +26,7 @@ def usage():
       list_systems_json
       list_systems_os
       list_systems_os_version
-      list_systems_id [os]
+      list_systems_id [systems_os]
       list_systems_hostname
       list_systems_serial
       systeminsights_os_version [system_id]
@@ -902,8 +902,8 @@ def list_systems_id(operatingsystem=None):
             #print('checking... ' + str(operatingsystem))
             if str(data.get('os')) == str(operatingsystem):
                 #print('Match OS' + str(data.get('os')))
-                print(data.get('_id') + ' ' + str(data.get('os')))
-                #print(data.get('_id'))
+                if debug: print(data.get('_id') + ' ' + str(data.get('os')))
+                print(data.get('_id'))
         else:
             #print(data.get('_id') + ' ' + data.get('os'))
             print(data.get('_id'))
