@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.2.3'
+__version__='0.1.2.3a'
 
 import sys
 if sys.version_info[0] < 3:
@@ -1139,6 +1139,8 @@ def list_systems_hardware():
     for system_id in idList:
         #print(system_id)
         response = get_systeminsights_system_info_json(system_id, skip=0, limit=100)
+        if len(response) == 0:
+            print(str(system_id))
         for line in response:
             #print(line)
             _line =  str(system_id) + ' ' + line['computer_name'] + ' (' + line['hostname'] + ') '
