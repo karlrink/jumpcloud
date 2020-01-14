@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.3'
+__version__='0.1.4'
 
 import sys
 if sys.version_info[0] < 3:
@@ -31,6 +31,8 @@ def usage():
       list_systems_serial
       list_systems_hardware
       list_systems_hardware_json
+      list_systems_insights_state
+      list_systems_fde
       systeminsights_os_version [system_id]
 
       list_user_groups
@@ -308,7 +310,8 @@ def systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
 
     if len(response) == 1:
         if debug: print('I have spoken. 1')
-        sys.exit(0)
+        #sys.exit(0)
+        return
 
     #responseList = response
     #if debug: print(len(responseList))
@@ -785,6 +788,24 @@ def get_systems_hostname(system_id=None):
     print(jdata['hostname'])
 
 #api.v1
+def get_systems_json(system_id=None):
+    urllib3.disable_warnings()
+
+    if system_id is None:
+        system_id = ''
+    else:
+        system_id = ''.join(system_id)
+
+    URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
+
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    return json.loads(response.data.decode('utf-8'))
+
+
 def get_systems(system_id=None):
     urllib3.disable_warnings()
 
@@ -1366,7 +1387,7 @@ def list_systems_list():
     #print(str(jdata))
 
     for data in jdata['results']:
-        print(data.get('_id') + ' ' + data.get('displayName') + ' (' + data.get('hostname')  + ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch'))
+        print(data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')  + ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch'))
     #print('totalCount: ' + str(jdata['totalCount']))
 
 
@@ -1410,6 +1431,44 @@ def list_systems_os_version():
     #print('totalCount: ' + str(jdata['totalCount']))
 
 
+def list_systems_insights_state():
+    urllib3.disable_warnings()
+    URL="https://console.jumpcloud.com/api/systems"
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    jdata = json.loads(response.data.decode('utf-8'))
+    #print('totalCount: ' + str(jdata['totalCount']))
+    #for data in jdata['results']:
+    #    print(data.get('_id') + ' ' + data.get('hostname'))
+    #print(str(jdata))
+
+    for data in jdata['results']:
+        #print(data.get('_id') + ' ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch') + ' ' + json.dumps(data.get('systemInsights')))
+        _line = data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')  + ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch')
+        _line += ' ' + json.dumps(data.get('systemInsights'))
+        print(_line)
+    #print('totalCount: ' + str(jdata['totalCount']))
+
+def list_systems_fde():
+    jdata = get_systems_json()
+    if len(jdata) == 0:
+        print('Zero (0) response')
+    if len(jdata) == 1:
+        print(str(jdata))
+        if debug: print('I have spoken')
+        #sys.exit(1)
+        return
+
+    #print(str(jdata))
+    #print('totalCount: ' + str(jdata['totalCount']))
+    for data in jdata['results']:
+        fde_json = json.dumps(data.get('fde'), sort_keys=True)
+        _line = data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')  + ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch')
+        _line += ' [' + str(fde_json) + ']'
+        print(_line)
 
     
 def get_user_ids():
@@ -1437,6 +1496,8 @@ options = {
   'list_systems_os_version'         : list_systems_os_version,
   'list_systems_hardware'           : list_systems_hardware,
   'list_systems_hardware_json'      : list_systems_hardware_json,
+  'list_systems_insights_state'     : list_systems_insights_state,
+  'list_systems_fde'                : list_systems_fde,
   'systeminsights_os_version'       : systeminsights_os_version,
   'list_user_groups'                : list_user_groups,
   'list_user_group_members'         : list_user_group_members,
