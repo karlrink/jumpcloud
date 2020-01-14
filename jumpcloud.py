@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.2.3a'
+__version__='0.1.3'
 
 import sys
 if sys.version_info[0] < 3:
@@ -38,7 +38,12 @@ def usage():
       list_system_groups
       list_system_group_members [group_id]
       list_users
-      list_systemusers
+      list_users_json
+      list_users_suspended
+      list_users_locked
+      list_users_password_expired
+      list_users_not_activated
+      list_users_ldap_bind
       list_commands
 
       get_systems [system_id]
@@ -446,18 +451,6 @@ def get_systeminsights_list_programs_json(system_id=None, skip=0, limit=100): #G
     return json.loads(response.data.decode('utf-8'))
 
 
-
-
-def list_users():
-    configuration = jcapiv1.Configuration()
-    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
-    try:
-        api_instance = jcapiv1.SystemusersApi(jcapiv1.ApiClient(configuration))
-        users = api_instance.systemusers_list(content_type, accept_type)
-        #pprint(users)
-        print(users)
-    except ApiException1 as e:
-        print("Exception when calling SystemusersApi->systemusers_list: %s\n" % err)
 
 def list_commands():
     configuration = jcapiv1.Configuration()
@@ -983,17 +976,118 @@ def list_user_group_members(group_id=None):
         user_email = get_user_email(user_id)
         print(str(user_id) + ' ' + str(user_email))
 
+#def list_users():
+#    configuration = jcapiv1.Configuration()
+#    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
+#    try:
+#        api_instance = jcapiv1.SystemusersApi(jcapiv1.ApiClient(configuration))
+#        users = api_instance.systemusers_list(content_type, accept_type)
+#        #pprint(users)
+#        print(users)
+#    except ApiException1 as e:
+#        print("Exception when calling SystemusersApi->systemusers_list: %s\n" % err)
 
-                     
-def list_systemusers():
+#def list_systemusers():
+def get_systemusers_json():
     urllib3.disable_warnings()
     URL="https://console.jumpcloud.com/api/systemusers"
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type})
-    #pprint(response.data.decode('utf-8'))
-    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=True, indent=4))
+    return json.loads(response.data.decode('utf-8'))
+
+def list_users():
+    jdata = get_systemusers_json()
+    if len(jdata) == 0:
+        print('Zero (0) response')
+
+    #print('totalCount: ' + str(jdata['totalCount']))
+    for data in jdata['results']:
+        middlename = data.get('middlename')
+        if middlename == "" or middlename is None:
+            #if debug: print('blank middlename')
+            middlename = ' '
+        else:
+            #if debug: print(str(data.get('middlename')))
+            middlename = ' ' + str(data.get('middlename')) + ' '
+
+        _line = data.get('_id') + ' ' + data.get('username') + ' (' + data.get('displayname') + ') '
+        _line += '["' + data.get('firstname') + str(middlename) + data.get('lastname') + '"] '
+        _line += data.get('email')
+        print(_line)
+
+def list_users_suspended():
+    jdata = get_systemusers_json()
+    if len(jdata) == 0:
+        print('Zero (0) response')
+    #print('totalCount: ' + str(jdata['totalCount']))
+    for data in jdata['results']:
+        suspended = data.get('suspended')
+        if str(suspended) != 'False':
+            _line = data.get('_id') + ' ' + data.get('username') + ' ' + data.get('email') + ' '
+            _line += 'suspended:' + str(suspended)
+            print(_line)
+
+def list_users_locked():
+    jdata = get_systemusers_json()
+    if len(jdata) == 0:
+        print('Zero (0) response')
+    #print('totalCount: ' + str(jdata['totalCount']))
+    for data in jdata['results']:
+        account_locked = data.get('account_locked')
+        if str(account_locked) != 'False':
+            _line = data.get('_id') + ' ' + data.get('username') + ' ' + data.get('email') + ' '
+            _line += 'account_locked:' + str(account_locked)
+            print(_line)
+
+def list_users_password_expired():
+    jdata = get_systemusers_json()
+    if len(jdata) == 0:
+        print('Zero (0) response')
+    #print('totalCount: ' + str(jdata['totalCount']))
+    for data in jdata['results']:
+        password_expired = data.get('password_expired')
+        if str(password_expired) != 'False':
+            _line = data.get('_id') + ' ' + data.get('username') + ' ' + data.get('email') + ' '
+            _line += 'password_expired:' + str(password_expired)
+            print(_line)
+
+def list_users_not_activated():
+    jdata = get_systemusers_json()
+    if len(jdata) == 0:
+        print('Zero (0) response')
+    #print('totalCount: ' + str(jdata['totalCount']))
+    for data in jdata['results']:
+        activated = data.get('activated')
+        if str(activated) != 'True':
+            _line = data.get('_id') + ' ' + data.get('username') + ' ' + data.get('email') + ' '
+            _line += 'activated:' + str(activated)
+            print(_line)
+
+def list_users_ldap_bind():
+    jdata = get_systemusers_json()
+    if len(jdata) == 0:
+        print('Zero (0) response')
+    #print('totalCount: ' + str(jdata['totalCount']))
+    for data in jdata['results']:
+        ldap_binding_user = data.get('ldap_binding_user')
+        if str(ldap_binding_user) == 'True':
+            _line = data.get('_id') + ' ' + data.get('username') + ' ' + data.get('email') + ' '
+            _line += 'ldap_binding_user:' + str(ldap_binding_user)
+            print(_line)
+
+
+
+def list_users_json():
+        response = get_systemusers_json()
+        if len(response) == 0:
+            print('Zero (0) response')
+        print(json.dumps(response, sort_keys=True, indent=4))
+
+
+
+
 
 #def get_systems():
 #    urllib3.disable_warnings()
@@ -1142,24 +1236,16 @@ def list_systems_hardware():
         if len(response) == 0:
             print(str(system_id))
         for line in response:
+            memGB = round(int(line['physical_memory']) / 1024 / 1024 / 1024)
             #print(line)
             _line =  str(system_id) + ' ' + line['computer_name'] + ' (' + line['hostname'] + ') '
             _line += line['hardware_model'] + ' (' + line['hardware_vendor'] + ') '
             _line += line['cpu_type'] + ' (' + str(line['cpu_physical_cores']) + ') '
-            _line += line['cpu_brand'] + ' (' + line['physical_memory'] + ') '
-            _line += line['hardware_serial'] 
+            _line += line['cpu_brand'] + ' ' + str(line['physical_memory']) + ' Bytes (' + str(memGB) + ' GB) ["'
+            _line += str(line['hardware_serial']) + '"] '
             print(_line)
 
-
-        #print(jdata['hostname'] + ' ' )
-        #print(jdata)
-        #print(jdata['hostname'])
-        #results = json.dumps(jdata)
-        #print(results['hostname'])
-        
-
-    #print(jdata['hostname'])
-    if debug: print('run.1.end')
+    if debug: print('list_systems_hardware.end')
 
 
 
@@ -1357,7 +1443,12 @@ options = {
   'list_system_groups'              : list_system_groups,
   'list_system_group_members'       : list_system_group_members,
   'list_users'                      : list_users,
-  'list_systemusers'                : list_systemusers,
+  'list_users_json'                 : list_users_json,
+  'list_users_suspended'            : list_users_suspended,
+  'list_users_locked'               : list_users_locked,
+  'list_users_password_expired'     : list_users_password_expired,
+  'list_users_not_activated'        : list_users_not_activated,
+  'list_users_ldap_bind'            : list_users_ldap_bind,
   'list_commands'                   : list_commands,
   'systeminsights_apps'             : systeminsights_apps,
   'systeminsights_programs'         : systeminsights_programs,
