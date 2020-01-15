@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.4'
+__version__='0.1.5'
 
 import sys
 if sys.version_info[0] < 3:
@@ -22,17 +22,9 @@ def usage():
     print("""
     options:
 
-      list_systems
-      list_systems_json
-      list_systems_os
-      list_systems_os_version
+      list_systems [json, os, os_version, hostname, serial, insights_state, fde]
       list_systems_id [systems_os]
-      list_systems_hostname
-      list_systems_serial
-      list_systems_hardware
-      list_systems_hardware_json
-      list_systems_insights_state
-      list_systems_fde
+      list_systems_hardware [json]
       systeminsights_os_version [system_id]
 
       list_user_groups
@@ -77,6 +69,7 @@ def usage():
       trigger [name]
 
     """)
+    sys.exit(0)
 
 # Configure API key authorization: x-api-key
 if os.environ.get('JUMPCLOUD_API_KEY') is None:
@@ -1532,56 +1525,122 @@ options = {
   'trigger'                         : run_trigger,
 }
 
+#list_systems_options = {
+#  'hostname'                        : list_systems_hostname,
+#  'serial'                          : list_systems_serial,
+#  'json'                            : list_systems_json,
+#  'os'                              : list_systems_os,
+#  'os_version'                      : list_systems_os_version,
+#  'insights_state'                  : list_systems_insights_state,
+#  'fde'                             : list_systems_fde,
+#}
+
+#list_systems_options = ['hostname','serial','json','os','os_version',
+#              'insights_state','fde']
+
 if __name__ == '__main__':
 
-    if sys.argv[1:]:
+    argc = len(sys.argv) - 1
+
+    if argc == 1:
         if sys.argv[1] == "--help":
             usage()
-            sys.exit(0)
-
-        if sys.argv[1] == "update_system":
-            try:
-                options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
-                sys.exit(0)
-            except KeyError as e:
-                print("KeyError: " + str(e))
-                sys.exit(1)
-
-
-        if sys.argv[1] == "trigger" or \
-           sys.argv[1] == "systeminsights_os_version" or \
-           sys.argv[1] == "systeminsights_apps" or \
-           sys.argv[1] == "systeminsights_programs" or \
-           sys.argv[1] == "get_systems" or \
-           sys.argv[1] == "get_systems_users" or \
-           sys.argv[1] == "get_systems_state" or \
-           sys.argv[1] == "get_systems_hostname" or \
-           sys.argv[1] == "get_user_email" or \
-           sys.argv[1] == "list_systems_id" or \
-           sys.argv[1] == "list_user_group_members" or \
-           sys.argv[1] == "list_system_group_members" or \
-           sys.argv[1] == "list_systeminsights_apps" or \
-           sys.argv[1] == "list_systeminsights_programs" or \
-           sys.argv[1] == "get_systeminsights_system_info" or \
-           sys.argv[1] == "get_app" or \
-           sys.argv[1] == "get_program" or \
-           sys.argv[1] == "list_system_bindings":
-            try:
-                options[sys.argv[1]](sys.argv[2:])
-                sys.exit(0)
-            except KeyError as e:
-                print("KeyError: " + str(e))
-                sys.exit(1)
-
-
         try:
             options[sys.argv[1]]()
         except KeyError as e:
+            print("Unknown Option: " + str(e))
+            sys.exit(1)
+
+    elif argc == 2:
+        #if sys.arddgv[2] in list_systems_options:
+        if sys.argv[1] == "list_systems":
+            case_name = str(sys.argv[1]) + '_' + str(sys.argv[2])
+            try:
+                options[case_name]()
+            except KeyError as e:
+                print("Unknown Option: " + str(e))
+                sys.exit(1)
+        else:
+            try:
+                options[sys.argv[1]](sys.argv[2:])
+            except KeyError as e:
+                print("Unknown Option: " + str(e))
+                sys.exit(1)
+
+    elif argc >= 3:
+        try:
+            options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
+            sys.exit(0)
+        except KeyError as e:
             print("KeyError: " + str(e))
             sys.exit(1)
+
+
+        #if sys.argv[1] == 'list_systems':
+        #    try:
+        #        list_systems_options[sys.argv[2]]()
+        #    except KeyError as e:
+        #        print("Unknown Option: " + str(e))
+        #        sys.exit(1)
+
     else:
         usage()
-        sys.exit(1)
+
+
+#    elif argc == 2:
+
+
+#        if sys.argv[1] == "update_system":
+#            try:
+#                options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
+#                sys.exit(0)
+#            except KeyError as e:
+#                print("KeyError: " + str(e))
+#                sys.exit(1)
+#
+#        if sys.argv[1] == "list_systems" and sys.argv[2]:
+#            try:
+#                list_systems_options[sys.argv[2]]()
+#                sys.exit(0)
+#            except KeyError as e:
+#                print("KeyError: " + str(e))
+#                sys.exit(1)
+#
+#
+#        if sys.argv[1] == "trigger" or \
+#           sys.argv[1] == "systeminsights_os_version" or \
+#           sys.argv[1] == "systeminsights_apps" or \
+#           sys.argv[1] == "systeminsights_programs" or \
+#           sys.argv[1] == "get_systems" or \
+#           sys.argv[1] == "get_systems_users" or \
+#           sys.argv[1] == "get_systems_state" or \
+#           sys.argv[1] == "get_systems_hostname" or \
+#           sys.argv[1] == "get_user_email" or \
+#           sys.argv[1] == "list_systems_id" or \
+#           sys.argv[1] == "list_user_group_members" or \
+#           sys.argv[1] == "list_system_group_members" or \
+#           sys.argv[1] == "list_systeminsights_apps" or \
+#           sys.argv[1] == "list_systeminsights_programs" or \
+#           sys.argv[1] == "get_systeminsights_system_info" or \
+#           sys.argv[1] == "get_app" or \
+#           sys.argv[1] == "get_program" or \
+#           sys.argv[1] == "list_system_bindings":
+#            try:
+#                options[sys.argv[1]](sys.argv[2:])
+#                sys.exit(0)
+#            except KeyError as e:
+#                print("KeyError: " + str(e))
+#                sys.exit(1)
+#
+#
+#        try:
+#            options[sys.argv[1]]()
+#        except KeyError as e:
+#            print("KeyError: " + str(e))
+#            sys.exit(1)
+#    else:
+#        usage()
+#        sys.exit(1)
 
 #EOF
 
