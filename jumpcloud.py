@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.5'
+__version__='0.1.6'
 
 import sys
 if sys.version_info[0] < 3:
@@ -24,20 +24,14 @@ def usage():
 
       list_systems [json, os, os_version, hostname, serial, insights_state, fde]
       list_systems_id [systems_os]
-      list_systems_hardware [json]
-      systeminsights_os_version [system_id]
+      list_systeminsights_hardware [json]
 
+      list_users [json, suspended, locked, password_expired, not_activated, ldap_bind]
       list_user_groups
       list_user_group_members [group_id]
       list_system_groups
       list_system_group_members [group_id]
-      list_users
-      list_users_json
-      list_users_suspended
-      list_users_locked
-      list_users_password_expired
-      list_users_not_activated
-      list_users_ldap_bind
+
       list_commands
 
       get_systems [system_id]
@@ -48,19 +42,21 @@ def usage():
       get_user_ids
       get_user_email [user_id]
 
-      systeminsights_apps [system_id]
-      systeminsights_programs [system_id]
+      systeminsights_os_version [system_id]
 
       get_systeminsights_system_info [system_id]
-
-      systeminsights_browser_plugins
-      systeminsights_firefox_addons
 
       list_systeminsights_apps [system_id]
       list_systeminsights_programs [system_id]
 
+      systeminsights_apps [system_id]
+      systeminsights_programs [system_id]
+
       get_app [bundle_name]
       get_program [name]
+
+      systeminsights_browser_plugins
+      systeminsights_firefox_addons
 
       list_system_bindings [user_id]
 `
@@ -1240,7 +1236,7 @@ def list_systems_hostname():
     #print('totalCount: ' + str(jdata['totalCount']))
 
 
-def list_systems_hardware():
+def list_systeminsights_hardware():
 
     idList = get_systems_id()
 
@@ -1259,11 +1255,11 @@ def list_systems_hardware():
             _line += str(line['hardware_serial']) + '"] '
             print(_line)
 
-    if debug: print('list_systems_hardware.end')
+    if debug: print('list_systeminsights_hardware.end')
 
 
 
-def list_systems_hardware_json():
+def list_systeminsights_hardware_json():
     if debug: print('run.1')
     #system_id = '5dbb61c83cccc8147faa4189'
 
@@ -1487,8 +1483,8 @@ options = {
   'list_systems_json'               : list_systems_json,
   'list_systems_os'                 : list_systems_os,
   'list_systems_os_version'         : list_systems_os_version,
-  'list_systems_hardware'           : list_systems_hardware,
-  'list_systems_hardware_json'      : list_systems_hardware_json,
+  'list_systeminsights_hardware'    : list_systeminsights_hardware,
+  'list_systeminsights_hardware_json' : list_systeminsights_hardware_json,
   'list_systems_insights_state'     : list_systems_insights_state,
   'list_systems_fde'                : list_systems_fde,
   'systeminsights_os_version'       : systeminsights_os_version,
@@ -1525,139 +1521,52 @@ options = {
   'trigger'                         : run_trigger,
 }
 
-#list_systems_options = {
-#  'hostname'                        : list_systems_hostname,
-#  'serial'                          : list_systems_serial,
-#  'json'                            : list_systems_json,
-#  'os'                              : list_systems_os,
-#  'os_version'                      : list_systems_os_version,
-#  'insights_state'                  : list_systems_insights_state,
-#  'fde'                             : list_systems_fde,
-#}
-
-#list_systems_options = ['hostname','serial','json','os','os_version',
-#              'insights_state','fde']
-
 if __name__ == '__main__':
 
-    argc = len(sys.argv) - 1
+    try:
+        if sys.argv[1:]:
+            if sys.argv[1] == "--help":
+                usage()
 
-    if argc == 1:
-        if sys.argv[1] == "--help":
-            usage()
-        try:
-            options[sys.argv[1]]()
-        except KeyError as e:
-            print("Unknown Option: " + str(e))
-            sys.exit(1)
+            if sys.argv[1] == "update_system":
+                options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
+                sys.exit(0)
 
-    elif argc == 2:
-        #if sys.arddgv[2] in list_systems_options:
-        if sys.argv[1] == "list_systems":
-            case_name = str(sys.argv[1]) + '_' + str(sys.argv[2])
-            try:
-                options[case_name]()
-            except KeyError as e:
-                print("Unknown Option: " + str(e))
-                sys.exit(1)
-        else:
-            try:
+            if (sys.argv[1] == "list_systems" and len(sys.argv) > 2) or \
+            (sys.argv[1] == "list_users" and len(sys.argv) > 2) or \
+            (sys.argv[1] == "list_systeminsights_hardware" and len(sys.argv) > 2):
+                options[str(sys.argv[1] + '_' + sys.argv[2])]()
+                sys.exit(0)
+
+            if sys.argv[1] == "trigger" or \
+            sys.argv[1] == "systeminsights_os_version" or \
+            sys.argv[1] == "systeminsights_apps" or \
+            sys.argv[1] == "systeminsights_programs" or \
+            sys.argv[1] == "get_systems" or \
+            sys.argv[1] == "get_systems_users" or \
+            sys.argv[1] == "get_systems_state" or \
+            sys.argv[1] == "get_systems_hostname" or \
+            sys.argv[1] == "get_user_email" or \
+            sys.argv[1] == "list_systems_id" or \
+            sys.argv[1] == "list_user_group_members" or \
+            sys.argv[1] == "list_system_group_members" or \
+            sys.argv[1] == "list_systeminsights_apps" or \
+            sys.argv[1] == "list_systeminsights_programs" or \
+            sys.argv[1] == "get_systeminsights_system_info" or \
+            sys.argv[1] == "get_app" or \
+            sys.argv[1] == "get_program" or \
+            sys.argv[1] == "list_system_bindings":
                 options[sys.argv[1]](sys.argv[2:])
-            except KeyError as e:
-                print("Unknown Option: " + str(e))
-                sys.exit(1)
+                sys.exit(0)
+            else:
+                options[sys.argv[1]]()
+        else:
+            usage()
 
-    elif argc >= 3:
-        try:
-            options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
-            sys.exit(0)
-        except KeyError as e:
-            print("KeyError: " + str(e))
-            sys.exit(1)
-
-
-        #if sys.argv[1] == 'list_systems':
-        #    try:
-        #        list_systems_options[sys.argv[2]]()
-        #    except KeyError as e:
-        #        print("Unknown Option: " + str(e))
-        #        sys.exit(1)
-
-    else:
-        usage()
-
-
-#    elif argc == 2:
-
-
-#        if sys.argv[1] == "update_system":
-#            try:
-#                options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
-#                sys.exit(0)
-#            except KeyError as e:
-#                print("KeyError: " + str(e))
-#                sys.exit(1)
-#
-#        if sys.argv[1] == "list_systems" and sys.argv[2]:
-#            try:
-#                list_systems_options[sys.argv[2]]()
-#                sys.exit(0)
-#            except KeyError as e:
-#                print("KeyError: " + str(e))
-#                sys.exit(1)
-#
-#
-#        if sys.argv[1] == "trigger" or \
-#           sys.argv[1] == "systeminsights_os_version" or \
-#           sys.argv[1] == "systeminsights_apps" or \
-#           sys.argv[1] == "systeminsights_programs" or \
-#           sys.argv[1] == "get_systems" or \
-#           sys.argv[1] == "get_systems_users" or \
-#           sys.argv[1] == "get_systems_state" or \
-#           sys.argv[1] == "get_systems_hostname" or \
-#           sys.argv[1] == "get_user_email" or \
-#           sys.argv[1] == "list_systems_id" or \
-#           sys.argv[1] == "list_user_group_members" or \
-#           sys.argv[1] == "list_system_group_members" or \
-#           sys.argv[1] == "list_systeminsights_apps" or \
-#           sys.argv[1] == "list_systeminsights_programs" or \
-#           sys.argv[1] == "get_systeminsights_system_info" or \
-#           sys.argv[1] == "get_app" or \
-#           sys.argv[1] == "get_program" or \
-#           sys.argv[1] == "list_system_bindings":
-#            try:
-#                options[sys.argv[1]](sys.argv[2:])
-#                sys.exit(0)
-#            except KeyError as e:
-#                print("KeyError: " + str(e))
-#                sys.exit(1)
-#
-#
-#        try:
-#            options[sys.argv[1]]()
-#        except KeyError as e:
-#            print("KeyError: " + str(e))
-#            sys.exit(1)
-#    else:
-#        usage()
-#        sys.exit(1)
+    except KeyError as e:
+        print("KeyError: " + str(e))
+        sys.exit(1)
 
 #EOF
-
-# page through...
-#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&skip=0
-#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&skip=99
-
-#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&filter=bundle_name:eq:Microsoft%20Teams
-#https://console.jumpcloud.com/api/v2/systeminsights/apps?limit=100&filter=bundle_name:eq:Safari
-
-#https://console.jumpcloud.com/api/v2/systeminsights/programs?limit=100&filter=name:eq:Microsoft%20Teams
-#https://console.jumpcloud.com/api/v2/systeminsights/apps?limit=100&filter=bundle_name:eq:Microsoft%20Teams
-
-#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/firefox_addons?limit=100&skip=0
-#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/browser_plugins?limit=100&skip=0
-#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&skip=0
-#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&skip=100
-#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&skip=200
 
 
