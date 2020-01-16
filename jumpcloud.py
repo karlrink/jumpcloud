@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.9'
+__version__='0.1.9.1'
 
 import sys
 if sys.version_info[0] < 3:
@@ -23,7 +23,7 @@ def usage():
     print("""
     options:
 
-      list_systems [json, os, os_version, hostname, serial, insights_state, fde]
+      list_systems [json, os, os_version, hostname, serial, insights_state, fde, agent]
       list_systems_id [systems_os]
       list_systeminsights_hardware [json]
 
@@ -1453,7 +1453,10 @@ def list_systems_serial():
         print(data.get('_id') + ' ' + data.get('hostname') + ' ("' + data.get('serialNumber') + '") ')
     #print('totalCount: ' + str(jdata['totalCount']))
 
-
+def list_systems_agent():
+    jdata = get_systems_json()
+    for data in jdata['results']:
+        print(data.get('_id') + ' ' + data.get('hostname') + ' ("' + data.get('agentVersion') + '") ')
 
 def list_systems_list():
     URL="https://console.jumpcloud.com/api/systems"
@@ -1608,6 +1611,7 @@ options = {
   'list_systems_serial'             : list_systems_serial,
   'list_systems_json'               : list_systems_json,
   'list_systems_os'                 : list_systems_os,
+  'list_systems_agent'              : list_systems_agent,
   'list_systems_os_version'         : list_systems_os_version,
   'list_systeminsights_hardware'    : list_systeminsights_hardware,
   'list_systeminsights_hardware_json' : list_systeminsights_hardware_json,
