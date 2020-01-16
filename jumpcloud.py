@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.7'
+__version__='0.1.8'
 
 import sys
 if sys.version_info[0] < 3:
@@ -60,7 +60,7 @@ def usage():
       list_system_bindings [user_id]
 
       list_commands
-`
+
       update_system [system_id] [key] [value]
 
       #Note: Dates must be formatted as RFC3339: "2020-01-15T16:20:01Z"
