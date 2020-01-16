@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
-__version__='0.1.8'
+__version__='0.1.9'
 
 import sys
 if sys.version_info[0] < 3:
     raise Exception("Please use Python 3 ")
 
-import jcapiv1
-from jcapiv1.rest import ApiException as ApiException1
+#import jcapiv1
+#from jcapiv1.rest import ApiException as ApiException1
 
-import jcapiv2
-from jcapiv2.rest import ApiException as ApiException2
+#import jcapiv2
+#from jcapiv2.rest import ApiException as ApiException2
 
 import time
 import os
@@ -28,8 +28,9 @@ def usage():
       list_systeminsights_hardware [json]
 
       list_users [json, suspended, locked, password_expired, not_activated, ldap_bind]
-      list_user_groups
-      list_user_group_members [group_id]
+      list_user_groups [json]
+      list_user_groups_members [group_id]
+      list_user_groups_details [group_id]
       list_system_groups
       list_system_group_members [group_id]
 
@@ -59,7 +60,7 @@ def usage():
 
       list_system_bindings [user_id]
 
-      list_commands
+      list_commands [json]
 
       update_system [system_id] [key] [value]
 
@@ -195,17 +196,58 @@ def get_systems_users(system_id=None):
     if debug: print('all done.')
 
 
+#mark.remove
+#def list_user_groups():
+#    configuration = jcapiv2.Configuration()
+#    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
+#    try:
+#        api_instance = jcapiv2.UserGroupsApi(jcapiv2.ApiClient(configuration))
+#        user_groups = api_instance.groups_user_list(content_type, accept_type, limit=100)
+#        #pprint(user_groups)
+#        print(user_groups)
+#    except ApiException2 as e:
+#        print("Exception when calling UserGroupsApi->groups_user_list: %s\n" % e)
 
+
+#https://docs.jumpcloud.com/2.0/user-groups/list-all-users-groups
+#https://github.com/TheJumpCloud/jcapi-python/tree/master/jcapiv2
+#List all User Groups
+#GET /usergroups
+def list_user_groups_json():
+    jdata = get_usergroups_json(group_id=None)
+    print(json.dumps(jdata, sort_keys=False, indent=4))
+    
 def list_user_groups():
-    configuration = jcapiv2.Configuration()
-    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
-    try:
-        api_instance = jcapiv2.UserGroupsApi(jcapiv2.ApiClient(configuration))
-        user_groups = api_instance.groups_user_list(content_type, accept_type, limit=100)
-        #pprint(user_groups)
-        print(user_groups)
-    except ApiException2 as e:
-        print("Exception when calling UserGroupsApi->groups_user_list: %s\n" % e)
+    jdata = get_usergroups_json(group_id=None)
+    #print(json.dumps(jdata, sort_keys=False, indent=4))
+    c=0
+    for line in jdata:
+        c+=1
+        #print(str(c) + ' ' + str(line))
+        print(str(line['id']) + ' "' + str(line['name']) + '"' )
+
+def get_usergroups_json(group_id=None):
+
+    if group_id:
+        group_id = ''.join(group_id)
+    else:
+        group_id = ''
+
+    URL="https://console.jumpcloud.com/api/v2/usergroups/" + str(group_id) 
+
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #print(str(response.status))
+    if response.status == 200:
+        return json.loads(response.data.decode('utf-8'))
+    else:
+        return json.loads('{"error" : "' + str(response.data.decode('utf-8')) + '"}')
+
+
+
 
 def list_system_groups():
     URL="https://console.jumpcloud.com/api/v2/systemgroups?limit=100"
@@ -440,32 +482,82 @@ def get_systeminsights_list_programs_json(system_id=None, skip=0, limit=100): #G
 
 
 
+#def list_commands():
+#    configuration = jcapiv1.Configuration()
+#    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
+#    try:
+#        api_instance = jcapiv1.CommandsApi(jcapiv1.ApiClient(configuration))
+#        api_response = api_instance.commands_list(content_type, accept_type, skip=skip, fields=fields, limit=limit, sort=sort, filter=filter, x_org_id=x_org_id)
+#        #pprint(api_response)
+#        print(api_response)
+#    except ApiException1 as e:
+#        print("Exception when calling CommandsApi->commands_list: %s\n" % e)
+
+def get_commands_json(command_id=None): #GET/commands/{id}
+
+    if command_id:
+        command_id = ''.join(command_id)
+    else:
+        command_id = ''
+
+    URL="https://console.jumpcloud.com/api/commands/" + str(command_id)
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type})
+    if response.status == 200:
+        return json.loads(response.data.decode('utf-8'))
+    else:
+        return response.data.decode('utf-8')
+ 
+        #return json.loads('{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}')
+        #return json.loads('{"' + str(response.status) + '"}')
+        #print('{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}')
+        #jdata = '{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}'
+    #    data = "'" + str(response.data.decode('utf-8')) + "'"
+    #    jdata = '{"' + str(response.status) + '":"' + str(data) + '"}'
+    #    print(str(jdata))
+    #    return json.loads(jdata)
+
+#jdata = '{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}'
+#{"400":"Bad Request: invalid object id "None""}
+#json.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 41 (char 40)
+
+
+def list_commands_json():
+    jdata = get_commands_json()
+    print(json.dumps(jdata, sort_keys=True, indent=4))
+    #print(' 1 ' + str(jdata))
+    
 def list_commands():
-    configuration = jcapiv1.Configuration()
-    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
-    try:
-        api_instance = jcapiv1.CommandsApi(jcapiv1.ApiClient(configuration))
-        api_response = api_instance.commands_list(content_type, accept_type, skip=skip, fields=fields, limit=limit, sort=sort, filter=filter, x_org_id=x_org_id)
-        #pprint(api_response)
-        print(api_response)
-    except ApiException1 as e:
-        print("Exception when calling CommandsApi->commands_list: %s\n" % e)
+    jdata = get_commands_json()
+    #print('totalCount: ' + str(jdata['totalCount']))
+    for data in jdata['results']:
 
-def systeminsights_list_system_apps_jcapiv2(system_id=None): #GET /systeminsights/{system_id}/apps
+        _line = data.get('id') + ' ' + data.get('name') + ' (' + data.get('commandType') + ') '
+        _line += '["' + data.get('launchType') + '"] '
+        #_line += '["' + data.get('launchType') + ' ' + data.get('command') + '"] '
+        print(_line)
 
-    system_id = ''.join(system_id)
-    print(system_id)
 
-    configuration = jcapiv2.Configuration()
-    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
 
-    try:
-        api_instance = jcapiv2.SystemInsightsApi(jcapiv2.ApiClient(configuration))
-        api_response = api_instance.systeminsights_list_system_apps(system_id=system_id, content_type=content_type, accept=accept_type, limit=100, skip=skip, filter=filter, x_org_id=x_org_id)
-        #pprint(api_response)
-        print(api_response)
-    except ApiException2 as e:
-        print("Exception when calling SystemInsightsApi->systeminsights_list_system_apps: %s\n" % e)
+
+
+#def systeminsights_list_system_apps_jcapiv2(system_id=None): #GET /systeminsights/{system_id}/apps
+#
+#    system_id = ''.join(system_id)
+#    print(system_id)
+#
+#    configuration = jcapiv2.Configuration()
+#    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
+#
+#    try:
+#        api_instance = jcapiv2.SystemInsightsApi(jcapiv2.ApiClient(configuration))
+#        api_response = api_instance.systeminsights_list_system_apps(system_id=system_id, content_type=content_type, accept=accept_type, limit=100, skip=skip, filter=filter, x_org_id=x_org_id)
+#        #pprint(api_response)
+#        print(api_response)
+#    except ApiException2 as e:
+#        print("Exception when calling SystemInsightsApi->systeminsights_list_system_apps: %s\n" % e)
 #https://github.com/TheJumpCloud/jcapi-python/blob/master/jcapiv2/docs/SystemInsightsApi.md#systeminsights_list_apps
 
 #https://docs.jumpcloud.com/2.0/traits/filter
@@ -938,7 +1030,7 @@ def list_system_group_members(group_id=None):
     for sys in systems:
         get_systems_hostname(sys)
 
-def list_user_group_members(group_id=None):
+def list_user_groups_members(group_id=None):
 
     #print("group_id is " + str(group_id))
     group_id = ''.join(group_id)
@@ -950,8 +1042,15 @@ def list_user_group_members(group_id=None):
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
+    #print(str(len(response.data.decode('utf-8'))))
+    #print(str(response.status))
     #print(response.data.decode('utf-8'))
-    jdata = json.loads(response.data.decode('utf-8'))
+    if response.status == 200:
+        jdata = json.loads(response.data.decode('utf-8'))
+    else:
+        jdata = response.data.decode('utf-8')
+        print(str(jdata))
+        return
 
     users = []
     for user in jdata:
@@ -966,6 +1065,30 @@ def list_user_group_members(group_id=None):
         #get_user_email(user_id)
         user_email = get_user_email(user_id)
         print(str(user_id) + ' ' + str(user_email))
+
+def list_user_groups_details(group_id=None):
+
+    group_id = ''.join(group_id)
+
+    URL="https://console.jumpcloud.com/api/v2/usergroups/" + str(group_id)
+
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #print(str(len(response.data.decode('utf-8'))))
+    #print(str(response.status))
+    #print(response.data.decode('utf-8'))
+    if response.status == 200:
+        jdata = json.loads(response.data.decode('utf-8'))
+    else:
+        jdata = response.data.decode('utf-8')
+        print(str(jdata))
+        return
+
+    print(str(json.dumps(jdata, sort_keys=True, indent=4)))
+
 
 #def list_users():
 #    configuration = jcapiv1.Configuration()
@@ -1492,7 +1615,9 @@ options = {
   'list_systems_fde'                : list_systems_fde,
   'systeminsights_os_version'       : systeminsights_os_version,
   'list_user_groups'                : list_user_groups,
-  'list_user_group_members'         : list_user_group_members,
+  'list_user_groups_json'           : list_user_groups_json,
+  'list_user_groups_members'        : list_user_groups_members,
+  'list_user_groups_details'        : list_user_groups_details,
   'list_system_groups'              : list_system_groups,
   'list_system_group_members'       : list_system_group_members,
   'list_users'                      : list_users,
@@ -1503,6 +1628,7 @@ options = {
   'list_users_not_activated'        : list_users_not_activated,
   'list_users_ldap_bind'            : list_users_ldap_bind,
   'list_commands'                   : list_commands,
+  'list_commands_json'              : list_commands_json,
   'systeminsights_apps'             : systeminsights_apps,
   'systeminsights_programs'         : systeminsights_programs,
   'systeminsights_browser_plugins'  : systeminsights_browser_plugins,
@@ -1542,6 +1668,7 @@ if __name__ == '__main__':
 
             if (sys.argv[1] == "list_systems" and len(sys.argv) > 2) or \
             (sys.argv[1] == "list_users" and len(sys.argv) > 2) or \
+            (sys.argv[1] == "list_commands" and len(sys.argv) > 2) or \
             (sys.argv[1] == "list_systeminsights_hardware" and len(sys.argv) > 2):
                 options[str(sys.argv[1] + '_' + sys.argv[2])]()
                 sys.exit(0)
@@ -1556,7 +1683,8 @@ if __name__ == '__main__':
             sys.argv[1] == "get_systems_hostname" or \
             sys.argv[1] == "get_user_email" or \
             sys.argv[1] == "list_systems_id" or \
-            sys.argv[1] == "list_user_group_members" or \
+            sys.argv[1] == "list_user_groups_members" or \
+            sys.argv[1] == "list_user_groups_details" or \
             sys.argv[1] == "list_system_group_members" or \
             sys.argv[1] == "list_systeminsights_apps" or \
             sys.argv[1] == "list_systeminsights_programs" or \
