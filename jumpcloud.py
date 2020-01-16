@@ -1,16 +1,10 @@
 #!/usr/bin/env python
 
-__version__='0.1.9.1'
+__version__='0.1.9.2'
 
 import sys
 if sys.version_info[0] < 3:
     raise Exception("Please use Python 3 ")
-
-#import jcapiv1
-#from jcapiv1.rest import ApiException as ApiException1
-
-#import jcapiv2
-#from jcapiv2.rest import ApiException as ApiException2
 
 import time
 import os
@@ -88,20 +82,10 @@ x_org_id = '' # str |  (optional) (default to )
 fields = '' # str | Use a space seperated string of field parameters to include the data in the response. If omitted, the default list of fields will be returned.  (optional) (default to )
 sort = '' # str | Use space separated sort parameters to sort the collection. Default sort is ascending. Prefix with `-` to sort descending.  (optional) (default to )
 
-import ssl
-if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
-    getattr(ssl, '_create_unverified_context', None)): 
-    ssl._create_default_https_context = ssl._create_unverified_context
-
-#def list_os_version():
-#    configuration = jcapiv2.Configuration()
-#    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
-#    try: # List System Insights OS Version
-#        api_instance = jcapiv2.SystemInsightsApi(jcapiv2.ApiClient(configuration))
-#        api_response = api_instance.systeminsights_list_os_version(content_type, accept_type, limit=100, skip=skip, filter=filter, x_org_id=x_org_id)
-#        print(api_response)
-#    except ApiException2 as e:
-#        print("Exception when calling SystemInsightsApi->systeminsights_list_os_version: %s\n" % e)
+#import ssl
+#if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
+#    getattr(ssl, '_create_unverified_context', None)): 
+#    ssl._create_default_https_context = ssl._create_unverified_context
 
 def systeminsights_os_version(system_id=None):
 
@@ -1600,10 +1584,6 @@ def events(start=None, end=None):
     jdata = get_events_json(start, end)
     print(json.dumps(jdata, sort_keys=False, indent=4))
 
-
-
-
-
 options = {
   'list_systems'                    : list_systems_list,
   'list_systems_id'                 : list_systems_id,
@@ -1655,49 +1635,28 @@ options = {
   'trigger'                         : run_trigger,
 }
 
-if __name__ == '__main__':
+args1 = ['list_systems','list_users','list_commands','list_systeminsights_hardware']
 
+args2 = ['trigger','systeminsights_os_version','systeminsights_apps',
+         'systeminsights_programs','get_systems','get_systems_users',
+         'get_systems_state','get_systems_hostname','get_user_email',
+         'list_systems_id','list_user_groups_members','list_user_groups_details',
+         'list_system_group_members','list_systeminsights_apps','list_systeminsights_programs',
+         'get_systeminsights_system_info','get_app','get_program','list_system_bindings']
+
+if __name__ == '__main__':
     try:
         if sys.argv[1:]:
             if sys.argv[1] == "--help":
                 usage()
-
-            if sys.argv[1] == "events":
+            elif sys.argv[1] == "events":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3])
-                sys.exit(0)
-
-            if sys.argv[1] == "update_system":
+            elif sys.argv[1] == "update_system":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
-                sys.exit(0)
-
-            if (sys.argv[1] == "list_systems" and len(sys.argv) > 2) or \
-            (sys.argv[1] == "list_users" and len(sys.argv) > 2) or \
-            (sys.argv[1] == "list_commands" and len(sys.argv) > 2) or \
-            (sys.argv[1] == "list_systeminsights_hardware" and len(sys.argv) > 2):
+            elif len(sys.argv) > 2 and sys.argv[1] in args1:
                 options[str(sys.argv[1] + '_' + sys.argv[2])]()
-                sys.exit(0)
-
-            if sys.argv[1] == "trigger" or \
-            sys.argv[1] == "systeminsights_os_version" or \
-            sys.argv[1] == "systeminsights_apps" or \
-            sys.argv[1] == "systeminsights_programs" or \
-            sys.argv[1] == "get_systems" or \
-            sys.argv[1] == "get_systems_users" or \
-            sys.argv[1] == "get_systems_state" or \
-            sys.argv[1] == "get_systems_hostname" or \
-            sys.argv[1] == "get_user_email" or \
-            sys.argv[1] == "list_systems_id" or \
-            sys.argv[1] == "list_user_groups_members" or \
-            sys.argv[1] == "list_user_groups_details" or \
-            sys.argv[1] == "list_system_group_members" or \
-            sys.argv[1] == "list_systeminsights_apps" or \
-            sys.argv[1] == "list_systeminsights_programs" or \
-            sys.argv[1] == "get_systeminsights_system_info" or \
-            sys.argv[1] == "get_app" or \
-            sys.argv[1] == "get_program" or \
-            sys.argv[1] == "list_system_bindings":
+            elif sys.argv[1] in args2:
                 options[sys.argv[1]](sys.argv[2:])
-                sys.exit(0)
             else:
                 options[sys.argv[1]]()
         else:
@@ -1706,7 +1665,4 @@ if __name__ == '__main__':
     except KeyError as e:
         print("KeyError: " + str(e))
         sys.exit(1)
-
 #EOF
-
-
