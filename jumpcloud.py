@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.9.3'
+__version__='0.1.9.4'
 
 import sys
 if sys.version_info[0] < 3:
@@ -20,6 +20,10 @@ def usage():
       list_systems [json, os, os_version, hostname, serial, insights_state, fde, agent]
       list_systems_id [systems_os]
       list_systeminsights_hardware [json]
+      get_systems_json [system_id]
+      get_systems_hostname [system_id]
+      get_systems_users [system_id]
+      get_systems_state [system_id]
 
       list_users [json, suspended, locked, password_expired, not_activated, ldap_bind]
       list_usergroups [json]
@@ -27,17 +31,9 @@ def usage():
       list_usergroups_details [group_id]
       list_systemgroups [json]
       list_systemgroups_membership [group_id]
-
-      get_systems [system_id]
-      get_systems_version
-      get_systems_hostname [system_id]
-      get_systems_users [system_id]
-      get_systems_state [system_id]
-      get_user_ids
       get_user_email [user_id]
 
       systeminsights_os_version [system_id]
-
       get_systeminsights_system_info [system_id]
 
       list_systeminsights_apps [system_id]
@@ -274,27 +270,6 @@ def systeminsights_firefox_addons():
 
 
 
-#def systeminsights_list_apps():
-#    configuration = jcapiv2.Configuration()
-#    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
-#    try:
-#        api_instance = jcapiv2.SystemInsightsApi(jcapiv2.ApiClient(configuration))
-#        api_response = api_instance.systeminsights_list_apps(content_type, accept_type, limit=limit, x_org_id=x_org_id, skip=skip, filter=filter)
-#        pprint(api_response)
-#    except ApiException2 as e:
-#        print("Exception when calling SystemInsightsApi->systeminsights_list_apps: %s\n" % e)
-
-#def systeminsights_list_apps():
-#    urllib3.disable_warnings()
-#    URL="https://console.jumpcloud.com/api/v2/systeminsights/apps?limit=100"
-#    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-#    response = http.request('GET', URL,
-#                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-#                                     'Content-Type': content_type,
-#                                     'Accept': accept_type})
-#    #pprint(response.data.decode('utf-8'))
-#    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
-
 def systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
 
     if debug: print('system_id type: ' + str(type(system_id)))
@@ -314,17 +289,6 @@ def systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
 
     response = get_systeminsights_list_apps_json(system_id, skip, limit)
     print(json.dumps(response, sort_keys=False, indent=4))
-
-    #print('CHECK.FOR.RETURN.HERE')
-    #print(response['message'])
-
-    #if 'Bad' in response['message']:
-    #    print('Bail.Bad')
-    #    sys.exit(0)
-
-    #if 'Bad' in response.get('message'):
-    #    print('Bail.Bad')
-    #    sys.exit(0)
 
 #{
 #    "message": "Bad Request: invalid object id \"5df3efcdf2d66c6f6a287\""
@@ -349,19 +313,8 @@ def systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
         if system_id is None:
             print('Count: ' + str(count))
         
-
     #print(str(len(responseList)))
     print('Count: ' + str(count))
-
-    #for line in responseList:
-    #    count += 1
-    #    #print(str(count) + ' ' + line['name'] + ' (' + line['bundle_name'] + ') Version: ' + line['bundle_short_version'])
-    #    print(str(count) + ' ' + str(line) )
-    #print(json.dumps(json.loads(responseList), sort_keys=False, indent=4))
-    #for line in responseList:
-    #    count += 1
-    #    print(json.dumps(line, sort_keys=False, indent=4))
-    
 
 
 def get_systeminsights_list_apps_json(system_id=None, skip=0, limit=100): #GET /systeminsights/{system_id}/apps
@@ -390,36 +343,6 @@ def get_systeminsights_list_apps_json(system_id=None, skip=0, limit=100): #GET /
                                      'Accept': accept_type})
     return json.loads(response.data.decode('utf-8'))
 
-
-
-
-
-
-########################
-########################
-
-
-
-#def systeminsights_list_programs():
-#    configuration = jcapiv2.Configuration()
-#    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
-#    try:
-#        api_instance = jcapiv2.SystemInsightsApi(jcapiv2.ApiClient(configuration))
-#        api_response = api_instance.systeminsights_list_programs(content_type, accept_type, limit=100, x_org_id=x_org_id, skip=skip, filter=filter)
-#        pprint(api_response)
-#    except ApiException2 as e:
-#        print("Exception when calling SystemInsightsApi->systeminsights_list_programs: %s\n" % e)
-
-#def systeminsights_list_programs():
-#    urllib3.disable_warnings()
-#    URL="https://console.jumpcloud.com/api/v2/systeminsights/programs?limit=100"
-#    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-#    response = http.request('GET', URL,
-#                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-#                                     'Content-Type': content_type,
-#                                     'Accept': accept_type})
-#    #pprint(response.data.decode('utf-8'))
-#    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
 
 def systeminsights_programs(system_id=None): #GET /systeminsights/{system_id}/programs
 
@@ -474,18 +397,6 @@ def get_systeminsights_list_programs_json(system_id=None, skip=0, limit=100): #G
     return json.loads(response.data.decode('utf-8'))
 
 
-
-#def list_commands():
-#    configuration = jcapiv1.Configuration()
-#    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
-#    try:
-#        api_instance = jcapiv1.CommandsApi(jcapiv1.ApiClient(configuration))
-#        api_response = api_instance.commands_list(content_type, accept_type, skip=skip, fields=fields, limit=limit, sort=sort, filter=filter, x_org_id=x_org_id)
-#        #pprint(api_response)
-#        print(api_response)
-#    except ApiException1 as e:
-#        print("Exception when calling CommandsApi->commands_list: %s\n" % e)
-
 def get_commands_json(command_id=None): #GET/commands/{id}
 
     if command_id:
@@ -503,20 +414,6 @@ def get_commands_json(command_id=None): #GET/commands/{id}
     else:
         return response.data.decode('utf-8')
  
-        #return json.loads('{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}')
-        #return json.loads('{"' + str(response.status) + '"}')
-        #print('{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}')
-        #jdata = '{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}'
-    #    data = "'" + str(response.data.decode('utf-8')) + "'"
-    #    jdata = '{"' + str(response.status) + '":"' + str(data) + '"}'
-    #    print(str(jdata))
-    #    return json.loads(jdata)
-
-#jdata = '{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}'
-#{"400":"Bad Request: invalid object id "None""}
-#json.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 41 (char 40)
-
-
 def list_commands_json():
     jdata = get_commands_json()
     print(json.dumps(jdata, sort_keys=True, indent=4))
@@ -532,27 +429,6 @@ def list_commands():
         #_line += '["' + data.get('launchType') + ' ' + data.get('command') + '"] '
         print(_line)
 
-
-
-
-
-#def systeminsights_list_system_apps_jcapiv2(system_id=None): #GET /systeminsights/{system_id}/apps
-#
-#    system_id = ''.join(system_id)
-#    print(system_id)
-#
-#    configuration = jcapiv2.Configuration()
-#    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
-#
-#    try:
-#        api_instance = jcapiv2.SystemInsightsApi(jcapiv2.ApiClient(configuration))
-#        api_response = api_instance.systeminsights_list_system_apps(system_id=system_id, content_type=content_type, accept=accept_type, limit=100, skip=skip, filter=filter, x_org_id=x_org_id)
-#        #pprint(api_response)
-#        print(api_response)
-#    except ApiException2 as e:
-#        print("Exception when calling SystemInsightsApi->systeminsights_list_system_apps: %s\n" % e)
-#https://github.com/TheJumpCloud/jcapi-python/blob/master/jcapiv2/docs/SystemInsightsApi.md#systeminsights_list_apps
-
 #https://docs.jumpcloud.com/2.0/traits/filter
 #https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&filter=bundle_name:eq:ControlStrip
 def systeminsights_list_system_apps(system_id=None): #GET /systeminsights/{system_id}/apps
@@ -565,14 +441,12 @@ def systeminsights_list_system_apps(system_id=None): #GET /systeminsights/{syste
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
-    #pprint(response.data.decode('utf-8'))
     print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
 
 
 def list_systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
 
     system_id = ''.join(system_id)
-    #print(system_id)
 
     count=0
     skip=0
@@ -589,36 +463,10 @@ def list_systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/a
         responseList = responseList + response
         #print(str(len(responseList)) + ' ' + str(len(response)))
 
-    #print(str(len(responseList)))
-
     for line in responseList:
         count += 1
         print(str(count) + ' ' + line['name'] + ' (' + line['bundle_name'] + ') Version: ' + line['bundle_short_version'])
 
-
-#    {
-#        "name": "Python.app",
-#        "path": "/System/Library/Frameworks/Python.framework/Versions/2.7/Resources/Python.app",
-#        "bundle_executable": "Python",
-#        "bundle_identifier": "org.python.python",
-#        "bundle_name": "Python",
-#        "bundle_short_version": "2.7.16",
-#        "bundle_version": "2.7.16",
-#        "bundle_package_type": "APPL",
-#        "environment": "",
-#        "element": "",
-#        "compiler": "",
-#        "development_region": "English",
-#        "display_name": "",
-#        "info_string": "2.7.16, (c) 2001-2016 Python Software Foundation.",
-#        "minimum_system_version": "",
-#        "category": "",
-#        "applescript_enabled": "1",
-#        "copyright": "(c) 2001-2016 Python Software Foundation.",
-#        "last_opened_time": -1,
-#        "system_id": "5df3efcdf2d66c6f6a287136",
-#        "collection_time": "2020-01-11T21:37:29.541Z"
-#    },
 
 def get_systeminsights_apps_json(system_id=None, skip=0, limit=100): #GET /systeminsights/{system_id}/apps
 
@@ -673,11 +521,6 @@ def get_systeminsights_programs_json(system_id=None, skip=0, limit=100): #GET /s
                                      'Accept': accept_type})
     return json.loads(response.data.decode('utf-8'))
 
-
-
-
-
-
 # api/v2/systeminsights/apps?limit=100&skip=0&filter=bundle_name:eq:Maps
 def get_app(name=None): #GET /systeminsights/apps
 
@@ -699,13 +542,10 @@ def get_app(name=None): #GET /systeminsights/apps
         responseList = responseList + response
         #print(str(len(responseList)) + ' ' + str(len(response)))
 
-    #print(str(len(responseList)))
-
     for line in responseList:
         count += 1
         print(line['system_id']  + ' ' + line['name'] + ' (' + line['bundle_name'] + ') Version: ' + line['bundle_short_version'])
         #print(str(count) + str(line))
-
 
 
 # api/v2/systeminsights/apps?limit=100&skip=0&filter=bundle_name:eq:Maps
@@ -809,36 +649,9 @@ def update_system(system_id=None, key=None, value=None):
                            body=encoded_body)
     #print(response.read())
     print(response.data.decode('utf-8'))
-
 #https://docs.jumpcloud.com/1.0/authentication-and-authorization/system-context
 #https://docs.jumpcloud.com/1.0/systems/list-an-individual-system
 #https://github.com/TheJumpCloud/SystemContextAPI/blob/master/examples/instance-shutdown-initd
-
-#mark.remove.old.way...
-#List system bindings for specific system user
-#https://github.com/TheJumpCloud/JumpCloudAPI
-#def list_system_bindings(user_id=None):
-#
-#    print("user_id is " + str(user_id))
-#    user_id = ''.join(user_id)
-#
-#    URL="https://console.jumpcloud.com/api/systemusers/" + str(user_id) + "/systems"
-#
-#    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-#    response = http.request('GET', URL,
-#                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-#                                     'Content-Type': content_type})
-#    print(response.data.decode('utf-8'))
-#user_id is ['5dc08e264efb8242879cb4b3']
-#Cannot GET /api/systemusers/5dc08e264efb8242879cb4b3/systems
-#no.working
-#https://docs.jumpcloud.com/1.0/systemusers
-
-#moved to apiv2...
-#https://docs.jumpcloud.com/2.0/users/list-the-systems-bound-to-a-user
-#List the Systems bound to a User
-#GET/users/{user_id}/systems
-#https://console.jumpcloud.com/api/v2/users/{UserID}/systems
 
 def get_system_bindings_json(user_id=None):
     #user_id = ''.join(user_id)
@@ -866,47 +679,24 @@ def list_system_bindings(user_id=None):
 
 
 
-
-
-
 def get_systems_hostname(system_id=None):
-
-    #print("system_id is " + str(system_id))
     system_id = ''.join(system_id)
-
-    URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
-
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', URL,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': content_type,
-                                     'Accept': accept_type})
-    #print(response.data.decode('utf-8'))
-    jdata = json.loads(response.data.decode('utf-8'))
-    #print(jdata['hostname'])
+    jdata = get_systems_json(system_id)
     return jdata['hostname']
 
-#api.v1
-def get_systems_json(system_id=None):
-
-    if system_id is None:
-        system_id = ''
-    else:
-        system_id = ''.join(system_id)
-
-    URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
-
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', URL,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': content_type,
-                                     'Accept': accept_type})
-    return json.loads(response.data.decode('utf-8'))
-
-
-def get_systems(system_id=None):
-
+def print_systems_hostname(system_id=None):
     system_id = ''.join(system_id)
+    jdata = get_systems_json(system_id)
+    print(jdata['hostname'])
+
+#api.v1
+#https://docs.jumpcloud.com/1.0/systems/list-all-systems
+#List All Systems GET /systems
+def get_systems_json(system_id=None):
+    if system_id:
+        system_id = ''.join(system_id)
+    else:
+        system_id = ''
 
     URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
 
@@ -915,8 +705,22 @@ def get_systems(system_id=None):
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
-    jdata = json.loads(response.data.decode('utf-8'))
-    print(json.dumps(jdata, indent=4, sort_keys=True))
+    if debug: print(str(response.status))
+    if debug: print(str(len(response.data.decode('utf-8'))))
+
+    if len(response.data.decode('utf-8')) == 0:
+        return json.loads('{ "json":"0" }')
+
+    if response.status == 200:
+        return json.loads(response.data.decode('utf-8'))
+    else:
+        return response.data.decode('utf-8')
+
+
+#def print_systems_json(system_id=None):
+#    system_id = ''.join(system_id)
+#    jdata = get_systems_json(system_id)
+#    print(json.dumps(jdata, indent=4, sort_keys=True))
 
 def get_systems_state(system_id=None):
 
@@ -935,82 +739,6 @@ def get_systems_state(system_id=None):
     #print(json.dumps(jdata, indent=4, sort_keys=True))
     #print(str(jsize))
     print(jdata.get('_id') + ' ' + jdata.get('displayName') + ' (' + jdata.get('hostname')  + ') active:' + str(jdata.get('active')) + ' lastContact:' + jdata.get('lastContact') )
-
-#{
-#    "_id": "5dc094e91b6c344c321f5bd5",
-#    "active": false,
-#    "agentVersion": "0.10.108",
-#    "allowMultiFactorAuthentication": false,
-#    "allowPublicKeyAuthentication": false,
-#    "allowSshPasswordAuthentication": false,
-#    "allowSshRootLogin": false,
-#    "arch": "64-bit",
-#    "connectionHistory": [],
-#    "created": "2019-11-04T21:15:21.074Z",
-#    "displayName": "LAPTOP-FF7SJ1K1",
-#    "fde": {
-#        "active": false,
-#        "keyPresent": false
-#    },
-#    "fileSystem": null,
-#    "hasServiceAccount": false,
-#    "hostname": "LAPTOP-FF7SJ1K1",
-#    "id": "5dc094e91b6c344c321f5bd5",
-#    "lastContact": "2020-01-06T20:44:24.082Z",
-#    "modifySSHDConfig": false,
-#    "networkInterfaces": [
-#        {
-#            "address": "2607:fea8:4d20:3b04::7",
-#            "family": "IPv6",
-#            "internal": false,
-#            "name": "Ethernet"
-#        },
-#        {
-#            "address": "2607:fea8:4d20:3b04:7dab:2645:5ee8:30ab",
-#            "family": "IPv6",
-#            "internal": false,
-#            "name": "Ethernet"
-#        },
-#        {
-#            "address": "fd00:688f:2e2f:40e2:7dab:2645:5ee8:30ab",
-#            "family": "IPv6",
-#            "internal": false,
-#            "name": "Ethernet"
-#        },
-#        {
-#            "address": "2607:fea8:4d20:3b04:81a8:7947:da11:948d",
-#            "family": "IPv6",
-#            "internal": false,
-#            "name": "Ethernet"
-#        },
-#        {
-#            "address": "fd00:688f:2e2f:40e2:81a8:7947:da11:948d",
-#            "family": "IPv6",
-#            "internal": false,
-#            "name": "Ethernet"
-#        },
-#        {
-#            "address": "192.168.0.19",
-#            "family": "IPv4",
-#            "internal": false,
-#            "name": "Ethernet"
-#        }
-#    ],
-#    "organization": "5cdc7f3c95a60d5c14488d5f",
-#    "os": "Windows",
-#    "remoteIP": "99.245.147.130",
-#    "serialNumber": "MP17U84L",
-#    "sshRootEnabled": true,
-#    "sshdParams": [],
-#    "systemInsights": {
-#        "state": "enabled"
-#    },
-#    "systemTimezone": -8,
-#    "systemToken": "4caade1c-37de-47be-8afc-5d7caa927c96",
-#    "templateName": "windows-windows-x86_64",
-#    "version": "10 Home"
-#}
-
 
 
 def get_user_email(user_id=None):
@@ -1051,25 +779,8 @@ def list_systemgroups_membership(group_id=None):
     else:
         return print(str(response.data.decode('utf-8')))
 
-    #print(response.data.decode('utf-8'))
-    #print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=True, indent=4))
-    #jdata = json.dumps(json.loads(response.data.decode('utf-8')))
-    #jdata = json.loads(response.data.decode('utf-8'))
-    #print(jdata)
-    #for item in jdata:
-    #    print(jdata.get('id'))
-    #for data in jdata['id']:
-
-
-    systems = []
-    for system in jdata:
-        #print(system.get('id'))
-        systems.append(system.get('id'))
-
-    #print(systems)
-    for system_id in systems:
-        hostname = get_systems_hostname(system_id)
-        print(system_id + ' ' + hostname)
+    for data in jdata:
+        print(data['id'] + ' ' + get_systems_hostname(data.get('id')))
 
 
 def list_usergroups_members(group_id=None):
@@ -1132,18 +843,6 @@ def list_usergroups_details(group_id=None):
     print(str(json.dumps(jdata, sort_keys=True, indent=4)))
 
 
-#def list_users():
-#    configuration = jcapiv1.Configuration()
-#    configuration.api_key['x-api-key'] = os.environ.get('JUMPCLOUD_API_KEY')
-#    try:
-#        api_instance = jcapiv1.SystemusersApi(jcapiv1.ApiClient(configuration))
-#        users = api_instance.systemusers_list(content_type, accept_type)
-#        #pprint(users)
-#        print(users)
-#    except ApiException1 as e:
-#        print("Exception when calling SystemusersApi->systemusers_list: %s\n" % err)
-
-#def list_systemusers():
 def get_systemusers_json():
     URL="https://console.jumpcloud.com/api/systemusers"
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
@@ -1232,8 +931,6 @@ def list_users_ldap_bind():
             _line += 'ldap_binding_user:' + str(ldap_binding_user)
             print(_line)
 
-
-
 def list_users_json():
         response = get_systemusers_json()
         if len(response) == 0:
@@ -1241,33 +938,12 @@ def list_users_json():
         print(json.dumps(response, sort_keys=True, indent=4))
 
 
-
-
-
-#def get_systems():
-#    urllib3.disable_warnings()
-#    URL="https://console.jumpcloud.com/api/systems"
-#    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-#    response = http.request('GET', URL,
-#                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-#                                     'Content-Type': content_type,
-#                                     'Accept': accept_type})
-#    #pprint(response.data.decode('utf-8'))
-#    jdata = json.loads(response.data.decode('utf-8'))
-#    #print('totalCount: ' + str(jdata['totalCount']))
-#    print(json.dumps(jdata, sort_keys=True, indent=4))
-
-#https://docs.jumpcloud.com/1.0/systems/list-all-systems
-#List All Systems GET /systems
-def list_systems_json():
-    URL="https://console.jumpcloud.com/api/systems"
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', URL,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': content_type,
-                                     'Accept': accept_type})
-    jdata = json.loads(response.data.decode('utf-8'))
-    #print('totalCount: ' + str(jdata['totalCount']))
+def list_systems_json(system_id=None):
+    if system_id:
+        system_id = ''.join(system_id)
+        jdata = get_systems_json(system_id)
+    else:
+        jdata = get_systems_json()
     print(json.dumps(jdata, sort_keys=True, indent=4))
 
 
@@ -1519,25 +1195,6 @@ def list_systems_list():
     #print('totalCount: ' + str(jdata['totalCount']))
 
 
-
-def get_systems_version():
-    URL="https://console.jumpcloud.com/api/systems"
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', URL,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': content_type,
-                                     'Accept': accept_type})
-    #pprint(response.data.decode('utf-8'))
-    jdata = json.loads(response.data.decode('utf-8'))
-    #print('totalCount: ' + str(jdata['totalCount']))
-    #for data in jdata['results']:
-    #    print(data.get('_id') + ' ' + data.get('hostname'))
-    #print(str(jdata))
-
-    for data in jdata['results']:
-        print(data.get('_id') + ' ' + data.get('displayName') + ' (' + data.get('hostname')  + ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch'))
-    #print('totalCount: ' + str(jdata['totalCount']))
-
 def list_systems_os_version():
     URL="https://console.jumpcloud.com/api/systems"
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
@@ -1597,18 +1254,18 @@ def list_systems_fde():
     #print('totalCount: ' + str(jdata['totalCount']))
 
     
-def get_user_ids():
-    URL="https://console.jumpcloud.com/api/systemusers"
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', URL,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': content_type,
-                                     'Accept': accept_type})
-    #pprint(response.data.decode('utf-8'))
-    jdata = json.loads(response.data.decode('utf-8'))
-    #print('totalCount: ' + str(jdata['totalCount']))
-    for data in jdata['results']:
-        print(data.get('_id') + ' ' + data.get('email'))
+#def get_user_ids():
+#    URL="https://console.jumpcloud.com/api/systemusers"
+#    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+#    response = http.request('GET', URL,
+#                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+#                                     'Content-Type': content_type,
+#                                     'Accept': accept_type})
+#    #pprint(response.data.decode('utf-8'))
+#    jdata = json.loads(response.data.decode('utf-8'))
+#    #print('totalCount: ' + str(jdata['totalCount']))
+#    for data in jdata['results']:
+#        print(data.get('_id') + ' ' + data.get('email'))
 
 #https://support.jumpcloud.com/support/s/article/jumpcloud-events-api1
 def get_events_json(startDate=None, endDate=None):
@@ -1648,6 +1305,7 @@ options = {
   'list_systems_hostname'           : list_systems_hostname,
   'list_systems_serial'             : list_systems_serial,
   'list_systems_json'               : list_systems_json,
+  'get_systems_json'                : list_systems_json,
   'list_systems_os'                 : list_systems_os,
   'list_systems_agent'              : list_systems_agent,
   'list_systems_os_version'         : list_systems_os_version,
@@ -1678,13 +1336,11 @@ options = {
   'systeminsights_firefox_addons'   : systeminsights_firefox_addons,
   'list_system_bindings'            : list_system_bindings,
   'list_system_bindings_json'       : list_system_bindings_json,
-  'get_systems'                     : get_systems,
   'get_systems_users'               : get_systems_users,
   'get_systems_state'               : get_systems_state,
-  'get_systems_version'             : get_systems_version,
-  'get_systems_hostname'            : get_systems_hostname,
+  'get_systems_hostname'            : print_systems_hostname,
   'get_user_email'                  : get_user_email,
-  'get_user_ids'                    : get_user_ids,
+  #'get_user_ids'                    : get_user_ids,
   'update_system'                   : update_system,
   'list_systeminsights_apps'        : list_systeminsights_apps,
   'list_systeminsights_programs'    : list_systeminsights_programs,
@@ -1699,7 +1355,7 @@ args1 = ['list_systems','list_users','list_commands','list_systeminsights_hardwa
          'list_systemgroups']
 
 args2 = ['trigger','systeminsights_os_version','systeminsights_apps',
-         'systeminsights_programs','get_systems','get_systems_users',
+         'systeminsights_programs','get_systems_json','get_systems_users',
          'get_systems_state','get_systems_hostname','get_user_email',
          'list_systems_id','list_usergroups_members','list_usergroups_details',
          'list_systemgroups_membership','list_systeminsights_apps','list_systeminsights_programs',
