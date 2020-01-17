@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.9.7'
+__version__='0.1.9.8'
 
 import sys
 if sys.version_info[0] < 3:
@@ -117,21 +117,52 @@ def get_systems_users_json(system_id=None):
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
-    if debug: print(str(len(response.data.decode('utf-8'))))
-    if debug: print(str(response.status))
+    #if debug: print(str(len(response.data.decode('utf-8'))))
+    #if debug: print(str(response.status))
 
-    if response.status == 200:
-        return json.loads(response.data.decode('utf-8'))
-    else:
-        print(str(response.data.decode('utf-8')))
+    return json.loads(response.data.decode('utf-8'))
+
+#    if response.status == 200:
+#        return json.loads(response.data.decode('utf-8'))
+#    else:
+#        try:
+#            return json.loads(response.data.decode('utf-8'))
+#        except json.decoder.JSONDecodeError:
+#            print('error.out')
+
+
+
+
+#        print(str(response.data.decode('utf-8')))
         #return json.loads('{"status":"' + str(response.status) + '"}')
         #return json.loads('{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}')
-        jdata = str('{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}')
-        print(jdata)
-        return json.loads('{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}')
-        #json.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 10 (char 9)
-        #{"message":"Bad Request: invalid object id \"5df3efcdf2d66c6f6a28713\""}
+        #sanitized_colon = response.data.decode('utf-8').replace(':', '\\":\\"')
+        #sanitized_colon = response.data.decode('utf-8').replace(':', ' ')
+#        sanitized = response.data.decode('utf-8')
+        #sanitized = response.data.decode('utf-8').replace('{', ' ')
+        #sanitized = sanitized.replace('}', ' ')
+        #sanitized = sanitized.replace(':', ' ')
+#        sanitized = sanitized.replace('"', ' ')
+#        sanitized = sanitized.replace('\\', ' ')
+        #jdata = str('{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}')
+        #jdata = str('{"' + str(response.status) + '":"' + str(sanitized) + '"}')
+#        jdata = str('{"' + str(response.status) + '":"' + str(sanitized) + '"}')
+#        print(jdata)
+
+        #print(json.dumps(jdata))
+        #"{\"400\":\"{\"message\":\"Bad Request: invalid object id \\\"[]\\\"\"}\"}"
+
+#        return json.loads(jdata)
+        #return json.loads('{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}')
         #fix.me the response data has a : in it that causes
+        #json.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 10 (char 9)
+        #{"400":"{"message":"Bad Request: invalid object id \"[]\""}"}
+
+#{"message":"Bad Request: invalid object id \"[]\""}
+#{"400":"{"message":"Bad Request: invalid object id \"[]\""}"}
+#it appears the data is properly enclosed with quotes...
+#
+
 
 
 def get_systems_users(system_id=None):
