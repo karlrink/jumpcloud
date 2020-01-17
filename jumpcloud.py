@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.9.8'
+__version__='0.1.9.9'
 
 import sys
 if sys.version_info[0] < 3:
@@ -119,81 +119,18 @@ def get_systems_users_json(system_id=None):
                                      'Accept': accept_type})
     #if debug: print(str(len(response.data.decode('utf-8'))))
     #if debug: print(str(response.status))
-
     return json.loads(response.data.decode('utf-8'))
-
-#    if response.status == 200:
-#        return json.loads(response.data.decode('utf-8'))
-#    else:
-#        try:
-#            return json.loads(response.data.decode('utf-8'))
-#        except json.decoder.JSONDecodeError:
-#            print('error.out')
-
-
-
-
-#        print(str(response.data.decode('utf-8')))
-        #return json.loads('{"status":"' + str(response.status) + '"}')
-        #return json.loads('{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}')
-        #sanitized_colon = response.data.decode('utf-8').replace(':', '\\":\\"')
-        #sanitized_colon = response.data.decode('utf-8').replace(':', ' ')
-#        sanitized = response.data.decode('utf-8')
-        #sanitized = response.data.decode('utf-8').replace('{', ' ')
-        #sanitized = sanitized.replace('}', ' ')
-        #sanitized = sanitized.replace(':', ' ')
-#        sanitized = sanitized.replace('"', ' ')
-#        sanitized = sanitized.replace('\\', ' ')
-        #jdata = str('{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}')
-        #jdata = str('{"' + str(response.status) + '":"' + str(sanitized) + '"}')
-#        jdata = str('{"' + str(response.status) + '":"' + str(sanitized) + '"}')
-#        print(jdata)
-
-        #print(json.dumps(jdata))
-        #"{\"400\":\"{\"message\":\"Bad Request: invalid object id \\\"[]\\\"\"}\"}"
-
-#        return json.loads(jdata)
-        #return json.loads('{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}')
-        #fix.me the response data has a : in it that causes
-        #json.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 10 (char 9)
-        #{"400":"{"message":"Bad Request: invalid object id \"[]\""}"}
-
-#{"message":"Bad Request: invalid object id \"[]\""}
-#{"400":"{"message":"Bad Request: invalid object id \"[]\""}"}
-#it appears the data is properly enclosed with quotes...
-#
-
-
 
 def get_systems_users(system_id=None):
     if system_id:
         system_id = ''.join(system_id)
-    #print(system_id)
     jdata = get_systems_users_json(system_id)
-
-    #print(json.dumps(jdata, sort_keys=True, indent=4))
-
-    #print(len(jdata))
 
     if len(jdata) == 1:
         return print(jdata)
 
     for line in jdata:
-        #print(line)
         print(line['id'])
-
-
-
-
-    #print(len(json.loads(jdata)))
-    #print(json.dumps(jdata, sort_keys=True, indent=4))
-
-    #if len(jdata) == 1:
-    #    return print(json.dumps(jdata))
-
-    #for line in jdata:
-    #    print(line['id'])
-        
 
 #https://docs.jumpcloud.com/2.0/user-groups/list-all-users-groups
 #https://github.com/TheJumpCloud/jcapi-python/tree/master/jcapiv2
