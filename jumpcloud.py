@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.9.6'
+__version__='0.1.9.7'
 
 import sys
 if sys.version_info[0] < 3:
@@ -19,7 +19,6 @@ def usage():
 
       list_systems [json, os, os_version, hostname, serial, insights_state, fde, agent]
       list_systems_id [systems_os]
-      list_systeminsights_hardware [json]
       get_systems_json [system_id]
       get_systems_hostname [system_id]
       get_systems_users [system_id]
@@ -33,6 +32,7 @@ def usage():
       list_systemgroups_membership [group_id]
       get_user_email [user_id]
 
+      list_systeminsights_hardware [json]
       systeminsights_os_version [system_id]
       get_systeminsights_system_info [system_id]
 
@@ -70,14 +70,10 @@ if os.environ.get('JUMPCLOUD_API_KEY') is None:
 
 debug=False
 
-content_type = 'application/json' # str |  (default to application/json)
-accept_type  = 'application/json' # str |  (default to application/json)
+content_type = 'application/json' # str |  (default application/json)
+accept_type  = 'application/json' # str |  (default application/json)
 limit = 0 # int |  (optional) (default 10) (100 max)
-skip = 0 # int | The offset into the records to return. (optional) (default to 0)
-filter = ['[]'] # list[str] | Supported operators are: eq (optional) (default to [])
-x_org_id = '' # str |  (optional) (default to )
-fields = '' # str | Use a space seperated string of field parameters to include the data in the response. If omitted, the default list of fields will be returned.  (optional) (default to )
-sort = '' # str | Use space separated sort parameters to sort the collection. Default sort is ascending. Prefix with `-` to sort descending.  (optional) (default to )
+skip = 0 # int | The offset into the records to return. (optional) (default 0)
 
 def systeminsights_os_version(system_id=None):
 
@@ -104,66 +100,69 @@ def systeminsights_os_version(system_id=None):
     #is also limited by systeminsights being enabled
     if debug: print('all done.')
 
-def get_systems_users_json(system_id=None):
+def print_systems_users_json(system_id=None):
+    if system_id:
+        system_id = ''.join(system_id)
+    jdata = get_systems_users_json(system_id)
+    print(json.dumps(jdata, sort_keys=True, indent=4))
+    if debug: print(system_id)
 
+def get_systems_users_json(system_id=None):
     skip=0
     limit=100
 
-    if debug: print('system_id is ' + str(system_id))
-    if debug: print('system_id type ' + str(type(system_id)))
-
-    system_id = ''.join(system_id)
     URL="https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/users?limit=" + str(limit) + "&skip=" + str(skip)
-
-    if debug: print(str(URL))
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
+    if debug: print(str(len(response.data.decode('utf-8'))))
+    if debug: print(str(response.status))
 
-    count = len(json.loads(response.data.decode('utf-8')))
-    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
-    print(str(count))
+    if response.status == 200:
+        return json.loads(response.data.decode('utf-8'))
+    else:
+        print(str(response.data.decode('utf-8')))
+        #return json.loads('{"status":"' + str(response.status) + '"}')
+        #return json.loads('{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}')
+        jdata = str('{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}')
+        print(jdata)
+        return json.loads('{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}')
+        #json.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 10 (char 9)
+        #{"message":"Bad Request: invalid object id \"5df3efcdf2d66c6f6a28713\""}
+        #fix.me the response data has a : in it that causes
 
-    #and after 100...
-    #is also limited by systeminsights being enabled
-    if debug: print('all done.')
 
 def get_systems_users(system_id=None):
+    if system_id:
+        system_id = ''.join(system_id)
+    #print(system_id)
+    jdata = get_systems_users_json(system_id)
 
-    skip=0
-    limit=100
+    #print(json.dumps(jdata, sort_keys=True, indent=4))
 
-    system_id = ''.join(system_id)
-    URL="https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/users?limit=" + str(limit) + "&skip=" + str(skip)
+    #print(len(jdata))
 
-    if debug: print(str(URL))
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', URL,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': content_type,
-                                     'Accept': accept_type})
+    if len(jdata) == 1:
+        return print(jdata)
 
-    count = len(json.loads(response.data.decode('utf-8')))
-    jdata = json.loads(response.data.decode('utf-8'))
-    #print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
-
-    c=0
     for line in jdata:
-        c+=1
-        #print(str(c) + ' ' + str(line))
-        #print(str(c) + ' ' + str(line['id']) + ' ' + str(line['type']))
-        user_id = str(line['id'])
-        user_email = get_user_email(user_id)
+        #print(line)
+        print(line['id'])
 
-        #print(str(user_id) + ' ' + get_user_email(user_id))
-        print(str(user_id) + ' ' + str(user_email))
 
-    if debug: print(str(count))
-    #and after 100...
-    #is also limited by systeminsights being enabled
-    if debug: print('all done.')
+
+
+    #print(len(json.loads(jdata)))
+    #print(json.dumps(jdata, sort_keys=True, indent=4))
+
+    #if len(jdata) == 1:
+    #    return print(json.dumps(jdata))
+
+    #for line in jdata:
+    #    print(line['id'])
+        
 
 #https://docs.jumpcloud.com/2.0/user-groups/list-all-users-groups
 #https://github.com/TheJumpCloud/jcapi-python/tree/master/jcapiv2
@@ -1146,6 +1145,7 @@ options = {
   'list_user_bindings'              : list_user_bindings,
   'list_user_bindings_json'         : list_user_bindings_json,
   'get_systems_users'               : get_systems_users,
+  'get_systems_users_json'          : print_systems_users_json,
   'get_systems_state'               : get_systems_state,
   'get_systems_hostname'            : print_systems_hostname,
   'get_user_email'                  : print_user_email,
@@ -1168,7 +1168,8 @@ args2 = ['trigger','systeminsights_os_version','systeminsights_apps',
          'list_systems_id','list_usergroups_members','list_usergroups_details',
          'list_systemgroups_membership','list_systeminsights_apps','list_systeminsights_programs',
          'get_systeminsights_system_info','get_app','get_program','list_system_bindings',
-         'list_user_bindings','list_user_bindings_json','list_system_bindings_json']
+         'list_user_bindings','list_user_bindings_json','list_system_bindings_json',
+         'get_systems_users_json']
 
 if __name__ == '__main__':
     try:
