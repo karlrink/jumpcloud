@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.9.4'
+__version__='0.1.9.5'
 
 import sys
 if sys.version_info[0] < 3:
@@ -58,8 +58,8 @@ def usage():
       events [startDate] [endDate] 
 
       trigger [name]
-
     """)
+    print('Version: ' + str(__version__))
     sys.exit(0)
 
 # Configure API key authorization: x-api-key
@@ -741,21 +741,34 @@ def get_systems_state(system_id=None):
     print(jdata.get('_id') + ' ' + jdata.get('displayName') + ' (' + jdata.get('hostname')  + ') active:' + str(jdata.get('active')) + ' lastContact:' + jdata.get('lastContact') )
 
 
+#def get_user_email(user_id=None):
+#    user_id = ''.join(user_id)
+#    URL="https://console.jumpcloud.com/api/systemusers/" + str(user_id)
+#
+#    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+#    response = http.request('GET', URL,
+#                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+#                                     'Content-Type': content_type,
+#                                     'Accept': accept_type})
+#    #print(response.data.decode('utf-8'))
+#    jdata = json.loads(response.data.decode('utf-8'))
+#    #print(jdata['email'])
+#    return str(jdata['email'])
+
 def get_user_email(user_id=None):
-
-    user_id = ''.join(user_id)
-
-    URL="https://console.jumpcloud.com/api/systemusers/" + str(user_id)
-
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', URL,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': content_type,
-                                     'Accept': accept_type})
-    #print(response.data.decode('utf-8'))
-    jdata = json.loads(response.data.decode('utf-8'))
-    #print(jdata['email'])
+    if user_id:
+        user_id = ''.join(user_id)
+    jdata = get_systemusers_json(user_id)
     return str(jdata['email'])
+
+def print_user_email(user_id=None):
+    if user_id:
+        user_id = ''.join(user_id)
+        jdata = get_systemusers_json(user_id)
+        #print(jdata)
+        print(jdata['email'])
+    else:
+        print('None')
 
 
 #https://docs.jumpcloud.com/2.0/system-group-members-and-membership/list-system-groups-group-membership
@@ -843,13 +856,24 @@ def list_usergroups_details(group_id=None):
     print(str(json.dumps(jdata, sort_keys=True, indent=4)))
 
 
-def get_systemusers_json():
-    URL="https://console.jumpcloud.com/api/systemusers"
+def get_systemusers_json(user_id=None):
+    if user_id:
+        user_id = ''.join(user_id)
+    else:
+        user_id = ''
+    URL="https://console.jumpcloud.com/api/systemusers/" + str(user_id)
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type})
-    return json.loads(response.data.decode('utf-8'))
+    if response.status == 200:
+        if len(response.data.decode('utf-8')) == 0:
+            return json.loads('{}')
+        return json.loads(response.data.decode('utf-8'))
+    else:
+        jdata = response.data.decode('utf-8')
+        print(str(jdata))
+        return
 
 def list_users():
     jdata = get_systemusers_json()
@@ -1339,7 +1363,7 @@ options = {
   'get_systems_users'               : get_systems_users,
   'get_systems_state'               : get_systems_state,
   'get_systems_hostname'            : print_systems_hostname,
-  'get_user_email'                  : get_user_email,
+  'get_user_email'                  : print_user_email,
   #'get_user_ids'                    : get_user_ids,
   'update_system'                   : update_system,
   'list_systeminsights_apps'        : list_systeminsights_apps,
