@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__version__='0.1.9.9'
+__version__='0.2.0'
 
 import sys
 if sys.version_info[0] < 3:
@@ -17,12 +17,12 @@ def usage():
     print("""
     options:
 
-      list_systems [json, os, os_version, hostname, serial, insights_state, fde, agent]
+      list_systems [json, os, os_version, hostname, serial, insights, state, fde, agent]
       list_systems_id [systems_os]
       get_systems_json [system_id]
       get_systems_hostname [system_id]
       get_systems_users [system_id]
-      get_systems_state [system_id]
+      delete_system [system_id]
 
       list_users [json, suspended, locked, password_expired, not_activated, ldap_bind]
       list_usergroups [json]
@@ -218,10 +218,6 @@ def systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
 
     response = get_systeminsights_list_apps_json(system_id, skip, limit)
     print(json.dumps(response, sort_keys=False, indent=4))
-
-#{
-#    "message": "Bad Request: invalid object id \"5df3efcdf2d66c6f6a287\""
-#}
 
     if len(response) == 1:
         if debug: print('I have spoken. 1')
@@ -647,33 +643,35 @@ def get_systems_json(system_id=None):
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
-    if debug: print(str(response.status))
-    if debug: print(str(len(response.data.decode('utf-8'))))
+    #if debug: print(str(response.status))
+    #if debug: print(str(len(response.data.decode('utf-8'))))
 
     if len(response.data.decode('utf-8')) == 0:
-        return json.loads('{ "json":"0" }')
-
-    if response.status == 200:
-        return json.loads(response.data.decode('utf-8'))
+        return json.loads('{ "response":"0" }')
     else:
-        return response.data.decode('utf-8')
+        return json.loads(response.data.decode('utf-8'))
+
+    #if response.status == 200:
+    #    return json.loads(response.data.decode('utf-8'))
+    #else:
+    #    return response.data.decode('utf-8')
 
 
-def get_systems_state(system_id=None):
-
-    system_id = ''.join(system_id)
-
-    URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
-
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', URL,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': content_type,
-                                     'Accept': accept_type})
-    jdata = json.loads(response.data.decode('utf-8'))
-    jsize = len(jdata)
-
-    print(jdata.get('_id') + ' ' + jdata.get('displayName') + ' (' + jdata.get('hostname')  + ') active:' + str(jdata.get('active')) + ' lastContact:' + jdata.get('lastContact') )
+#def get_systems_state(system_id=None):
+#
+#    system_id = ''.join(system_id)
+#
+#    URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
+#
+#    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+#    response = http.request('GET', URL,
+#                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+#                                     'Content-Type': content_type,
+#                                     'Accept': accept_type})
+#    jdata = json.loads(response.data.decode('utf-8'))
+#    jsize = len(jdata)
+#
+#    print(str(jdata.get('_id')) + ' ' + str(jdata.get('displayName')) + ' (' + str(jdata.get('hostname'))  + ') active:' + str(jdata.get('active')) + ' lastContact:' + str(jdata.get('lastContact')) )
 
 def get_user_email(user_id=None):
     if user_id:
@@ -1028,12 +1026,19 @@ def list_systems_os_version():
     for data in jdata['results']:
         print(data.get('_id') + ' ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch'))
 
-def list_systems_insights_state():
+def list_systems_insights():
     jdata = get_systems_json()
     for data in jdata['results']:
         #print(data.get('_id') + ' ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch') + ' ' + json.dumps(data.get('systemInsights')))
         _line = data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')  + ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch')
         _line += ' ' + json.dumps(data.get('systemInsights'))
+        print(_line)
+
+def list_systems_state():
+    jdata = get_systems_json()
+    for data in jdata['results']:
+        _line = data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')  + ') '
+        _line += str(data.get('lastContact')) + ' active: ' + str(json.dumps(data.get('active')))
         print(_line)
 
 def list_systems_fde():
@@ -1051,6 +1056,23 @@ def list_systems_fde():
         _line = data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')  + ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch')
         _line += ' ' + str(data.get('fileSystem')) + ' [' + str(fde_json) + ']'
         print(_line)
+
+
+def delete_system(system_id=None):
+    if system_id:
+        system_id = ''.join(system_id)
+    else:
+        return print('system_id required')
+
+    URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
+
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('DELETE', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    return print(json.loads(response.data.decode('utf-8')))
+
     
 #https://support.jumpcloud.com/support/s/article/jumpcloud-events-api1
 def get_events_json(startDate=None, endDate=None):
@@ -1085,8 +1107,10 @@ options = {
   'list_systems_os_version'         : list_systems_os_version,
   'list_systeminsights_hardware'    : list_systeminsights_hardware,
   'list_systeminsights_hardware_json' : list_systeminsights_hardware_json,
-  'list_systems_insights_state'     : list_systems_insights_state,
+  'list_systems_insights'           : list_systems_insights,
+  'list_systems_state'              : list_systems_state,
   'list_systems_fde'                : list_systems_fde,
+  'delete_system'                   : delete_system,
   'systeminsights_os_version'       : systeminsights_os_version,
   'list_usergroups'                 : list_usergroups,
   'list_usergroups_json'            : list_usergroups_json,
@@ -1114,7 +1138,6 @@ options = {
   'list_user_bindings_json'         : list_user_bindings_json,
   'get_systems_users'               : get_systems_users,
   'get_systems_users_json'          : print_systems_users_json,
-  'get_systems_state'               : get_systems_state,
   'get_systems_hostname'            : print_systems_hostname,
   'get_user_email'                  : print_user_email,
   'update_system'                   : update_system,
@@ -1132,12 +1155,12 @@ args1 = ['list_systems','list_users','list_commands','list_systeminsights_hardwa
 
 args2 = ['trigger','systeminsights_os_version','systeminsights_apps',
          'systeminsights_programs','get_systems_json','get_systems_users',
-         'get_systems_state','get_systems_hostname','get_user_email',
+         'get_systems_hostname','get_user_email',
          'list_systems_id','list_usergroups_members','list_usergroups_details',
          'list_systemgroups_membership','list_systeminsights_apps','list_systeminsights_programs',
          'get_systeminsights_system_info','get_app','get_program','list_system_bindings',
          'list_user_bindings','list_user_bindings_json','list_system_bindings_json',
-         'get_systems_users_json']
+         'get_systems_users_json','delete_system']
 
 if __name__ == '__main__':
     try:
