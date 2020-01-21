@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-__version__='0.2.0'
+__version__='0.2.a'
 
 import sys
 if sys.version_info[0] < 3:
-    raise Exception("Please use Python 3 ")
+    raise Exception("Python 3 please")
 
 import time
 import os
@@ -159,10 +159,11 @@ def get_usergroups_json(group_id=None):
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
-    if response.status == 200:
-        return json.loads(response.data.decode('utf-8'))
-    else:
-        return json.loads('{"error" : "' + str(response.data.decode('utf-8')) + '"}')
+    return json.loads(response.data.decode('utf-8'))
+    #if response.status == 200:
+    #    return json.loads(response.data.decode('utf-8'))
+    #else:
+    #    return json.loads('{"error" : "' + str(response.data.decode('utf-8')) + '"}')
 
 
 def get_systemgroups_json():
@@ -206,11 +207,8 @@ def systeminsights_firefox_addons():
 
 def systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
 
-    if len(system_id) != 0:
+    if system_id:
         system_id = ''.join(system_id)
-        if debug: print('Using system_id (' + system_id + ')')
-    else:
-        system_id = None
 
     count=0
     skip=0
@@ -220,7 +218,7 @@ def systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
     print(json.dumps(response, sort_keys=False, indent=4))
 
     if len(response) == 1:
-        if debug: print('I have spoken. 1')
+        if debug: print('I have spoken.') #Kuiil
         #sys.exit(0)
         return
 
@@ -278,8 +276,9 @@ def systeminsights_programs(system_id=None): #GET /systeminsights/{system_id}/pr
     print(json.dumps(response, sort_keys=False, indent=4))
 
     if len(response) == 1:
-        if debug: print('I have spoken. 1')
-        sys.exit(0)
+        if debug: print('I have spoken.') #Kuiil
+        #sys.exit(0)
+        return
 
     count += len(response)
 
@@ -324,10 +323,11 @@ def get_commands_json(command_id=None): #GET/commands/{id}
     response = http.request('GET', URL,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type})
-    if response.status == 200:
-        return json.loads(response.data.decode('utf-8'))
-    else:
-        return response.data.decode('utf-8')
+    return json.loads(response.data.decode('utf-8'))
+    #if response.status == 200:
+    #    return json.loads(response.data.decode('utf-8'))
+    #else:
+    #    return response.data.decode('utf-8')
  
 def list_commands_json():
     jdata = get_commands_json()
@@ -346,19 +346,6 @@ def list_commands():
 
 #https://docs.jumpcloud.com/2.0/traits/filter
 #https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&filter=bundle_name:eq:ControlStrip
-def systeminsights_list_system_apps(system_id=None): #GET /systeminsights/{system_id}/apps
-
-    system_id = ''.join(system_id)
-    #print(system_id)
-    URL="https://console.jumpcloud.com/api/v2/systeminsights/" + str(system_id) + "/apps?limit=100"
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', URL,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': content_type,
-                                     'Accept': accept_type})
-    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
-
-
 def list_systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
 
     system_id = ''.join(system_id)
@@ -561,7 +548,7 @@ def update_system(system_id=None, key=None, value=None):
                                     'Accept': accept_type},
                            body=encoded_body)
     #print(response.read())
-    print(response.data.decode('utf-8'))
+    print(json.loads(response.data.decode('utf-8')))
 #https://docs.jumpcloud.com/1.0/authentication-and-authorization/system-context
 #https://docs.jumpcloud.com/1.0/systems/list-an-individual-system
 #https://github.com/TheJumpCloud/SystemContextAPI/blob/master/examples/instance-shutdown-initd
@@ -1047,8 +1034,8 @@ def list_systems_fde():
         print('Zero (0) response')
     if len(jdata) == 1:
         print(str(jdata))
-        if debug: print('I have spoken')
-        #sys.exit(1)
+        if debug: print('I have spoken.') #Kuiil
+        #sys.exit(0)
         return
 
     for data in jdata['results']:
@@ -1084,12 +1071,13 @@ def get_events_json(startDate=None, endDate=None):
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
-    if response.status != 200:
-        print(str(response.data.decode('utf-8')))
-        jdata = '{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}'
-        return json.loads(jdata)
-    else:
-        return json.loads(response.data.decode('utf-8'))
+    return json.loads(response.data.decode('utf-8'))
+    #if response.status != 200:
+    #    print(str(response.data.decode('utf-8')))
+    #    jdata = '{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}'
+    #    return json.loads(jdata)
+    #else:
+    #    return json.loads(response.data.decode('utf-8'))
 
 def events(start=None, end=None):
     jdata = get_events_json(start, end)
