@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-__version__='0.2.a'
+__version__='0.2.b'
 
 import sys
 if sys.version_info[0] < 3:
@@ -127,7 +127,9 @@ def get_systems_users(system_id=None):
     jdata = get_systems_users_json(system_id)
 
     if len(jdata) == 1:
-        return print(jdata)
+        #return print(jdata)
+        print(jdata)
+        return
 
     for line in jdata:
         print(line['id'])
@@ -694,7 +696,9 @@ def list_systemgroups_membership(group_id=None):
     if response.status == 200:
         jdata = json.loads(response.data.decode('utf-8'))
     else:
-        return print(str(response.data.decode('utf-8')))
+        #return print(str(response.data.decode('utf-8')))
+        print(str(response.data.decode('utf-8')))
+        return
 
     for data in jdata:
         print(data['id'] + ' ' + get_systems_hostname(data.get('id')))
@@ -1049,7 +1053,9 @@ def delete_system(system_id=None):
     if system_id:
         system_id = ''.join(system_id)
     else:
-        return print('system_id required')
+        #return print('system_id required')
+        print('system_id required')
+        return
 
     URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
 
@@ -1058,7 +1064,8 @@ def delete_system(system_id=None):
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
-    return print(json.loads(response.data.decode('utf-8')))
+    print(json.loads(response.data.decode('utf-8')))
+    return
 
     
 #https://support.jumpcloud.com/support/s/article/jumpcloud-events-api1

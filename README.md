@@ -13,9 +13,7 @@ export JUMPCLOUD_API_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 # setup/install...    
 
 python3    
-pip3 install six   
 pip3 install urllib3    
-pip3 install certifi     
 
 ----
 
