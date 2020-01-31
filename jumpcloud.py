@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.1'
+__version__='1.0.1a'
 
 import sys
 if sys.version_info[0] < 3:
@@ -52,8 +52,8 @@ def usage():
       list_user_bindings [system_id]
 
       list_commands [json]
-      get_commands [command_id] [associations|systems|systemgroups]
-      mod_commands [command_id] [add|remove] [system_id]
+      get_command [command_id] [associations|systems|systemgroups]
+      mod_command [command_id] [add|remove] [system_id]
 
       update_system [system_id] [key] [value]
 
@@ -378,7 +378,7 @@ def list_commands_api2(command_id=None, segment=None):
     jdata = get_commands_api2_json(command_id, segment)
     print(json.dumps(jdata, sort_keys=True, indent=4))
 
-def mod_commands(command_id=None, op=None, system_id=None): #POST/api/v2/commands/{id}/associations
+def mod_command(command_id=None, op=None, system_id=None): #POST/api/v2/commands/{id}/associations
     if command_id:
         command_id = ''.join(command_id)
 
@@ -1186,8 +1186,8 @@ options = {
   'list_users_ldap_bind'            : list_users_ldap_bind,
   'list_commands'                   : list_commands,
   'list_commands_json'              : list_commands_json,
-  'get_commands'                    : list_commands_api2,
-  'mod_commands'                    : mod_commands,
+  'get_command'                     : list_commands_api2,
+  'mod_command'                     : mod_command,
   'systeminsights_apps'             : systeminsights_apps,
   'systeminsights_programs'         : systeminsights_programs,
   'systeminsights_browser_plugins'  : systeminsights_browser_plugins,
@@ -1227,9 +1227,9 @@ if __name__ == '__main__':
         if sys.argv[1:]:
             if sys.argv[1] == "--help":
                 usage()
-            elif sys.argv[1] == "events" or sys.argv[1] == "get_commands":
+            elif sys.argv[1] == "events" or sys.argv[1] == "get_command":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3])
-            elif sys.argv[1] == "update_system" or sys.argv[1] == "mod_commands":
+            elif sys.argv[1] == "update_system" or sys.argv[1] == "mod_command":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
             elif len(sys.argv) > 2 and sys.argv[1] in args1:
                 options[str(sys.argv[1] + '_' + sys.argv[2])]()
