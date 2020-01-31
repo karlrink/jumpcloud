@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.1a'
+__version__='1.0.2'
 
 import sys
 if sys.version_info[0] < 3:
@@ -495,10 +495,10 @@ def get_systeminsights_programs_json(system_id=None, skip=0, limit=100): #GET /s
 # api/v2/systeminsights/apps?limit=100&skip=0&filter=bundle_name:eq:Maps
 def get_app(name=None): #GET /systeminsights/apps
 
-    name = ''.join(name)
+    #name = ''.join(name)
     #print(str(name) + ' my name is')
 
-    count=0
+    #count=0
     skip=0
     limit=100
 
@@ -513,10 +513,20 @@ def get_app(name=None): #GET /systeminsights/apps
         responseList = responseList + response
         #print(str(len(responseList)) + ' ' + str(len(response)))
 
+    #for line in responseList:
+    #    count += 1
+    #    print(line['system_id']  + ' ' + line['name'] + ' (' + line['bundle_name'] + ') Version: ' + line['bundle_short_version'])
+    #    #print(str(count) + str(line))
+    return responseList
+
+def print_get_app(name=None):
+    name = ''.join(name)
+    responseList = get_app(name)
+    count=0
     for line in responseList:
         count += 1
         print(line['system_id']  + ' ' + line['name'] + ' (' + line['bundle_name'] + ') Version: ' + line['bundle_short_version'])
-        #print(str(count) + str(line))
+
 
 
 # api/v2/systeminsights/apps?limit=100&skip=0&filter=bundle_name:eq:Maps
@@ -1203,7 +1213,7 @@ options = {
   'update_system'                   : update_system,
   'list_systeminsights_apps'        : list_systeminsights_apps,
   'list_systeminsights_programs'    : list_systeminsights_programs,
-  'get_app'                         : get_app,
+  'get_app'                         : print_get_app,
   'get_program'                     : get_program,
   'get_systeminsights_system_info'  : get_systeminsights_system_info,
   'events'                          : events,
