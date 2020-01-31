@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.0'
+__version__='1.0.1'
 
 import sys
 if sys.version_info[0] < 3:
@@ -53,6 +53,7 @@ def usage():
 
       list_commands [json]
       get_commands [command_id] [associations|systems|systemgroups]
+      mod_commands [command_id] [add|remove] [system_id]
 
       update_system [system_id] [key] [value]
 
@@ -377,6 +378,38 @@ def list_commands_api2(command_id=None, segment=None):
     jdata = get_commands_api2_json(command_id, segment)
     print(json.dumps(jdata, sort_keys=True, indent=4))
 
+def mod_commands(command_id=None, op=None, system_id=None): #POST/api/v2/commands/{id}/associations
+    if command_id:
+        command_id = ''.join(command_id)
+
+    ops = ['add','remove']
+  
+    if not op in ops:
+        print("Unknown option: " + str(op))
+        return
+
+    if system_id:
+        system_id = ''.join(system_id)
+
+
+    URL="https://console.jumpcloud.com/api/v2/commands/" + str(command_id) + "/associations"
+
+    #encoded_body = json.dumps('{"op":"' + str(op) + '","type":"system","id":"' + str(system_id) + '"}')
+    #encoded_body = json.dumps('{"op":"' + str(op) + '","type":"system","id":"' + str(system_id) + '"}').encode('utf-8')
+    data = {'op': op, 'type': 'system', 'id': system_id}
+    encoded_body = json.dumps(data).encode('utf-8')
+    print(encoded_body)
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('POST', URL,
+                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                    'Content-Type': content_type,
+                                    'Accept': accept_type},
+                           body=encoded_body)
+
+    #return json.loads(response.data.decode('utf-8'))
+    #print(json.loads(response.data.decode('utf-8')))
+    print(str(response.status))
+    print(response.data.decode('utf-8'))
 
 
 
@@ -1154,6 +1187,7 @@ options = {
   'list_commands'                   : list_commands,
   'list_commands_json'              : list_commands_json,
   'get_commands'                    : list_commands_api2,
+  'mod_commands'                    : mod_commands,
   'systeminsights_apps'             : systeminsights_apps,
   'systeminsights_programs'         : systeminsights_programs,
   'systeminsights_browser_plugins'  : systeminsights_browser_plugins,
@@ -1195,7 +1229,7 @@ if __name__ == '__main__':
                 usage()
             elif sys.argv[1] == "events" or sys.argv[1] == "get_commands":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3])
-            elif sys.argv[1] == "update_system":
+            elif sys.argv[1] == "update_system" or sys.argv[1] == "mod_commands":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
             elif len(sys.argv) > 2 and sys.argv[1] in args1:
                 options[str(sys.argv[1] + '_' + sys.argv[2])]()
