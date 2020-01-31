@@ -26,4 +26,15 @@ Some notes on this api...
 ```
 empty return [] means systeminsights is not enabled
 
+----
+
+
+# example.1
+```
+for i in `./jumpcloud.py list_systems_id 'Mac OS X'`;do echo $i;./jumpcloud.py list_systeminsights_apps $i;done
+
+for i in `./jumpcloud.py list_systems_id Windows`;do echo $i;./jumpcloud.py list_systeminsights_programs $i;done
+```
+
+
 

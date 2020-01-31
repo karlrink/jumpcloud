@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='0.2.b'
+__version__='1.0.0'
 
 import sys
 if sys.version_info[0] < 3:
@@ -17,14 +17,14 @@ def usage():
     print("""
     options:
 
-      list_systems [json, os, os_version, hostname, serial, insights, state, fde, agent]
+      list_systems [json|os|os_version|hostname|serial|insights|state|fde|agent]
       list_systems_id [systems_os]
       get_systems_json [system_id]
       get_systems_hostname [system_id]
       get_systems_users [system_id]
       delete_system [system_id]
 
-      list_users [json, suspended, locked, password_expired, not_activated, ldap_bind]
+      list_users [json|suspended|locked|password_expired|not_activated|ldap_bind]
       list_usergroups [json]
       list_usergroups_members [group_id]
       list_usergroups_details [group_id]
@@ -52,6 +52,7 @@ def usage():
       list_user_bindings [system_id]
 
       list_commands [json]
+      get_commands [command_id] [associations|systems|systemgroups]
 
       update_system [system_id] [key] [value]
 
@@ -312,39 +313,74 @@ def get_systeminsights_list_programs_json(system_id=None, skip=0, limit=100): #G
                                      'Accept': accept_type})
     return json.loads(response.data.decode('utf-8'))
 
-
-def get_commands_json(command_id=None): #GET/commands/{id}
-
+#api.v1
+def get_commands_json(command_id=None): #GET/api/commands/{id}
     if command_id:
         command_id = ''.join(command_id)
     else:
         command_id = ''
-
     URL="https://console.jumpcloud.com/api/commands/" + str(command_id)
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': content_type})
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
     return json.loads(response.data.decode('utf-8'))
-    #if response.status == 200:
-    #    return json.loads(response.data.decode('utf-8'))
-    #else:
-    #    return response.data.decode('utf-8')
  
 def list_commands_json():
     jdata = get_commands_json()
     print(json.dumps(jdata, sort_keys=True, indent=4))
-    #print(' 1 ' + str(jdata))
     
 def list_commands():
     jdata = get_commands_json()
-    #print('totalCount: ' + str(jdata['totalCount']))
     for data in jdata['results']:
-
         _line = data.get('id') + ' ' + data.get('name') + ' (' + data.get('commandType') + ') '
         _line += '["' + data.get('launchType') + '"] '
-        #_line += '["' + data.get('launchType') + ' ' + data.get('command') + '"] '
         print(_line)
+
+#api.v2
+def get_commands_api2_json(command_id=None, segment=None): #GET/api/v2/commands/{id}/[associations?,systems,systemgroups]
+    if command_id:
+        command_id = ''.join(command_id)
+
+    segments = ['associations','systems','systemgroups']
+   
+    if not segment in segments:
+        print("Unknown option: " + str(segment))
+        return
+
+    if segment == 'associations':
+        param = "&targets=system"
+    else:
+        param = ""
+        
+
+    limit = 100
+    skip  = 0
+
+    URL="https://console.jumpcloud.com/api/v2/commands/" + str(command_id) + "/" + str(segment) + "?limit=" + str(limit) + "&skip=" + str(skip) + str(param)
+    #print(URL)
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    return json.loads(response.data.decode('utf-8'))
+
+def list_commands_api2(command_id=None, segment=None):
+    if command_id:
+        command_id = ''.join(command_id)
+
+    if segment:
+        segment = ''.join(segment)
+
+    jdata = get_commands_api2_json(command_id, segment)
+    print(json.dumps(jdata, sort_keys=True, indent=4))
+
+
+
+
+
 
 #https://docs.jumpcloud.com/2.0/traits/filter
 #https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/apps?limit=100&filter=bundle_name:eq:ControlStrip
@@ -1079,12 +1115,6 @@ def get_events_json(startDate=None, endDate=None):
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
     return json.loads(response.data.decode('utf-8'))
-    #if response.status != 200:
-    #    print(str(response.data.decode('utf-8')))
-    #    jdata = '{"' + str(response.status) + '":"' + str(response.data.decode('utf-8')) + '"}'
-    #    return json.loads(jdata)
-    #else:
-    #    return json.loads(response.data.decode('utf-8'))
 
 def events(start=None, end=None):
     jdata = get_events_json(start, end)
@@ -1123,6 +1153,7 @@ options = {
   'list_users_ldap_bind'            : list_users_ldap_bind,
   'list_commands'                   : list_commands,
   'list_commands_json'              : list_commands_json,
+  'get_commands'                    : list_commands_api2,
   'systeminsights_apps'             : systeminsights_apps,
   'systeminsights_programs'         : systeminsights_programs,
   'systeminsights_browser_plugins'  : systeminsights_browser_plugins,
@@ -1162,7 +1193,7 @@ if __name__ == '__main__':
         if sys.argv[1:]:
             if sys.argv[1] == "--help":
                 usage()
-            elif sys.argv[1] == "events":
+            elif sys.argv[1] == "events" or sys.argv[1] == "get_commands":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3])
             elif sys.argv[1] == "update_system":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
