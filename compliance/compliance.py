@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0003.1'
+__version__ = '0003.2'
 
 import sys, os, json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -12,9 +12,34 @@ def usage():
     print("""Usage: {0} [option]
 
     options:
+
         check app_offenses
+        check username_policy
+        check|send systems_root_ssh
 
     """.format(sys.argv[0]))
+
+def check_systems_root_ssh():
+    systems_root_ssh_dict = {}
+    jdata = jumpcloud.get_systems_json()
+    for data in jdata['results']:
+        system_id = data.get('_id')
+        hostname  = data.get('hostname')
+        root_ssh = json.dumps(data.get('allowSshRootLogin'), sort_keys=True)
+        if root_ssh == 'true':
+            systems_root_ssh_dict[system_id] = str(hostname)
+    return systems_root_ssh_dict
+
+def send_systems_root_ssh():
+    offenders = check_systems_root_ssh()
+    if len(offenders) == 0:
+        print('No offenders: check_systems_root_ssh')
+    else:
+        print('Send SES email...')
+
+
+def check_username_policy():
+    pass
 
 
 def check_app_offenses():
@@ -78,7 +103,6 @@ def check_app_offenses():
 
     return systems_users_email_dict
         
-
     #5ddf112c2e34784cb7e24c41 Skype
     #systems_users_jdata [{'id': '5cdc80416e59bc2c5bbe63ef', 'type': 'user', 'compiledAttributes': {'sudo': {'withoutPassword': False, 'enabled': True}}, 'paths': [[{'attributes': {'sudo': {'withoutPassword': False, 'enabled': True}}, 'to': {'attributes': None, 'id': '5cdc80416e59bc2c5bbe63ef', 'type': 'user'}}]]}]
     #----------------------------------------------------
@@ -90,12 +114,19 @@ if __name__ == "__main__":
     if sys.argv[1:]:
         if sys.argv[1] == "check" and sys.argv[2] == "app_offenses":
             offenders = check_app_offenses()
-            print(str(offenders))
+            #print(str(offenders))
+            print(json.dumps(offenders, sort_keys=True, indent=4))
+        elif sys.argv[1] == "check" and sys.argv[2] == "systems_root_ssh":
+            offenders = check_systems_root_ssh()
+            print(json.dumps(offenders, sort_keys=True, indent=4))
+        elif sys.argv[1] == "send" and sys.argv[2] == "systems_root_ssh":
+            offenders = send_systems_root_ssh()
         else:
             print('Unknown option')
     else:
         usage()
 
-
-
+# check systems with root ssh
+# check passwd for unauth users
+# check group for sudoers
 

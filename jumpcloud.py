@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.3'
+__version__='1.0.3.2'
 
 import sys
 if sys.version_info[0] < 3:
@@ -17,7 +17,7 @@ def usage():
     print("""
     options:
 
-      list_systems [json|os|os_version|hostname|serial|insights|state|fde|agent]
+      list_systems [json|os|os_version|hostname|serial|insights|state|fde|agent|root_ssh]
       list_systems_id [systems_os]
       get_systems_json [system_id]
       get_systems_hostname [system_id]
@@ -1127,6 +1127,14 @@ def list_systems_fde():
         _line += ' ' + str(data.get('fileSystem')) + ' [' + str(fde_json) + ']'
         print(_line)
 
+def list_systems_root_ssh():
+    jdata = get_systems_json()
+    for data in jdata['results']:
+        root_ssh = json.dumps(data.get('allowSshRootLogin'), sort_keys=True)
+        _line = data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')  + ') ' + data.get('os')
+        _line += ' allowSshRootLogin ' + ' [' + str(root_ssh) + ']'
+        print(_line)
+        #print('root_ssh')
 
 def delete_system(system_id=None):
     if system_id:
@@ -1178,6 +1186,7 @@ options = {
   'list_systems_insights'           : list_systems_insights,
   'list_systems_state'              : list_systems_state,
   'list_systems_fde'                : list_systems_fde,
+  'list_systems_root_ssh'           : list_systems_root_ssh,
   'delete_system'                   : delete_system,
   'systeminsights_os_version'       : systeminsights_os_version,
   'list_usergroups'                 : list_usergroups,
