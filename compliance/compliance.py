@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S python3 -B
 
-__version__ = '0003.2'
+__version__ = '0003.3'
 
 import sys, os, json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -35,8 +35,42 @@ def send_systems_root_ssh():
     if len(offenders) == 0:
         print('No offenders: check_systems_root_ssh')
     else:
-        print('Send SES email...')
+        #print('Send SES email...')
+        receivers = list([config.ses['smtp_to']])
+        subject = 'Compliance: Systems with allowSshRootLogin'
+        message ="""The following systems allowSshRootLogin
+       
+        {0}
+        
+        These systems are out of compliance with policy.
+        """.format(json.dumps(offenders, sort_keys=True, indent=4))
+        send_ses_email(receivers, subject, message)
 
+def send_ses_email(receivers, subject, message):
+    import smtplib, ssl
+    sender_email = config.ses['smtp_from']
+    smtp_server  = config.ses['smtp_host']
+    port         = config.ses['smtp_port']
+    smtp_user    = config.ses['smtp_user']
+    smtp_pass    = config.ses['smtp_pass']
+
+    header =  ("From: %s\r\nTo: %s\r\n"
+            % (sender_email, ",".join(receivers)))
+    header += ("Subject: %s\r\n\r\n" % (subject))
+    msg = header + message
+
+    #msg = 'Subject: ' + str(subject) + '\r\n'
+    #msg += str(message) + '\r\n'
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP(smtp_server, port) as server:
+        server.ehlo()
+        server.starttls(context=context)
+        server.ehlo()
+        server.login(smtp_user, smtp_pass)
+        server.sendmail(sender_email, receivers, msg)
+    print('emailto: ' + str(receivers))
+    print('message: ' + str(message))
 
 def check_username_policy():
     pass

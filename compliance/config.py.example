@@ -5,6 +5,7 @@ ses = dict( # Amazon Simple Email Service (ses)
   smtp_user = 'XXXXXXXXXXXXXXXXXXXX',
   smtp_pass = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
   smtp_from = 'karl.rink@nationsinfocorp.com',
+  smtp_to   = 'compliance@nationsinfocorp.com'
 )
 
 blacklistsoftware = [ 'Slack', 'Skype'
