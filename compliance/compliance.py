@@ -1,6 +1,6 @@
 #!/usr/bin/env -S python3 -B
 
-__version__ = '0005'
+__version__ = '0005.1'
 
 import sys, os, json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -81,16 +81,21 @@ def send_fde():
     report = fde_report_text()
     if len(report) == 0:
         print('No report: fde_report_text')
-    else:
-        #print('Send SES email...')
-        receivers = list([config.ses['smtp_to']])
-        subject = 'Compliance: Systems FDE (Full Disk Encryption)'
-        message ="""The following systems FDE report
-       
-        {0}
-        
-        """.format(report)
-        send_ses_email(receivers, subject, message)
+        return False
+    
+    receivers = list([config.ses['smtp_to']])
+    subject = 'Compliance: Systems FDE (Full Disk Encryption)'
+    message = 'The following systems FDE report \r\n{0}\r\n'.format(report)
+    message += """AICPA.org, Trust Services Criteria (TSC)
+    Logical and Physical Access Controls
+    CC6.1 - The entity implements logical access security software, infrastructure, and architectures 
+    over protected information assets to protect them from security events to meet the entity's objectives.
+      - Uses Encryption to Protect Data.  The entity uses encryption to supplement other measures used to protect data-at-rest, 
+                                          when such protections are deemed appropriate based on assessed risk.
+      - Protects Encryption Keys.  Processes are in place to protect encryption keys during generation, storage, use, and destruction.
+    """
+    send_ses_email(receivers, subject, message)
+    return True
 
 
 #---------------------------------------------------------------------------
@@ -109,17 +114,19 @@ def send_systems_root_ssh():
     offenders = check_systems_root_ssh()
     if len(offenders) == 0:
         print('No offenders: check_systems_root_ssh')
-    else:
-        #print('Send SES email...')
-        receivers = list([config.ses['smtp_to']])
-        subject = 'Compliance: Systems with allowSshRootLogin'
-        message ="""The following systems allowSshRootLogin
-       
-        {0}
-        
-        These systems are out of compliance.
-        """.format(json.dumps(offenders, sort_keys=True, indent=4))
-        send_ses_email(receivers, subject, message)
+        return False
+    receivers = list([config.ses['smtp_to']])
+    subject = 'Compliance: Systems with allowSshRootLogin'
+    message = 'The following systems allowSshRootLogin \r\n{0}\r\n'.format(json.dumps(offenders, sort_keys=True, indent=4))
+    message += """AICPA.org, Trust Services Criteria (TSC)
+    Logical and Physical Access Controls
+    CC6.1 - The entity implements logical access security software, infrastructure, and architectures 
+    over protected information assets to protect them from security events to meet the entity's objectives.
+      - Identifies and Authenticates Users.  Persons, infrastructure and software are identified and authenticated 
+                                             prior to accessing information assets, whether locally or remotely.
+    """
+    send_ses_email(receivers, subject, message)
+    return True
 
 #---------------------------------------------------------------------------
 def send_ses_email(receivers, subject, message):
@@ -134,9 +141,6 @@ def send_ses_email(receivers, subject, message):
             % (sender_email, ",".join(receivers)))
     header += ("Subject: %s\r\n\r\n" % (subject))
     msg = header + message
-
-    #msg = 'Subject: ' + str(subject) + '\r\n'
-    #msg += str(message) + '\r\n'
 
     context = ssl.create_default_context()
     with smtplib.SMTP(smtp_server, port) as server:
