@@ -1,6 +1,6 @@
 #!/usr/bin/env -S python3 -B
 
-__version__ = '0004'
+__version__ = '0005'
 
 import sys, os, json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -28,35 +28,59 @@ def get_fde():
     for data in jdata['results']:
         system_id = data.get('_id')
         hostname  = data.get('hostname')
-        fde_json = json.dumps(data.get('fde', 'Empty'), sort_keys=True)
-        #systems_fde_dict[system_id] = '{"hostname":' + str(hostname) + '},' + str(fde_json)
-        #systems_fde_dict[system_id] = str(fde_json)
+        fde_json = json.dumps(data.get('fde', 'None'), sort_keys=True)
         systems_fde_dict[system_id] = fde_json
     return systems_fde_dict
 
 def fde_report_text():
-    fde_dict = get_fde()
     report = ''
+    fde_dict = get_fde()
 
     systems_none = {}
+    systems_active_false = {}
+    systems_active_nokey = {}
+    systems_compliant = {}
+
     for system_id in fde_dict:
-        if fde_dict[system_id] == '"Empty"':
-        systems_none[system_id] = fde_dict[system_id]
+        if fde_dict[system_id] == '"None"':
+            systems_none[system_id] = fde_dict[system_id]
+        else:
+            active_json = json.loads(fde_dict[system_id])
+            active = json.dumps(active_json.get('active', 'None'))
+            keyPresent = json.dumps(active_json.get('keyPresent', 'None'))
+
+            if active == 'false':
+                systems_active_false[system_id] = fde_dict[system_id]
+                continue
+
+            if active == 'true' and keyPresent == 'false':
+                systems_active_nokey[system_id] = fde_dict[system_id]
+                continue
+
+            if active == 'true' and keyPresent == 'true':
+                systems_compliant[system_id] = fde_dict[system_id]
+                continue
 
 
+    report += 'The followig systems are Compliant \n'
+    report += json.dumps(systems_compliant, sort_keys=True, indent=4)
+    report += '\r\n'
 
+    report += 'The followig sysytems have FDE, but no recovery key \n'
+    report += json.dumps(systems_active_nokey, sort_keys=True, indent=4)
+    report += '\r\n'
 
-    report += 'the followig sysytems are none \n'
+    report += 'The followig sysytems are "Unconfigured" \n'
     report += json.dumps(systems_none, sort_keys=True, indent=4)
-
+    report += '\r\n'
 
     return report
     
 
 def send_fde():
-    offenders = check_fde()
-    if len(offenders) == 0:
-        print('No offenders: check_fde')
+    report = fde_report_text()
+    if len(report) == 0:
+        print('No report: fde_report_text')
     else:
         #print('Send SES email...')
         receivers = list([config.ses['smtp_to']])
@@ -65,8 +89,7 @@ def send_fde():
        
         {0}
         
-        These systems are out of compliance.
-        """.format(json.dumps(offenders, sort_keys=True, indent=4))
+        """.format(report)
         send_ses_email(receivers, subject, message)
 
 
@@ -207,21 +230,13 @@ if __name__ == "__main__":
             offenders = check_systems_root_ssh()
             print(json.dumps(offenders, sort_keys=True, indent=4))
         elif sys.argv[1] == "send" and sys.argv[2] == "systems_root_ssh":
-            offenders = send_systems_root_ssh()
+            email = send_systems_root_ssh()
         elif sys.argv[1] == "check" and sys.argv[2] == "fde":
             report = fde_report_text()
             print(report)
+        elif sys.argv[1] == "send" and sys.argv[2] == "fde":
+            email = send_fde()
 
-
-            #for system_id in report:
-            #    if report[system_id] == '"Empty"':
-            #        print('yes, Empty')
-#
-#                print(system_id + ' ' + report[system_id])
-            #print(report)
-            #systems = check_fde()
-            #for system_id in systems:
-            #    print(str(system_id) + ' ' + str(systems[system_id]))
         else:
             print('Unknown option')
     else:
