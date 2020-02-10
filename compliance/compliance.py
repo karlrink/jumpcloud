@@ -1,6 +1,6 @@
 #!/usr/bin/env -S python3 -B
 
-__version__ = '0003.3'
+__version__ = '0004'
 
 import sys, os, json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -16,9 +16,61 @@ def usage():
         check app_offenses
         check username_policy
         check|send systems_root_ssh
+        check|send fde
 
     """.format(sys.argv[0]))
 
+
+#---------------------------------------------------------------------------
+def get_fde():
+    systems_fde_dict = {}
+    jdata = jumpcloud.get_systems_json()
+    for data in jdata['results']:
+        system_id = data.get('_id')
+        hostname  = data.get('hostname')
+        fde_json = json.dumps(data.get('fde', 'Empty'), sort_keys=True)
+        #systems_fde_dict[system_id] = '{"hostname":' + str(hostname) + '},' + str(fde_json)
+        #systems_fde_dict[system_id] = str(fde_json)
+        systems_fde_dict[system_id] = fde_json
+    return systems_fde_dict
+
+def fde_report_text():
+    fde_dict = get_fde()
+    report = ''
+
+    systems_none = {}
+    for system_id in fde_dict:
+        if fde_dict[system_id] == '"Empty"':
+        systems_none[system_id] = fde_dict[system_id]
+
+
+
+
+    report += 'the followig sysytems are none \n'
+    report += json.dumps(systems_none, sort_keys=True, indent=4)
+
+
+    return report
+    
+
+def send_fde():
+    offenders = check_fde()
+    if len(offenders) == 0:
+        print('No offenders: check_fde')
+    else:
+        #print('Send SES email...')
+        receivers = list([config.ses['smtp_to']])
+        subject = 'Compliance: Systems FDE (Full Disk Encryption)'
+        message ="""The following systems FDE report
+       
+        {0}
+        
+        These systems are out of compliance.
+        """.format(json.dumps(offenders, sort_keys=True, indent=4))
+        send_ses_email(receivers, subject, message)
+
+
+#---------------------------------------------------------------------------
 def check_systems_root_ssh():
     systems_root_ssh_dict = {}
     jdata = jumpcloud.get_systems_json()
@@ -42,10 +94,11 @@ def send_systems_root_ssh():
        
         {0}
         
-        These systems are out of compliance with policy.
+        These systems are out of compliance.
         """.format(json.dumps(offenders, sort_keys=True, indent=4))
         send_ses_email(receivers, subject, message)
 
+#---------------------------------------------------------------------------
 def send_ses_email(receivers, subject, message):
     import smtplib, ssl
     sender_email = config.ses['smtp_from']
@@ -155,6 +208,20 @@ if __name__ == "__main__":
             print(json.dumps(offenders, sort_keys=True, indent=4))
         elif sys.argv[1] == "send" and sys.argv[2] == "systems_root_ssh":
             offenders = send_systems_root_ssh()
+        elif sys.argv[1] == "check" and sys.argv[2] == "fde":
+            report = fde_report_text()
+            print(report)
+
+
+            #for system_id in report:
+            #    if report[system_id] == '"Empty"':
+            #        print('yes, Empty')
+#
+#                print(system_id + ' ' + report[system_id])
+            #print(report)
+            #systems = check_fde()
+            #for system_id in systems:
+            #    print(str(system_id) + ' ' + str(systems[system_id]))
         else:
             print('Unknown option')
     else:
