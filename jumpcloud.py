@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.3.2'
+__version__='1.0.3.4'
 
 import sys
 if sys.version_info[0] < 3:
@@ -32,7 +32,7 @@ def usage():
       list_systemgroups_membership [group_id]
       get_user_email [user_id]
 
-      list_systeminsights_hardware [json]
+      list_systeminsights_hardware [json|csv]
       systeminsights_os_version [system_id]
       get_systeminsights_system_info [system_id]
 
@@ -1020,6 +1020,26 @@ def list_systeminsights_hardware():
             _line += str(line['hardware_serial']) + '"] '
             print(_line)
 
+def list_systeminsights_hardware_csv():
+
+    idList = get_systems_id()
+
+    for system_id in idList:
+        #print(system_id)
+        response = get_systeminsights_system_info_json(system_id, skip=0, limit=100)
+        if len(response) == 0:
+            print(str(system_id))
+        for line in response:
+            memGB = round(int(line['physical_memory']) / 1024 / 1024 / 1024)
+            #print(line)
+            _line =  str(system_id) + ',' + line['computer_name'] + ',(' + line['hostname'] + '),'
+            _line += str(line['hardware_model']).replace(",", " ") + ',(' + line['hardware_vendor'] + '),'
+            _line += line['cpu_type'] + ',(' + str(line['cpu_physical_cores']) + '),'
+            _line += line['cpu_brand'] + ',' + str(line['physical_memory']) + ' Bytes,(' + str(memGB) + ' GB),["'
+            _line += str(line['hardware_serial']) + '"] '
+            print(_line)
+
+
 
 def list_systeminsights_hardware_json():
 
@@ -1183,6 +1203,7 @@ options = {
   'list_systems_os_version'         : list_systems_os_version,
   'list_systeminsights_hardware'    : list_systeminsights_hardware,
   'list_systeminsights_hardware_json' : list_systeminsights_hardware_json,
+  'list_systeminsights_hardware_csv'  : list_systeminsights_hardware_csv,
   'list_systems_insights'           : list_systems_insights,
   'list_systems_state'              : list_systems_state,
   'list_systems_fde'                : list_systems_fde,
