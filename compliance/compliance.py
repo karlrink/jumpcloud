@@ -1,6 +1,6 @@
 #!/usr/bin/env -S python3 -B
 
-__version__ = '0005.1'
+__version__ = '0005.2'
 
 import sys, os, json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -13,13 +13,13 @@ def usage():
 
     options:
 
-        check app_offenses
-        check username_policy
         check|send systems_root_ssh
         check|send fde
 
     """.format(sys.argv[0]))
 
+        #check app_offenses
+        #check username_policy
 
 #---------------------------------------------------------------------------
 def get_fde():
