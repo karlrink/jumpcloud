@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.3.5'
+__version__='1.0.3.6'
 
 import sys
 if sys.version_info[0] < 3:
@@ -31,6 +31,7 @@ def usage():
       list_usergroups_details [group_id]
       list_systemgroups [json]
       list_systemgroups_membership [group_id]
+      get_systemgroups_name [group_id]
       get_user_email [user_id]
 
       list_systeminsights_hardware [json|csv]
@@ -142,8 +143,13 @@ def print_systems_memberof(system_id=None):
     if system_id:
         system_id = ''.join(system_id)
     jdata = get_systems_memberof_json(system_id)
-    print(json.dumps(jdata, sort_keys=True, indent=4))
-    if debug: print(system_id)
+    #print(json.dumps(jdata, sort_keys=True, indent=4))
+    #if debug: print(system_id)
+    for line in jdata:
+        #print(str(line))
+        group_id = str(line['id'])
+        group_name = get_systemgroups_name(group_id)
+        print(str(group_id) + ' "' + str(group_name) + '"')
 
 
 
@@ -188,14 +194,16 @@ def get_usergroups_json(group_id=None):
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
     return json.loads(response.data.decode('utf-8'))
-    #if response.status == 200:
-    #    return json.loads(response.data.decode('utf-8'))
-    #else:
-    #    return json.loads('{"error" : "' + str(response.data.decode('utf-8')) + '"}')
 
 
-def get_systemgroups_json():
-    URL="https://console.jumpcloud.com/api/v2/systemgroups?limit=100"
+def get_systemgroups_json(group_id=None):
+    if group_id:
+        group_id = ''.join(group_id)
+        URL="https://console.jumpcloud.com/api/v2/systemgroups/" + str(group_id) + "?limit=100&skip=0"
+    else:
+        group_id = ''
+        URL="https://console.jumpcloud.com/api/v2/systemgroups?limit=100&skip=0"
+
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
@@ -203,12 +211,12 @@ def get_systemgroups_json():
                                      'Accept': accept_type})
     return json.loads(response.data.decode('utf-8'))
 
-def list_systemgroups_json():
-    jdata = get_systemgroups_json()
+def list_systemgroups_json(group_id=None):
+    jdata = get_systemgroups_json(group_id)
     print(json.dumps(jdata, sort_keys=True, indent=4))
 
 def list_systemgroups():
-    jdata = get_systemgroups_json()
+    jdata = get_systemgroups_json(group_id=None)
     for line in jdata:
         print(line['id'] + ' "' + line['name'] + '"')
 
@@ -780,6 +788,22 @@ def print_user_email(user_id=None):
     else:
         print('None')
 
+
+def get_systemgroups_name(group_id=None):
+    if group_id:
+        group_id = ''.join(group_id)
+    jdata = get_systemgroups_json(group_id)
+    return str(jdata['name'])
+
+def print_systemgroups_name(group_id=None):
+    if group_id:
+        group_id = ''.join(group_id)
+        jdata = get_systemgroups_json(group_id)
+        print(jdata['name'])
+    else:
+        print('None')
+
+
 #https://docs.jumpcloud.com/2.0/system-group-members-and-membership/list-system-groups-group-membership
 def list_systemgroups_membership(group_id=None):
 
@@ -1265,6 +1289,7 @@ options = {
   'get_systems_users_json'          : print_systems_users_json,
   'get_systems_hostname'            : print_systems_hostname,
   'get_user_email'                  : print_user_email,
+  'get_systemgroups_name'           : print_systemgroups_name,
   'update_system'                   : update_system,
   'list_systeminsights_apps'        : list_systeminsights_apps,
   'list_systeminsights_programs'    : list_systeminsights_programs,
@@ -1285,7 +1310,7 @@ args2 = ['trigger','systeminsights_os_version','systeminsights_apps',
          'list_systemgroups_membership','list_systeminsights_apps','list_systeminsights_programs',
          'get_systeminsights_system_info','get_app','get_program','list_system_bindings',
          'list_user_bindings','list_user_bindings_json','list_system_bindings_json',
-         'get_systems_users_json','delete_system','get_systems_memberof']
+         'get_systems_users_json','delete_system','get_systems_memberof','get_systemgroups_name']
 
 if __name__ == '__main__':
     try:
