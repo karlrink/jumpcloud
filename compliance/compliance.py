@@ -1,6 +1,6 @@
 #!/usr/bin/env -S python3 -B
 
-__version__ = '0005.2'
+__version__ = '0005.3'
 
 import sys, os, json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -15,11 +15,48 @@ def usage():
 
         check|send systems_root_ssh
         check|send fde
+        check|send systems_no_group
 
     """.format(sys.argv[0]))
 
         #check app_offenses
         #check username_policy
+
+#---------------------------------------------------------------------------
+
+def systems_no_group_report_text():
+    report = ''
+    systems_no_group = {}
+
+    all_system_id = jumpcloud.get_systems_id()
+    for system_id in all_system_id:
+        #print(system_id)
+        jdata = jumpcloud.get_systems_memberof_json(system_id)
+        if not jdata:
+            hostname = jumpcloud.get_systems_hostname(system_id)
+            systems_no_group[system_id] = hostname
+
+    report += 'The followig systems are not identified \n'
+    report += json.dumps(systems_no_group, sort_keys=True, indent=4)
+    report += '\r\n'
+    report += """AICPA.org, Trust Services Criteria (TSC)
+    Logical and Physical Access Controls
+    CC6.1 - The entity implements logical access security software, infrastructure, and architectures 
+    over protected information assets to protect them from security events to meet the entity's objectives.
+      - Identifies and Manages the Inventory of Information Assets. The entity identifies, inventories, classifies, and manages information assets.
+    """
+    return report
+
+def send_systems_no_group():
+    report = systems_no_group_report_text()
+    if len(report) == 0:
+        print('No report: systems_no_group_report_text')
+        return False
+    receivers = list([config.ses['smtp_to']])
+    subject = 'Compliance: Systems Unidentified (no group assignment)'
+    send_ses_email(receivers, subject, report)
+    return True
+
 
 #---------------------------------------------------------------------------
 def get_fde():
@@ -240,7 +277,9 @@ if __name__ == "__main__":
             print(report)
         elif sys.argv[1] == "send" and sys.argv[2] == "fde":
             email = send_fde()
-
+        elif sys.argv[1] == "check" and sys.argv[2] == "systems_no_group":
+            report = systems_no_group_report_text()
+            print(report)
         else:
             print('Unknown option')
     else:
