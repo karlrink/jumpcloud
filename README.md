@@ -29,12 +29,16 @@ empty return [] means systeminsights is not enabled
 ----
 
 
-# example.1
+### example 1
 ```
 for i in `./jumpcloud.py list_systems_id 'Mac OS X'`;do echo $i;./jumpcloud.py list_systeminsights_apps $i;done
 
 for i in `./jumpcloud.py list_systems_id Windows`;do echo $i;./jumpcloud.py list_systeminsights_programs $i;done
 ```
 
+### example 2
+```
+for i in `./jumpcloud.py list_systems_id`;do ./jumpcloud.py get_systems_memberof $i;done
+```
 
 

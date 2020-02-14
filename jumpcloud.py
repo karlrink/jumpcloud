@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.3.7'
+__version__='1.0.3.8'
 
 import sys
 if sys.version_info[0] < 3:
@@ -158,7 +158,7 @@ def print_systems_memberof(system_id=None):
             groups.append(str(group_name))
         print(str(system_id) + ' ' + str(groups))
     else:
-        print('[]')
+        print(str(system_id) + ' []')
 
 
 
