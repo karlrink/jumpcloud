@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.3.4'
+__version__='1.0.3.5'
 
 import sys
 if sys.version_info[0] < 3:
@@ -22,6 +22,7 @@ def usage():
       get_systems_json [system_id]
       get_systems_hostname [system_id]
       get_systems_users [system_id]
+      get_systems_memberof [system_id]
       delete_system [system_id]
 
       list_users [json|suspended|locked|password_expired|not_activated|ldap_bind]
@@ -122,6 +123,29 @@ def get_systems_users_json(system_id=None):
     #if debug: print(str(len(response.data.decode('utf-8'))))
     #if debug: print(str(response.status))
     return json.loads(response.data.decode('utf-8'))
+
+def get_systems_memberof_json(system_id=None):
+    skip=0
+    limit=100
+
+    URL="https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/memberof?limit=" + str(limit) + "&skip=" + str(skip)
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    #if debug: print(str(len(response.data.decode('utf-8'))))
+    #if debug: print(str(response.status))
+    return json.loads(response.data.decode('utf-8'))
+   
+def print_systems_memberof(system_id=None):
+    if system_id:
+        system_id = ''.join(system_id)
+    jdata = get_systems_memberof_json(system_id)
+    print(json.dumps(jdata, sort_keys=True, indent=4))
+    if debug: print(system_id)
+
+
 
 def get_systems_users(system_id=None):
     if system_id:
@@ -1237,6 +1261,7 @@ options = {
   'list_user_bindings'              : list_user_bindings,
   'list_user_bindings_json'         : list_user_bindings_json,
   'get_systems_users'               : get_systems_users,
+  'get_systems_memberof'            : print_systems_memberof,
   'get_systems_users_json'          : print_systems_users_json,
   'get_systems_hostname'            : print_systems_hostname,
   'get_user_email'                  : print_user_email,
@@ -1260,7 +1285,7 @@ args2 = ['trigger','systeminsights_os_version','systeminsights_apps',
          'list_systemgroups_membership','list_systeminsights_apps','list_systeminsights_programs',
          'get_systeminsights_system_info','get_app','get_program','list_system_bindings',
          'list_user_bindings','list_user_bindings_json','list_system_bindings_json',
-         'get_systems_users_json','delete_system']
+         'get_systems_users_json','delete_system','get_systems_memberof']
 
 if __name__ == '__main__':
     try:
