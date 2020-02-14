@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.3.6'
+__version__='1.0.3.7'
 
 import sys
 if sys.version_info[0] < 3:
@@ -145,11 +145,20 @@ def print_systems_memberof(system_id=None):
     jdata = get_systems_memberof_json(system_id)
     #print(json.dumps(jdata, sort_keys=True, indent=4))
     #if debug: print(system_id)
-    for line in jdata:
-        #print(str(line))
-        group_id = str(line['id'])
-        group_name = get_systemgroups_name(group_id)
-        print(str(group_id) + ' "' + str(group_name) + '"')
+    #for line in jdata:
+    #    #print(str(line))
+    #    group_id = str(line['id'])
+    #    group_name = get_systemgroups_name(group_id)
+    #    print(str(group_id) + ' "' + str(group_name) + '"')
+    if jdata:
+        groups = []
+        for line in jdata:
+            group_id = str(line['id'])
+            group_name = get_systemgroups_name(group_id)
+            groups.append(str(group_name))
+        print(str(system_id) + ' ' + str(groups))
+    else:
+        print('[]')
 
 
 
