@@ -1,6 +1,6 @@
 #!/usr/bin/env -S python3 -B
 
-__version__ = '0005.3'
+__version__ = '0005.5'
 
 import sys, os, json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -280,6 +280,8 @@ if __name__ == "__main__":
         elif sys.argv[1] == "check" and sys.argv[2] == "systems_no_group":
             report = systems_no_group_report_text()
             print(report)
+        elif sys.argv[1] == "send" and sys.argv[2] == "systems_no_group":
+            email = send_systems_no_group()
         else:
             print('Unknown option')
     else:
