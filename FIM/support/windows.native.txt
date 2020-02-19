@@ -1,4 +1,0 @@
-
-C:\>CertUtil -hashfile "%systemroot%\system32\csrss.exe" MD5 | findstr -v ash
-0300c7833bfba831b67f9291097655cb162263fd
-
