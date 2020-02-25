@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.3.8'
+__version__='1.0.3.9'
 
 import sys
 if sys.version_info[0] < 3:
@@ -195,7 +195,7 @@ def get_usergroups_json(group_id=None):
     else:
         group_id = ''
 
-    URL="https://console.jumpcloud.com/api/v2/usergroups/" + str(group_id) 
+    URL="https://console.jumpcloud.com/api/v2/usergroups/" + str(group_id) + "?limit=" + str(limit) + "&skip=" + str(skip)
 
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
