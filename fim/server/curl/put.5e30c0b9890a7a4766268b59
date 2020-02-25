@@ -1,0 +1,13 @@
+
+curl -k -X PUT https://monitor.nationsinfocorp.com/fim?system_id=5e30c0b9890a7a4766268b59 \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: 5e30c0b9890a7a4766268b59' \
+  -d '{
+    "/etc/hosts": "c75b284e86393c653fdd8d96ceb6b1d0f44f8d34",
+    "/etc/passwd": "14e6089b58703286399d670073a758014064c41a",
+    "/etc/group": "0996309dc16b961e8f02c5d560a8c3aa607b0258",
+    "/Users/karl.rink/.ssh/authorized_keys": "f3c15e9a0408a03b8f188a56aee2e39eee7c2b18"
+}'
+
+

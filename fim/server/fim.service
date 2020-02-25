@@ -1,0 +1,16 @@
+#file:/etc/systemd/system/fim.service
+
+[Unit]
+Description=Gunicorn instance for fim
+After=network.target
+
+[Service]
+User=ec2-user
+Group=nginx
+WorkingDirectory=/app/fim/server
+Environment="PATH=/app/fim/server/env/bin"
+ExecStart=/app/fim/server/env/bin/gunicorn --workers 3 --bind unix:app.sock -m 000 --log-level DEBUG --log-file /app/fim/server/gunicorn.log wsgi:app
+
+[Install]
+WantedBy=multi-user.target
+
