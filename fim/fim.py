@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '001'
+__version__ = '002'
 
 import sys
 import json
@@ -8,11 +8,13 @@ import urllib2
 import hashlib
 
 def usage():
-    print("""Usage: {0} [list|check|add]
+    print("""Usage: {0} [list|check|add|gen|post]
 
         list
         check
         add /path/file
+        gen /path/infile /path/out.json
+        post /path/file.json
     """.format(sys.argv[0]))
 
 url = 'https://monitor.nationsinfocorp.com:443/fim'
@@ -61,15 +63,46 @@ def print_list():
 def add_file(_file):
     system_id = get_system_id()
     fim_url = url + '?system_id=' + system_id
-    request = urllib2.Request(fim_url)
-    request.get_method = lambda: 'PUT'
-    request.add_header('content-type','application/json')
-    request.add_header('x-api-key',system_id)
     with open(_file) as hashfile:
         hfile = hashfile.read()
         sha1 = hashlib.sha1(hfile).hexdigest()
         data = {_file : sha1}
-    post = json.dumps(data).encode('utf-8')
+    jdata = json.dumps(data).encode('utf-8')
+    request = urllib2.Request(fim_url, data=jdata)
+    request.get_method = lambda: 'PUT'
+    request.add_header('content-type','application/json')
+    request.add_header('x-api-key',system_id)
+    response = urllib2.urlopen(request).read()
+    print(response)
+
+def create_json_file(_infile, _outfile):
+    files_dict = {}
+    with open(_infile, 'r') as filehandle:
+        data = filehandle.read().splitlines()
+
+    for line in data:
+        with open(line, 'r') as hashfile:
+            hfile = hashfile.read()
+            sha1 = hashlib.sha1(hfile).hexdigest()
+            files_dict[line] = sha1
+            sys.stdout.write('.')
+            sys.stdout.flush()
+
+    with open(_outfile, 'w+') as outfile:
+            json.dump(files_dict, outfile)
+    print('\n' + _outfile)
+
+
+def post_json_file(_file):
+    with open(_file, 'r') as jsonfile:
+        jdata = json.load(jsonfile)
+
+    system_id = get_system_id()
+    fim_url = url + '?system_id=' + system_id
+    request = urllib2.Request(fim_url)
+    request.add_header('content-type','application/json')
+    request.add_header('x-api-key',system_id)
+    post = json.dumps(jdata).encode('utf-8')
     response = urllib2.urlopen(request, post).read()
     print(response)
 
@@ -81,6 +114,10 @@ if __name__ == '__main__':
             run_check()
         elif sys.argv[2] and sys.argv[1] == "add":
             add_file(sys.argv[2])
+        elif sys.argv[2] and sys.argv[1] == "post":
+            post_json_file(sys.argv[2])
+        elif sys.argv[3] and sys.argv[2] and sys.argv[1] == "gen":
+            create_json_file(sys.argv[2], sys.argv[3])
         else:
             usage()
     else:
