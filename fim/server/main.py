@@ -42,6 +42,8 @@ def fim():
 
     if request.method == 'GET':
         return get_request(system_id)
+    elif request.method == 'PUT':
+        return put_request(system_id)
     elif request.method == 'POST':
         return post_request(system_id)
     else:
@@ -60,7 +62,7 @@ def get_request(system_id):
         jdata = '{"FileNotFoundError":"' + str(system_id_file) + '"}'
     return jdata
 
-def post_request(system_id):
+def put_request(system_id):
     system_id_file = datadir + '/' + str(system_id) + '.json'
     post = request.get_json()
     #app.logger.info(str(post))
@@ -79,6 +81,16 @@ def post_request(system_id):
         json.dump(jdata, jsonfile)
 
     return jsonify('{add:OK}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+def post_request(system_id):
+    system_id_file = datadir + '/' + str(system_id) + '.json'
+    post = request.get_json()
+
+    with open(system_id_file, 'w+') as jsonfile:
+        json.dump(post, jsonfile)
+
+    return jsonify('{post:OK}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)

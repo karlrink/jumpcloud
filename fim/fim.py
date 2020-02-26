@@ -43,28 +43,11 @@ def get_response():
 def run_check():
     jresponse = get_response()
     for k,v in jresponse.items():
-        #print(k, v)
         with open(k, 'r') as hashfile:
             hfile = hashfile.read()
             sha1 = hashlib.sha1(hfile).hexdigest()
-            #print(sha1)
             if v != sha1:
                 print(k + ' CHANGED')
-
-def run_create():
-    jresponse = get_response()
-    count = len(jresponse)
-    print('{')
-    for k,v in jresponse.items():
-        count -= 1
-        with open(k, 'r') as hashfile:
-            hfile = hashfile.read()
-            sha1 = hashlib.sha1(hfile).hexdigest()
-            if count:
-                print('    "' + str(k) + '":"' + str(sha1) + '",')
-            else:
-                print('    "' + str(k) + '":"' + str(sha1) + '"')
-    print('}')
 
 def print_list():
     system_id = get_system_id()
@@ -79,6 +62,7 @@ def add_file(_file):
     system_id = get_system_id()
     fim_url = url + '?system_id=' + system_id
     request = urllib2.Request(fim_url)
+    request.get_method = lambda: 'PUT'
     request.add_header('content-type','application/json')
     request.add_header('x-api-key',system_id)
     with open(_file) as hashfile:
