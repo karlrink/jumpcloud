@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '002'
+__version__ = '003'
 
 import sys
 import json
@@ -15,6 +15,9 @@ def usage():
         add /path/file
         gen /path/infile /path/out.json
         post /path/file.json
+
+        check-threading
+        check-multiprocessing
     """.format(sys.argv[0]))
 
 url = 'https://monitor.nationsinfocorp.com:443/fim'
@@ -42,14 +45,44 @@ def get_response():
     jresponse = json.loads(response)
     return jresponse
 
+def check_file(_file,_val):
+    with open(_file, 'r') as hashfile:
+        hfile = hashfile.read()
+        sha1 = hashlib.sha1(hfile).hexdigest()
+        if _val != sha1:
+            print(_file + ' CHANGED')
+
 def run_check():
     jresponse = get_response()
+    for _file,_val in jresponse.items():
+        check = check_file(_file,_val)
+
+def run_check_threading():
+    import threading
+    threads = list()
+    jresponse = get_response()
+    
     for k,v in jresponse.items():
-        with open(k, 'r') as hashfile:
-            hfile = hashfile.read()
-            sha1 = hashlib.sha1(hfile).hexdigest()
-            if v != sha1:
-                print(k + ' CHANGED')
+        t = threading.Thread(target=check_file, args=(k,v))
+        threads.append(t)
+        t.start()
+
+    for index, thread in enumerate(threads):
+        thread.join()
+
+def run_check_multiprocessing():
+    import multiprocessing
+    procs = list()
+    jresponse = get_response()
+   
+    for k,v in jresponse.items():
+        p = multiprocessing.Process(target=check_file, args=(k,v))
+        procs.append(p)
+        p.start()
+
+    for index, proc in enumerate(procs):
+        proc.join()
+
 
 def print_list():
     system_id = get_system_id()
@@ -112,6 +145,10 @@ if __name__ == '__main__':
             print_list()
         elif sys.argv[1] == "check":
             run_check()
+        elif sys.argv[1] == "check-threading":
+            run_check_threading()
+        elif sys.argv[1] == "check-multiprocessing":
+            run_check_multiprocessing()
         elif sys.argv[2] and sys.argv[1] == "add":
             add_file(sys.argv[2])
         elif sys.argv[2] and sys.argv[1] == "post":
