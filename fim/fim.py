@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '003'
+__version__ = '003.1'
 
 import sys
 import json
@@ -8,10 +8,11 @@ import urllib2
 import hashlib
 
 def usage():
-    print("""Usage: {0} [list|check|add|gen|post]
+    print("""Usage: {0} [list|check|add|gen|post|notify]
 
         list
         check
+        notify
         add /path/file
         gen /path/infile /path/out.json
         post /path/file.json
@@ -51,6 +52,26 @@ def check_file(_file,_val):
         sha1 = hashlib.sha1(hfile).hexdigest()
         if _val != sha1:
             print(_file + ' CHANGED')
+            return _file
+    return None
+
+def run_notify():
+    jdata = {}
+    jresponse = get_response()
+    for _file,_val in jresponse.items():
+        check = check_file(_file,_val)
+        if check:
+            jdata[_file] = 'CHANGED'
+
+    system_id = get_system_id()
+    fim_url = url + '?system_id=' + system_id
+    request = urllib2.Request(fim_url)
+    request.add_header('content-type','application/json')
+    request.add_header('x-api-key',system_id)
+    request.add_header('x-notify', 'True')
+    post = json.dumps(jdata).encode('utf-8')
+    response = urllib2.urlopen(request, post).read()
+    print(response)
 
 def run_check():
     jresponse = get_response()
@@ -145,6 +166,8 @@ if __name__ == '__main__':
             print_list()
         elif sys.argv[1] == "check":
             run_check()
+        elif sys.argv[1] == "notify":
+            run_notify()
         elif sys.argv[1] == "check-threading":
             run_check_threading()
         elif sys.argv[1] == "check-multiprocessing":
