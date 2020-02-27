@@ -5,6 +5,8 @@ from flask import jsonify
 import logging
 import json
 
+import config
+
 app = Flask(__name__)
 
 gunicorn_error_logger = logging.getLogger('gunicorn.error')
@@ -21,6 +23,7 @@ x_api_key_file = datadir + '/x-api-key.txt'
 def fim():
 
     headers_api_key = request.headers.getlist("x-api-key", None)
+    headers_notify  = request.headers.getlist("x-notify", None)
     if not headers_api_key:
         return jsonify('{x-api-key:None}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
 
@@ -45,7 +48,10 @@ def fim():
     elif request.method == 'PUT':
         return put_request(system_id)
     elif request.method == 'POST':
-        return post_request(system_id)
+        if headers_notify:
+            return notify_request(system_id)
+        else:
+            return post_request(system_id)
     else:
         return ''
 
@@ -90,6 +96,38 @@ def post_request(system_id):
         json.dump(post, jsonfile)
 
     return jsonify('{post:OK}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+def notify_request(system_id):
+    post = request.get_json()
+    receivers = list([config.ses['smtp_to']])
+    subject = 'FIM: The following files changed for ' + str(system_id)
+    message =  subject + '\r\n'
+    message += json.dumps(post, sort_keys=False, indent=4)
+    send_ses_email(receivers, subject, message)
+    return jsonify('{notify:OK}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+
+def send_ses_email(receivers, subject, message):
+    import smtplib, ssl
+    sender_email = config.ses['smtp_from']
+    smtp_server  = config.ses['smtp_host']
+    port         = config.ses['smtp_port']
+    smtp_user    = config.ses['smtp_user']
+    smtp_pass    = config.ses['smtp_pass']
+
+    header =  ("From: %s\r\nTo: %s\r\n"
+            % (sender_email, ",".join(receivers)))
+    header += ("Subject: %s\r\n\r\n" % (subject))
+    msg = header + message
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP(smtp_server, port) as server:
+        server.ehlo()
+        server.starttls(context=context)
+        server.ehlo()
+        server.login(smtp_user, smtp_pass)
+        server.sendmail(sender_email, receivers, msg)
+    print('emailto: ' + str(receivers))
 
 
 if __name__ == '__main__':
