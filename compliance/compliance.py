@@ -1,6 +1,6 @@
 #!/usr/bin/env -S python3 -B
 
-__version__ = '0005.5'
+__version__ = '0006'
 
 import sys, os, json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

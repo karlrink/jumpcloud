@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.3.11'
+__version__='1.0.3.12'
 
 import sys
 if sys.version_info[0] < 3:
@@ -728,12 +728,12 @@ def list_user_bindings(system_id=None):
 
 def get_systems_hostname(system_id=None):
     system_id = ''.join(system_id)
-    jdata = get_systems_json(system_id)
+    jdata = get_systems_json_single(system_id)
     return jdata['hostname']
 
 def print_systems_hostname(system_id=None):
     system_id = ''.join(system_id)
-    jdata = get_systems_json(system_id)
+    jdata = get_systems_json_single(system_id)
     print(jdata['hostname'])
 
 #api.v1
@@ -759,7 +759,21 @@ def print_systems_hostname(system_id=None):
 #    return response.data.decode('utf-8')
 # more than 100 results... URL="https://console.jumpcloud.com/api/systems?skip=0&limit=100"
 
-def get_systems_json_method(skip, limit):
+def get_systems_json_single(system_id=None):
+    if system_id:
+        URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
+    else:
+         URL="https://console.jumpcloud.com/api/systems"
+
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    return json.loads(response.data.decode('utf-8'))
+
+
+def get_systems_json_multi(skip, limit):
     URL="https://console.jumpcloud.com/api/systems?skip=" + str(skip) + '&limit=' + str(limit)
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
@@ -770,14 +784,14 @@ def get_systems_json_method(skip, limit):
 
 def get_systems_json():
     skip=0
-    data = get_systems_json_method(skip, limit=100)
+    data = get_systems_json_multi(skip, limit=100)
     totalCount = data['totalCount']
     #print(len(data['results']))
     resultList = data['results']
 
     while len(data['results']) > 0:
         skip += 100
-        data = get_systems_json_method(skip, limit=100)
+        data = get_systems_json_multi(skip, limit=100)
         #print(len(data['results']))
         resultList.extend(data['results'])
 
@@ -1007,9 +1021,9 @@ def list_users_json():
 def list_systems_json(system_id=None):
     if system_id:
         system_id = ''.join(system_id)
-        jdata = get_systems_json(system_id)
+        jdata = get_systems_json_single(system_id)
     else:
-        jdata = get_systems_json()
+        jdata = get_systems_json_single()
     print(json.dumps(jdata, sort_keys=True, indent=4))
 
 
