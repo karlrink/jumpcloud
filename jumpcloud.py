@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.3.9'
+__version__='1.0.3.10'
 
 import sys
 if sys.version_info[0] < 3:
@@ -1010,35 +1010,49 @@ def list_systems_json(system_id=None):
     print(json.dumps(jdata, sort_keys=True, indent=4))
 
 
+#def list_systems_id(operatingsystem=None):
+#
+#    if operatingsystem:
+#        operatingsystem = ''.join(operatingsystem)
+#    else:
+#        if debug: print('no os!')
+#
+#    URL="https://console.jumpcloud.com/api/systems"
+#    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+#    response = http.request('GET', URL,
+#                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+#                                     'Content-Type': content_type,
+#                                     'Accept': accept_type})
+#    jdata = json.loads(response.data.decode('utf-8'))
+#    for data in jdata['results']:
+#        if operatingsystem:
+#            #print('checking... ' + str(operatingsystem))
+#            if str(data.get('os')) == str(operatingsystem):
+#                #print('Match OS' + str(data.get('os')))
+#                if debug: print(data.get('_id') + ' ' + str(data.get('os')))
+#                print(data.get('_id'))
+#        else:
+#            #print(data.get('_id') + ' ' + data.get('os'))
+#            print(data.get('_id'))
+#    #print('totalCount: ' + str(jdata['totalCount']))
+
 def list_systems_id(operatingsystem=None):
-
-    if operatingsystem:
-        operatingsystem = ''.join(operatingsystem)
-    else:
-        if debug: print('no os!')
-
-    URL="https://console.jumpcloud.com/api/systems"
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', URL,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': content_type,
-                                     'Accept': accept_type})
-    jdata = json.loads(response.data.decode('utf-8'))
+    results = []
+    skip=0
+    jdata = get_systems_id_json(skip, limit=100)
     for data in jdata['results']:
-        if operatingsystem:
-            #print('checking... ' + str(operatingsystem))
-            if str(data.get('os')) == str(operatingsystem):
-                #print('Match OS' + str(data.get('os')))
-                if debug: print(data.get('_id') + ' ' + str(data.get('os')))
-                print(data.get('_id'))
-        else:
-            #print(data.get('_id') + ' ' + data.get('os'))
+        print(data.get('_id'))
+
+    while len(jdata['results']) > 0:
+        skip += 100
+        jdata = get_systems_id_json(skip, limit=100)
+        for data in jdata['results']:
             print(data.get('_id'))
-    #print('totalCount: ' + str(jdata['totalCount']))
+    
 
 
-def get_systems_id_json():
-    URL="https://console.jumpcloud.com/api/systems"
+def get_systems_id_json(skip, limit):
+    URL="https://console.jumpcloud.com/api/systems?skip=" + str(skip) + '&limit=' + str(limit)
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
