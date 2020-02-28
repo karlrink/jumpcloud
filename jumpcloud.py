@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.3.10'
+__version__='1.0.3.11'
 
 import sys
 if sys.version_info[0] < 3:
@@ -739,26 +739,44 @@ def print_systems_hostname(system_id=None):
 #api.v1
 #https://docs.jumpcloud.com/1.0/systems/list-all-systems
 #List All Systems GET /systems
-def get_systems_json(system_id=None):
-    if system_id:
-        system_id = ''.join(system_id)
-    else:
-        system_id = ''
-
-    URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
-
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', URL,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': content_type,
-                                     'Accept': accept_type})
-    #if debug: print(str(response.status))
-    #if debug: print(str(len(response.data.decode('utf-8'))))
-
-    if len(response.data.decode('utf-8')) == 0:
-        return json.loads('{ "response":"0" }')
-    else:
-        return json.loads(response.data.decode('utf-8'))
+#def get_systems_json(system_id=None):
+#    if system_id:
+#        system_id = ''.join(system_id)
+#        URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
+#    else:
+#        system_id = ''
+#        URL="https://console.jumpcloud.com/api/systems?skip=0&limit=100"
+#
+#
+#    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+#    response = http.request('GET', URL,
+#                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+#                                     'Content-Type': content_type,
+#                                     'Accept': accept_type})
+#    #if debug: print(str(response.status))
+#    #if debug: print(str(len(response.data.decode('utf-8'))))
+#
+#    data = json.loads(response.data.decode('utf-8')) #dict
+#    results = data['results']
+#
+#    #print(str(type(data)))
+#    #print(str(data))
+#    #print(data['results'])
+#
+#    #print('need more')
+#    #print(str(response.status))
+#    #print(str(len(response.data.decode('utf-8'))))
+#
+#    while len(jdata['results']) > 0:
+#        skip += 100
+#        jdata = get_systems_id_json(skip, limit=100)
+#
+#    
+#
+#    if len(response.data.decode('utf-8')) == 0:
+#        return json.loads('{ "response":"0" }')
+#    else:
+#        return json.loads(response.data.decode('utf-8'))
 
     #if response.status == 200:
     #    return json.loads(response.data.decode('utf-8'))
@@ -781,6 +799,119 @@ def get_systems_json(system_id=None):
 #    jsize = len(jdata)
 #
 #    print(str(jdata.get('_id')) + ' ' + str(jdata.get('displayName')) + ' (' + str(jdata.get('hostname'))  + ') active:' + str(jdata.get('active')) + ' lastContact:' + str(jdata.get('lastContact')) )
+
+
+
+def get_systems_json_method(skip, limit):
+    URL="https://console.jumpcloud.com/api/systems?skip=" + str(skip) + '&limit=' + str(limit)
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+    return json.loads(response.data.decode('utf-8'))
+
+
+def get_systems_json():
+    skip=0
+    data = get_systems_json_method(skip, limit=100)
+    totalCount = data['totalCount']
+
+    #print(len(data['results']))
+    #print(str(type(data['results'])))
+    resultList = data['results']
+
+    while len(data['results']) > 0:
+        skip += 100
+        data = get_systems_json_method(skip, limit=100)
+        #print(len(data['results']))
+        resultList.extend(data['results'])
+
+    #print(resultList)
+    #print(len(resultList))
+
+    dictdata = { 'totalCount': totalCount, 'results': resultList }
+    #dictdata = dict( 'totalCount' = totalCount, 'results' = resultList )
+
+    #print(jdata)
+    jdata = json.dumps(dictdata)
+    #print(jdata)
+    #sys.exit()
+    return json.loads(jdata)
+    #return jdata
+
+
+
+
+#def get_systems_json():
+#    skip=0
+#    return_dict = {}
+#    data = get_systems_json_method(skip, limit=100)
+#    #print(str(type(data)))
+#    return_dict.update(data['results'])
+#
+#    while len(data['results']) > 0:
+#        print(len(data['results']))
+#        skip += 100
+#        data = get_systems_json_method(skip, limit=100)
+#        #return_dict = {**data, **data}
+#        return_dict.update(data['results'])
+#
+#
+#    print(str(return_dict))
+
+
+
+    #print(data)
+    #totalCount = data['totalCount']
+    #results = data['results']
+    #print(str(type(results)))
+
+    #systemsDict = {}
+    #print(results)
+    #for line in data['results']:
+        #print(line)
+    #    systemsDict.update(line)
+
+
+    #print(systemsDict)
+
+
+    #{'totalCount': 120, 'results': [{'systemToken': '697cbfbb-70b8-4dd6-a87f-6ca84b780f7e',
+
+
+#def get_systems_json():
+#    skip=0
+#    data = get_systems_json_method(skip, limit=100)
+#    #print(jdata)
+#    totalCount = data['totalCount']
+#    results = data['results']
+#    #print(str(type(results)))
+#    #print(str(results))
+#    json_results = json.loads(json.dumps(results))
+#    #print(str(json_results))
+#    #print(str(type(json_results)))
+##    sys.exit()
+#
+#    #for data in jdata['results']:
+#    #    print(data.get('_id'))
+#    #print(str(type(results)))
+#
+#    while len(data['results']) > 0:
+#        skip += 100
+#        data = get_systems_json_method(skip, limit=100)
+#        resultsB = data['results']
+#        #print(str(type(resultsB)))
+#        json_resultsB = json.loads(json.dumps(resultsB))
+#        if json_resultsB:
+#            json_results.update(json_resultsB) 
+#            #for data in jdata['results']:
+#            #    print(data.get('_id'))
+#
+#    #return results
+#    print(str(json_results))
+#    return json_results
+
 
 def get_user_email(user_id=None):
     if user_id:
@@ -1037,7 +1168,6 @@ def list_systems_json(system_id=None):
 #    #print('totalCount: ' + str(jdata['totalCount']))
 
 def list_systems_id(operatingsystem=None):
-    results = []
     skip=0
     jdata = get_systems_id_json(skip, limit=100)
     for data in jdata['results']:
@@ -1062,12 +1192,17 @@ def get_systems_id_json(skip, limit):
 
 def get_systems_id():
     idList = []
-    jdata = get_systems_id_json()
-    #print(json.dumps(jdata, sort_keys=False, indent=4))
+    skip=0
+    jdata = get_systems_id_json(skip, limit=100)
     for data in jdata['results']:
-        #print(data.get('_id') + ' ' + data.get('hostname'))
         idList.append(data.get('_id'))
-    #print('totalCount: ' + str(jdata['totalCount']))
+
+    while len(jdata['results']) > 0:
+        skip += 100
+        jdata = get_systems_id_json(skip, limit=100)
+        for data in jdata['results']:
+            idList.append(data.get('_id'))
+
     return idList
 
 
