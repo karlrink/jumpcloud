@@ -112,8 +112,38 @@ upload the json file (create new/over write)
 sudo ./fim.py post mac.files.txt.json
 ```
 
+---
 
+# profile.system.sh
 
+```
+#!/bin/bash
 
+if [ `uname` == "Linux" ]; then
+  find /boot/ -type f   >/tmp/files.list
+  find /bin/  -type f  >>/tmp/files.list
+  find /usr/  -type f  >>/tmp/files.list
+  find /etc/  -type f  >>/tmp/files.list
+  find /opt/  -type f  >>/tmp/files.list
+  find /root/ -type f  >>/tmp/files.list
+fi 
+
+if [ `uname` == "Darwin" ]; then
+  find /bin -type f                   >/tmp/files.list
+  find /usr -type f                  >>/tmp/files.list
+  find /opt -type f                  >>/tmp/files.list
+
+  find /private/etc -type f          >>/tmp/files.list
+  find /private/var/root -type f     >>/tmp/files.list
+
+  find /Library -type f              >>/tmp/files.list
+  find /System/Applications -type f  >>/tmp/files.list
+  find /System/Library -type f       >>/tmp/files.list
+fi
+
+/opt/jc/bin/fim.py gen /tmp/files.list /tmp/files.json
+/opt/jc/bin/fim.py post /tmp/files.json
+
+```
 
 

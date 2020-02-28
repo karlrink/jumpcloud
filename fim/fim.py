@@ -63,6 +63,10 @@ def run_notify():
         if check:
             jdata[_file] = 'CHANGED'
 
+    if len(jdata) == 0:
+        print('No Changes, thus no notice sent')
+        return False
+
     system_id = get_system_id()
     fim_url = url + '?system_id=' + system_id
     request = urllib2.Request(fim_url)
@@ -72,6 +76,7 @@ def run_notify():
     post = json.dumps(jdata).encode('utf-8')
     response = urllib2.urlopen(request, post).read()
     print(response)
+    return True
 
 def run_check():
     jresponse = get_response()
