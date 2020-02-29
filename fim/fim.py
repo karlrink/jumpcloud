@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '003.1'
+__version__ = '003.2'
 
 import sys
 import json
@@ -47,21 +47,28 @@ def get_response():
     return jresponse
 
 def check_file(_file,_val):
-    with open(_file, 'r') as hashfile:
-        hfile = hashfile.read()
-        sha1 = hashlib.sha1(hfile).hexdigest()
-        if _val != sha1:
-            print(_file + ' CHANGED')
-            return _file
+    try:
+        with open(_file, 'r') as hashfile:
+            hfile = hashfile.read()
+            sha1 = hashlib.sha1(hfile).hexdigest()
+            if _val != sha1:
+                print(_file + ' CHANGED')
+                return _file
+    except IOError as e:
+        print(_file + ' MISSING')
+        return _file
     return None
 
 def run_notify():
     jdata = {}
     jresponse = get_response()
     for _file,_val in jresponse.items():
-        check = check_file(_file,_val)
-        if check:
-            jdata[_file] = 'CHANGED'
+        if os.path.isfile(_file):
+            check = check_file(_file,_val)
+            if check:
+                jdata[_file] = 'CHANGED'
+        else:
+            jdata[_file] = 'MISSING'
 
     if len(jdata) == 0:
         print('No Changes, thus no notice sent')
