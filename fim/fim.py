@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '003.2'
+__version__ = '003.4'
 
 import sys
 import json
@@ -63,12 +63,12 @@ def run_notify():
     jdata = {}
     jresponse = get_response()
     for _file,_val in jresponse.items():
-        if os.path.isfile(_file):
-            check = check_file(_file,_val)
-            if check:
+        check = check_file(_file,_val)
+        if check:
+            if os.path.isfile(_file):
                 jdata[_file] = 'CHANGED'
-        else:
-            jdata[_file] = 'MISSING'
+            else:
+                jdata[_file] = 'MISSING'
 
     if len(jdata) == 0:
         print('No Changes, thus no notice sent')
