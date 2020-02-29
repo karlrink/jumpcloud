@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.3.12'
+__version__='1.0.3.14'
 
 import sys
 if sys.version_info[0] < 3:
@@ -57,12 +57,16 @@ def usage():
       get_command [command_id] [associations|systems|systemgroups]
       mod_command [command_id] [add|remove] [system_id]
 
+      trigger [name]
+
+      list_command_results [command_id]
+      delete_command_results [command_id]
+
       update_system [system_id] [key] [value]
 
-      Note: Dates must be formatted as RFC3339: "2020-01-15T16:20:01Z"
       events [startDate] [endDate] 
+      Note: Dates must be formatted as RFC3339: "2020-01-15T16:20:01Z"
 
-      trigger [name]
     """)
     print('Version: ' + str(__version__))
     sys.exit(0)
@@ -103,6 +107,43 @@ def systeminsights_os_version(system_id=None):
     #and after 100...
     #is also limited by systeminsights being enabled
     if debug: print('all done.')
+
+
+def list_command_results(command_id=None):
+    skip=0
+    limit=100
+
+    if command_id:
+        command_id = ''.join(command_id)
+        URL="https://console.jumpcloud.com/api/commandresults/" + str(command_id) 
+    else:
+        URL="https://console.jumpcloud.com/api/commandresults?limit=" + str(limit) + "&skip=" + str(skip)
+
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+
+    count = len(json.loads(response.data.decode('utf-8')))
+    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
+    print(str(count))
+    #and then after 100... limit
+    return True
+
+def delete_command_results(command_id):
+    command_id = ''.join(command_id)
+    URL="https://console.jumpcloud.com/api/commandresults/" + str(command_id)
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('DELETE', URL,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': content_type,
+                                     'Accept': accept_type})
+
+    count = len(json.loads(response.data.decode('utf-8')))
+    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
+    print(str(count))
+    return True
 
 def print_systems_users_json(system_id=None):
     if system_id:
@@ -1340,6 +1381,8 @@ options = {
   'get_app'                         : print_get_app,
   'get_program'                     : get_program,
   'get_systeminsights_system_info'  : get_systeminsights_system_info,
+  'list_command_results'            : list_command_results,
+  'delete_command_results'          : delete_command_results,
   'events'                          : events,
   'trigger'                         : run_trigger,
 }
@@ -1354,7 +1397,8 @@ args2 = ['trigger','systeminsights_os_version','systeminsights_apps',
          'list_systemgroups_membership','list_systeminsights_apps','list_systeminsights_programs',
          'get_systeminsights_system_info','get_app','get_program','list_system_bindings',
          'list_user_bindings','list_user_bindings_json','list_system_bindings_json',
-         'get_systems_users_json','delete_system','get_systems_memberof','get_systemgroups_name']
+         'get_systems_users_json','delete_system','get_systems_memberof','get_systemgroups_name',
+         'list_command_results','delete_command_results']
 
 if __name__ == '__main__':
     try:
