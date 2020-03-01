@@ -1,21 +1,21 @@
 #!/usr/bin/env -S python3 -B
 
-__version__ = '0006'
+__version__ = '0007'
 
 import sys, os, json
+import config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import jumpcloud
-import config
-debug = True
 
 def usage():
     print("""Usage: {0} [option]
 
     options:
 
-        check|send systems_root_ssh
-        check|send fde
-        check|send systems_no_group
+        report|send systems_root_ssh
+        report|send systems_fde
+        report|send systems_no_group
+        report|send users_mfa
 
     """.format(sys.argv[0]))
 
@@ -23,6 +23,7 @@ def usage():
         #check username_policy
 
 #---------------------------------------------------------------------------
+debug = False
 
 def systems_no_group_report_text():
     report = ''
@@ -99,7 +100,7 @@ def fde_report_text():
                 continue
 
 
-    report += 'The followig systems are Compliant \n'
+    report += 'yyThe followig systems are Compliant \n'
     report += json.dumps(systems_compliant, sort_keys=True, indent=4)
     report += '\r\n'
 
@@ -111,6 +112,14 @@ def fde_report_text():
     report += json.dumps(systems_none, sort_keys=True, indent=4)
     report += '\r\n'
 
+    report += """AICPA.org, Trust Services Criteria (TSC)
+    Logical and Physical Access Controls
+    CC6.1 - The entity implements logical access security software, infrastructure, and architectures
+    over protected information assets to protect them from security events to meet the entity's objectives.
+      - Uses Encryption to Protect Data.  The entity uses encryption to supplement other measures used to protect data-at-rest,
+                                          when such protections are deemed appropriate based on assessed risk.
+      - Protects Encryption Keys.  Processes are in place to protect encryption keys during generation, storage, use, and destruction.
+    """
     return report
     
 
@@ -122,21 +131,78 @@ def send_fde():
     
     receivers = list([config.ses['smtp_to']])
     subject = 'Compliance: Systems FDE (Full Disk Encryption)'
-    message = 'The following systems FDE report \r\n{0}\r\n'.format(report)
-    message += """AICPA.org, Trust Services Criteria (TSC)
-    Logical and Physical Access Controls
-    CC6.1 - The entity implements logical access security software, infrastructure, and architectures 
-    over protected information assets to protect them from security events to meet the entity's objectives.
-      - Uses Encryption to Protect Data.  The entity uses encryption to supplement other measures used to protect data-at-rest, 
-                                          when such protections are deemed appropriate based on assessed risk.
-      - Protects Encryption Keys.  Processes are in place to protect encryption keys during generation, storage, use, and destruction.
+    send_ses_email(receivers, subject, report)
+    return True
+
+#---------------------------------------------------------------------------
+
+def get_users_mfa():
+    users_mfa_dict = {}
+    jdata = jumpcloud.get_systemusers_json()
+    for data in jdata['results']:
+        user_id = data.get('_id')
+        email  = data.get('email')
+        mfa_json = json.dumps(data.get('mfa', 'None'), sort_keys=True)
+        users_mfa_dict[user_id] = mfa_json
+    return users_mfa_dict
+
+
+def mfa_report_text():
+    report = ''
+    jdata = jumpcloud.get_systemusers_json()
+
+    report += 'The followig users have MFA/2FA configured \n\r'
+    report += '{ \n'
+    for data in jdata['results']:
+        user_id = data.get('_id')
+        email  = data.get('email')
+        mfa_dict = data.get('mfa', 'None')
+        configured = mfa_dict['configured']
+        exclusion  = mfa_dict['exclusion']
+        if str(configured) == 'True':
+            report += '    ' + user_id + ' ' + email + ' (MFA:' + str(configured) + ')\n'
+    report += '} \n'
+
+    report += 'The followig users DO NOT have MFA/2FA configured \n\r'
+    report += '{ \n'
+    for data in jdata['results']:
+        user_id = data.get('_id')
+        email  = data.get('email')
+        mfa_dict = data.get('mfa', 'None')
+        configured = mfa_dict['configured']
+        exclusion  = mfa_dict['exclusion']
+        if str(configured) == 'False':
+            report += '    ' + user_id + ' ' + email + ' (MFA:' + str(configured) + ')\n'
+    report += '} \n'
+
+    report += """AICPA.org, Trust Services Criteria (TSC)
+    Common Criteria Related to Logical and Physical Access Controls
+    CC5.1 - External access by personnel is permitted only through a two-factor (for example, a swipe card and a password)
+            encrypted virtual private network (VPN) connection. 
+    CC5.3 - Two-factor authentication and use of encrypted VPN channels help to ensure that only valid external users 
+            gain remote and local access to IT system components.
+    CC5.4 - When possible, formal role-based access controls to limit access to the system and infrastructure components 
+            are created and enforced by the access control system. When it is not possible, authorized user IDs with two-factor authentication are used.
+
+    Multi-Factor authentication (MFA) means you need more than one credential to login to systems, applications, or other digital assets.  
+    MFA, or sometimes referred to as 2FA or Two Factor Authentication, generally requires one of the credentials to be 
+    something you know – like your username and password – and the second credential to be 
+    something that you have – such as a code sent to your smartphone. 
     """
-    send_ses_email(receivers, subject, message)
+    return report
+
+def send_mfa():
+    report = mfa_report_text()
+    receivers = list([config.ses['smtp_to']])
+    subject = 'Compliance: Users MFA/2FA status'
+    send_ses_email(receivers, subject, report)
     return True
 
 
 #---------------------------------------------------------------------------
-def check_systems_root_ssh():
+def report_systems_root_ssh():
+    report = 'The followig systems ALLOW Root SSH Login \n\r'
+
     systems_root_ssh_dict = {}
     jdata = jumpcloud.get_systems_json()
     for data in jdata['results']:
@@ -145,24 +211,24 @@ def check_systems_root_ssh():
         root_ssh = json.dumps(data.get('allowSshRootLogin'), sort_keys=True)
         if root_ssh == 'true':
             systems_root_ssh_dict[system_id] = str(hostname)
-    return systems_root_ssh_dict
 
-def send_systems_root_ssh():
-    offenders = check_systems_root_ssh()
-    if len(offenders) == 0:
-        print('No offenders: check_systems_root_ssh')
-        return False
-    receivers = list([config.ses['smtp_to']])
-    subject = 'Compliance: Systems with allowSshRootLogin'
-    message = 'The following systems allowSshRootLogin \r\n{0}\r\n'.format(json.dumps(offenders, sort_keys=True, indent=4))
-    message += """AICPA.org, Trust Services Criteria (TSC)
+    report += json.dumps(systems_root_ssh_dict, indent=4)
+    report += '\n'
+    report += """AICPA.org, Trust Services Criteria (TSC)
     Logical and Physical Access Controls
     CC6.1 - The entity implements logical access security software, infrastructure, and architectures 
     over protected information assets to protect them from security events to meet the entity's objectives.
       - Identifies and Authenticates Users.  Persons, infrastructure and software are identified and authenticated 
                                              prior to accessing information assets, whether locally or remotely.
     """
-    send_ses_email(receivers, subject, message)
+    return report
+
+
+def send_systems_root_ssh():
+    report = report_systems_root_ssh()
+    receivers = list([config.ses['smtp_to']])
+    subject = 'Compliance: Systems with allowSshRootLogin'
+    send_ses_email(receivers, subject, report)
     return True
 
 #---------------------------------------------------------------------------
@@ -263,21 +329,27 @@ def check_app_offenses():
 
 if __name__ == "__main__":
     if sys.argv[1:]:
-        if sys.argv[1] == "check" and sys.argv[2] == "app_offenses":
+        if sys.argv[1] == "report" and sys.argv[2] == "app_offenses":
             offenders = check_app_offenses()
             #print(str(offenders))
             print(json.dumps(offenders, sort_keys=True, indent=4))
-        elif sys.argv[1] == "check" and sys.argv[2] == "systems_root_ssh":
-            offenders = check_systems_root_ssh()
-            print(json.dumps(offenders, sort_keys=True, indent=4))
+        elif sys.argv[1] == "report" and sys.argv[2] == "systems_root_ssh":
+            report = report_systems_root_ssh()
+            #print(json.dumps(report, sort_keys=True, indent=4))
+            print(report)
         elif sys.argv[1] == "send" and sys.argv[2] == "systems_root_ssh":
             email = send_systems_root_ssh()
-        elif sys.argv[1] == "check" and sys.argv[2] == "fde":
+        elif sys.argv[1] == "report" and sys.argv[2] == "systems_fde":
             report = fde_report_text()
             print(report)
-        elif sys.argv[1] == "send" and sys.argv[2] == "fde":
+        elif sys.argv[1] == "send" and sys.argv[2] == "systems_fde":
             email = send_fde()
-        elif sys.argv[1] == "check" and sys.argv[2] == "systems_no_group":
+        elif sys.argv[1] == "report" and sys.argv[2] == "users_mfa":
+            report = mfa_report_text()
+            print(report)
+        elif sys.argv[1] == "send" and sys.argv[2] == "users_mfa":
+            email = send_mfa()
+        elif sys.argv[1] == "report" and sys.argv[2] == "systems_no_group":
             report = systems_no_group_report_text()
             print(report)
         elif sys.argv[1] == "send" and sys.argv[2] == "systems_no_group":

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.3.14'
+__version__='1.0.3.15'
 
 import sys
 if sys.version_info[0] < 3:
@@ -25,7 +25,7 @@ def usage():
       get_systems_memberof [system_id]
       delete_system [system_id]
 
-      list_users [json|suspended|locked|password_expired|not_activated|ldap_bind]
+      list_users [json|suspended|locked|password_expired|not_activated|ldap_bind|mfa]
       list_usergroups [json]
       list_usergroups_members [group_id]
       list_usergroups_details [group_id]
@@ -954,6 +954,7 @@ def list_usergroups_details(group_id=None):
 
 
 def get_systemusers_json(user_id=None):
+    #WARNING: this method prone to skip,limit 100
     if user_id:
         user_id = ''.join(user_id)
     else:
@@ -1051,6 +1052,16 @@ def list_users_ldap_bind():
             _line = data.get('_id') + ' ' + data.get('username') + ' ' + data.get('email') + ' '
             _line += 'ldap_binding_user:' + str(ldap_binding_user)
             print(_line)
+
+def list_users_mfa():
+    jdata = get_systemusers_json()
+    if len(jdata) == 0:
+        print('Zero (0) response')
+    #print('totalCount: ' + str(jdata['totalCount']))
+    for data in jdata['results']:
+        mfa_json = json.dumps(data.get('mfa'), sort_keys=True)
+        _output = data.get('_id') + ' "' + data.get('email') + ' ' + str(mfa_json)
+        print(_output)
 
 def list_users_json():
         response = get_systemusers_json()
@@ -1352,6 +1363,7 @@ options = {
   'list_systemgroups_membership'    : list_systemgroups_membership,
   'list_users'                      : list_users,
   'list_users_json'                 : list_users_json,
+  'list_users_mfa'                  : list_users_mfa,
   'list_users_suspended'            : list_users_suspended,
   'list_users_locked'               : list_users_locked,
   'list_users_password_expired'     : list_users_password_expired,
