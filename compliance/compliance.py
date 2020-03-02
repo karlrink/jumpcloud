@@ -233,6 +233,34 @@ def send_systems_root_ssh():
     send_ses_email(receivers, subject, report)
     return True
 
+
+def systems_report():
+    report = 'jumpcloud systems report. \n\r'
+    jdata = jumpcloud.get_systems_json()
+    totalCount = jdata['totalCount']
+    report += '{\n'
+    report += '    "Total Systems Count": ' + str(totalCount) + '\n'
+    report += '}\n'
+
+    report += 'The following Operating Systems counts  \n\r'
+    osDict = jumpcloud.list_systems_os(_print=False)
+    from collections import defaultdict
+    dct = defaultdict(int)
+    for k,v in osDict.items():
+        dct[v] += 1
+
+    report += json.dumps(dct, sort_keys=False, indent=4)
+    return report
+
+def send_systems_report():
+    report = users_report()
+    receivers = list([config.ses['smtp_to']])
+    subject = 'Compliance: Jumpcloud SYSTEMS Report'
+    send_ses_email(receivers, subject, report)
+    return True
+
+
+#---------------------------------------------------------------------------
 def users_report():
     report = 'jumpcloud users report. \n\r'
     #totalCount
@@ -240,7 +268,7 @@ def users_report():
     #print(totalCount)
     totalCount = jdata['totalCount']
     report += '{\n'
-    report += '    "Total User Count": ' + str(totalCount) + '\n'
+    report += '    "Total Users Count": ' + str(totalCount) + '\n'
     report += '}\n'
     report += 'The following users are suspended \n\r'
     #report += str(jumpcloud.list_users_suspended())
@@ -253,6 +281,15 @@ def users_report():
     report += json.dumps(jumpcloud.list_users_not_activated(_print=False), indent=4)
     report += '\nThe following users are ldap_bind \n\r'
     report += json.dumps(jumpcloud.list_users_ldap_bind(_print=False), indent=4)
+    report += '\n'
+    #report += """AICPA.org, Trust Services Criteria (TSC)
+    #Logical and Physical Access Controls
+    #CC6.3 - The entity authorizes, modifies, or removes access to data, software, functions, and other protected information assets 
+    #based on roles, responsibilities, or the system design and changes, giving consideration to the concepts of least privilege 
+    #and segregation of duties, to meet the entity’s objectives.
+    #  - Removes Access to Protected Information Assets.  Processes are in place to remove access to protected information assets
+    #    when an individual no longer requires access.
+    #"""
     return report
 
 def send_users_report():
@@ -386,6 +423,11 @@ if __name__ == "__main__":
             print(report)
         elif sys.argv[1] == "send" and sys.argv[2] == "users":
             email = send_users_report()
+        elif sys.argv[1] == "report" and sys.argv[2] == "systems":
+            report = systems_report()
+            print(report)
+        elif sys.argv[1] == "send" and sys.argv[2] == "systems":
+            email = send_systems_report()
         elif sys.argv[1] == "report" and sys.argv[2] == "systems_no_group":
             report = systems_no_group_report_text()
             print(report)

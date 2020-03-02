@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.3.16'
+__version__='1.0.3.17'
 
 import sys
 if sys.version_info[0] < 3:
@@ -1255,10 +1255,13 @@ def list_systems_hostname():
     for data in jdata['results']:
         print(data.get('_id') + ' ' + data.get('hostname'))
 
-def list_systems_os():
+def list_systems_os(_print=True):
+    thisDict = {}
     jdata = get_systems_json()
     for data in jdata['results']:
-        print(data.get('_id') + ' ' + data.get('os'))
+        if _print: print(data.get('_id') + ' ' + data.get('os'))
+        thisDict[data.get('_id')] = data.get('os')
+    return thisDict
 
 def list_systems_serial():
     jdata = get_systems_json()
