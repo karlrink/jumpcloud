@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.3.15'
+__version__='1.0.3.16'
 
 import sys
 if sys.version_info[0] < 3:
@@ -993,19 +993,23 @@ def list_users():
         _line += data.get('email')
         print(_line)
 
-def list_users_suspended():
+def list_users_suspended(_print=True):
+    thisDict = {}
     jdata = get_systemusers_json()
     if len(jdata) == 0:
         print('Zero (0) response')
     #print('totalCount: ' + str(jdata['totalCount']))
     for data in jdata['results']:
         suspended = data.get('suspended')
-        if str(suspended) != 'False':
+        if str(suspended) == 'True':
             _line = data.get('_id') + ' ' + data.get('username') + ' ' + data.get('email') + ' '
             _line += 'suspended:' + str(suspended)
-            print(_line)
+            if _print: print(_line)
+            thisDict[data.get('_id')] = data.get('email')
+    return thisDict
 
-def list_users_locked():
+def list_users_locked(_print=True):
+    thisDict = {}
     jdata = get_systemusers_json()
     if len(jdata) == 0:
         print('Zero (0) response')
@@ -1015,9 +1019,12 @@ def list_users_locked():
         if str(account_locked) != 'False':
             _line = data.get('_id') + ' ' + data.get('username') + ' ' + data.get('email') + ' '
             _line += 'account_locked:' + str(account_locked)
-            print(_line)
+            if _print: print(_line)
+            thisDict[data.get('_id')] = data.get('email')
+    return thisDict
 
-def list_users_password_expired():
+def list_users_password_expired(_print=True):
+    thisDict = {}
     jdata = get_systemusers_json()
     if len(jdata) == 0:
         print('Zero (0) response')
@@ -1027,9 +1034,12 @@ def list_users_password_expired():
         if str(password_expired) != 'False':
             _line = data.get('_id') + ' ' + data.get('username') + ' ' + data.get('email') + ' '
             _line += 'password_expired:' + str(password_expired)
-            print(_line)
+            if _print: print(_line)
+            thisDict[data.get('_id')] = data.get('email')
+    return thisDict
 
-def list_users_not_activated():
+def list_users_not_activated(_print=True):
+    thisDict = {}
     jdata = get_systemusers_json()
     if len(jdata) == 0:
         print('Zero (0) response')
@@ -1039,9 +1049,12 @@ def list_users_not_activated():
         if str(activated) != 'True':
             _line = data.get('_id') + ' ' + data.get('username') + ' ' + data.get('email') + ' '
             _line += 'activated:' + str(activated)
-            print(_line)
+            if _print: print(_line)
+            thisDict[data.get('_id')] = data.get('email')
+    return thisDict
 
-def list_users_ldap_bind():
+def list_users_ldap_bind(_print=True):
+    thisDict = {}
     jdata = get_systemusers_json()
     if len(jdata) == 0:
         print('Zero (0) response')
@@ -1051,7 +1064,9 @@ def list_users_ldap_bind():
         if str(ldap_binding_user) == 'True':
             _line = data.get('_id') + ' ' + data.get('username') + ' ' + data.get('email') + ' '
             _line += 'ldap_binding_user:' + str(ldap_binding_user)
-            print(_line)
+            if _print: print(_line)
+            thisDict[data.get('_id')] = data.get('email')
+    return thisDict
 
 def list_users_mfa():
     jdata = get_systemusers_json()

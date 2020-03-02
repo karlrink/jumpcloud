@@ -16,6 +16,8 @@ def usage():
         report|send systems_fde
         report|send systems_no_group
         report|send users_mfa
+        report|send users
+        report|send systems
 
     """.format(sys.argv[0]))
 
@@ -100,7 +102,7 @@ def fde_report_text():
                 continue
 
 
-    report += 'yyThe followig systems are Compliant \n'
+    report += 'The followig systems have FDE with recovery key managment \n'
     report += json.dumps(systems_compliant, sort_keys=True, indent=4)
     report += '\r\n'
 
@@ -163,7 +165,7 @@ def mfa_report_text():
             report += '    ' + user_id + ' ' + email + ' (MFA:' + str(configured) + ')\n'
     report += '} \n'
 
-    report += 'The followig users DO NOT have MFA/2FA configured \n\r'
+    report += 'The followig users DO NOT have MFA/2FA \n\r'
     report += '{ \n'
     for data in jdata['results']:
         user_id = data.get('_id')
@@ -231,6 +233,35 @@ def send_systems_root_ssh():
     send_ses_email(receivers, subject, report)
     return True
 
+def users_report():
+    report = 'jumpcloud users report. \n\r'
+    #totalCount
+    jdata = jumpcloud.get_systemusers_json()
+    #print(totalCount)
+    totalCount = jdata['totalCount']
+    report += '{\n'
+    report += '    "Total User Count": ' + str(totalCount) + '\n'
+    report += '}\n'
+    report += 'The following users are suspended \n\r'
+    #report += str(jumpcloud.list_users_suspended())
+    report += json.dumps(jumpcloud.list_users_suspended(_print=False), indent=4)
+    report += '\nThe following users are locked \n\r'
+    report += json.dumps(jumpcloud.list_users_locked(_print=False), indent=4)
+    report += '\nThe following users are password_expired \n\r'
+    report += json.dumps(jumpcloud.list_users_password_expired(_print=False), indent=4)
+    report += '\nThe following users are not_activated \n\r'
+    report += json.dumps(jumpcloud.list_users_not_activated(_print=False), indent=4)
+    report += '\nThe following users are ldap_bind \n\r'
+    report += json.dumps(jumpcloud.list_users_ldap_bind(_print=False), indent=4)
+    return report
+
+def send_users_report():
+    report = users_report()
+    receivers = list([config.ses['smtp_to']])
+    subject = 'Compliance: Jumpcloud USERS Report'
+    send_ses_email(receivers, subject, report)
+    return True
+
 #---------------------------------------------------------------------------
 def send_ses_email(receivers, subject, message):
     import smtplib, ssl
@@ -253,7 +284,8 @@ def send_ses_email(receivers, subject, message):
         server.login(smtp_user, smtp_pass)
         server.sendmail(sender_email, receivers, msg)
     print('emailto: ' + str(receivers))
-    print('message: ' + str(message))
+    print('msg: ' + str(msg))
+#---------------------------------------------------------------------------
 
 def check_username_policy():
     pass
@@ -349,6 +381,11 @@ if __name__ == "__main__":
             print(report)
         elif sys.argv[1] == "send" and sys.argv[2] == "users_mfa":
             email = send_mfa()
+        elif sys.argv[1] == "report" and sys.argv[2] == "users":
+            report = users_report()
+            print(report)
+        elif sys.argv[1] == "send" and sys.argv[2] == "users":
+            email = send_users_report()
         elif sys.argv[1] == "report" and sys.argv[2] == "systems_no_group":
             report = systems_no_group_report_text()
             print(report)
