@@ -1,8 +1,10 @@
-#!/usr/bin/env -S python3 -B
+#!/usr/bin/env python3
 
 __version__ = '0007'
 
 import sys, os, json
+sys.dont_write_bytecode = True
+
 import config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import jumpcloud
