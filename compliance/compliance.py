@@ -43,7 +43,7 @@ def systems_no_group_report_text():
 
     report += 'The followig systems are not identified \n'
     report += json.dumps(systems_no_group, sort_keys=True, indent=4)
-    report += '\r\n'
+    report += '\n'
     report += """AICPA.org, Trust Services Criteria (TSC)
     Logical and Physical Access Controls
     CC6.1 - The entity implements logical access security software, infrastructure, and architectures 
@@ -106,15 +106,15 @@ def fde_report_text():
 
     report += 'The followig systems have FDE with recovery key managment \n'
     report += json.dumps(systems_compliant, sort_keys=True, indent=4)
-    report += '\r\n'
+    report += '\n'
 
     report += 'The followig sysytems have FDE, but no recovery key \n'
     report += json.dumps(systems_active_nokey, sort_keys=True, indent=4)
-    report += '\r\n'
+    report += '\n'
 
     report += 'The followig sysytems are "Unconfigured" \n'
     report += json.dumps(systems_none, sort_keys=True, indent=4)
-    report += '\r\n'
+    report += '\n'
 
     report += """AICPA.org, Trust Services Criteria (TSC)
     Logical and Physical Access Controls
@@ -155,7 +155,7 @@ def mfa_report_text():
     report = ''
     jdata = jumpcloud.get_systemusers_json()
 
-    report += 'The followig users have MFA/2FA configured \n\r'
+    report += 'The followig users have MFA/2FA configured \n'
     report += '{ \n'
     for data in jdata['results']:
         user_id = data.get('_id')
@@ -167,7 +167,7 @@ def mfa_report_text():
             report += '    ' + user_id + ' ' + email + ' (MFA:' + str(configured) + ')\n'
     report += '} \n'
 
-    report += 'The followig users DO NOT have MFA/2FA \n\r'
+    report += 'The followig users DO NOT have MFA/2FA \n'
     report += '{ \n'
     for data in jdata['results']:
         user_id = data.get('_id')
@@ -186,12 +186,13 @@ def mfa_report_text():
     CC5.3 - Two-factor authentication and use of encrypted VPN channels help to ensure that only valid external users 
             gain remote and local access to IT system components.
     CC5.4 - When possible, formal role-based access controls to limit access to the system and infrastructure components 
-            are created and enforced by the access control system. When it is not possible, authorized user IDs with two-factor authentication are used.
+            are created and enforced by the access control system. When it is not possible, 
+            authorized user IDs with two-factor authentication are used.
 
     Multi-Factor authentication (MFA) means you need more than one credential to login to systems, applications, or other digital assets.  
     MFA, or sometimes referred to as 2FA or Two Factor Authentication, generally requires one of the credentials to be 
-    something you know – like your username and password – and the second credential to be 
-    something that you have – such as a code sent to your smartphone. 
+    something you know; like your username and password, and the second credential to be 
+    something that you have; such as a code sent to your smartphone. 
     """
     return report
 
@@ -202,10 +203,9 @@ def send_mfa():
     send_ses_email(receivers, subject, report)
     return True
 
-
 #---------------------------------------------------------------------------
 def report_systems_root_ssh():
-    report = 'The followig systems ALLOW Root SSH Login \n\r'
+    report = 'The followig systems ALLOW Root SSH Login \n'
 
     systems_root_ssh_dict = {}
     jdata = jumpcloud.get_systems_json()
@@ -237,14 +237,14 @@ def send_systems_root_ssh():
 
 
 def systems_report():
-    report = 'jumpcloud systems report. \n\r'
+    report = 'jumpcloud systems report. \n'
     jdata = jumpcloud.get_systems_json()
     totalCount = jdata['totalCount']
     report += '{\n'
     report += '    "Total Systems Count": ' + str(totalCount) + '\n'
     report += '}\n'
 
-    report += 'The following Operating Systems counts  \n\r'
+    report += 'The following Operating Systems counts  \n'
     osDict = jumpcloud.list_systems_os(_print=False)
     from collections import defaultdict
     dct = defaultdict(int)
@@ -255,7 +255,7 @@ def systems_report():
     return report
 
 def send_systems_report():
-    report = users_report()
+    report = systems_report()
     receivers = list([config.ses['smtp_to']])
     subject = 'Compliance: Jumpcloud SYSTEMS Report'
     send_ses_email(receivers, subject, report)
@@ -264,7 +264,7 @@ def send_systems_report():
 
 #---------------------------------------------------------------------------
 def users_report():
-    report = 'jumpcloud users report. \n\r'
+    report = 'jumpcloud users report. \n'
     #totalCount
     jdata = jumpcloud.get_systemusers_json()
     #print(totalCount)
@@ -272,16 +272,16 @@ def users_report():
     report += '{\n'
     report += '    "Total Users Count": ' + str(totalCount) + '\n'
     report += '}\n'
-    report += 'The following users are suspended \n\r'
+    report += 'The following users are suspended \n'
     #report += str(jumpcloud.list_users_suspended())
     report += json.dumps(jumpcloud.list_users_suspended(_print=False), indent=4)
-    report += '\nThe following users are locked \n\r'
+    report += '\nThe following users are locked \n'
     report += json.dumps(jumpcloud.list_users_locked(_print=False), indent=4)
-    report += '\nThe following users are password_expired \n\r'
+    report += '\nThe following users are password_expired \n'
     report += json.dumps(jumpcloud.list_users_password_expired(_print=False), indent=4)
-    report += '\nThe following users are not_activated \n\r'
+    report += '\nThe following users are not_activated \n'
     report += json.dumps(jumpcloud.list_users_not_activated(_print=False), indent=4)
-    report += '\nThe following users are ldap_bind \n\r'
+    report += '\nThe following users are ldap_bind \n'
     report += json.dumps(jumpcloud.list_users_ldap_bind(_print=False), indent=4)
     report += '\n'
     #report += """AICPA.org, Trust Services Criteria (TSC)
