@@ -7,7 +7,7 @@ find /etc/ -type f  >>/tmp/files.list
 find /root/ -type f >>/tmp/files.list
 
 opt_exclude="! -name managedUsers.json ! -name *.log"
-find /opt/ -type f "$opt_exclude" >>/tmp/files.list
+find /opt/ -type f $opt_exclude >>/tmp/files.list
 
 /opt/jc/bin/fim.py gen /tmp/files.list /tmp/files.json
 /opt/jc/bin/fim.py post /tmp/files.json
