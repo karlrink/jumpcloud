@@ -1,66 +1,60 @@
 #!/usr/bin/env python2
 
 import json
+import os
+
+def get_system_id():
+    jcagent_conf = '/opt/jc/jcagent.conf'
+    with open(jcagent_conf, 'r') as jcconf:
+        jdata = json.load(jcconf)
+    system_id = jdata['systemKey']
+    return str(system_id)
 
 from proc import meminfo
 proc_meminfo = meminfo.get_meminfo()
 #print(json.dumps(proc_meminfo, sort_keys=True, indent=4))
 
+rrdList = []
+
 from rrd import free
 rrd_free = free.get_free()
 #print(json.dumps(rrd_free, sort_keys=True, indent=4))
+for item in rrd_free:
+    rrdList.append(item)
 
 from rrd import uptime
 rrd_uptime = uptime.get_uptime()
 #print(json.dumps(rrd_uptime, sort_keys=True, indent=4))
+rrdList.append(rrd_uptime)
 
 from rrd import df
 rrd_df = df.get_df()
 #print(json.dumps(rrd_df, sort_keys=True, indent=4))
+rrdList.append(rrd_df)
 
 from rrd import ps
 rrd_ps = ps.get_ps()
 #print(json.dumps(rrd_ps, sort_keys=True, indent=4))
-
-#mpstat #iostat , rely on sysstat package
-
-from rrd import mpstat
-rrd_mpstat = mpstat.get_mpstat()
-#print(json.dumps(rrd_mpstat, sort_keys=True, indent=4))
-
-#from rrd import iostat
-#rrd_iostat = iostat.get_iostat()
-#print(json.dumps(rrd_iostat, sort_keys=True, indent=4))
-
-#json_data = rrd_free + rrd_uptime
-
-#print(json_data)
-#print(type(rrd_free)) #<type 'list'>
-#print(type(rrd_iostat)) #<type 'dict'>
-
-rrdList = []
-for item in rrd_free:
-    #print(item)
-    #print(type(item))
-    rrdList.append(item)
-
-rrdList.append(rrd_uptime)
-rrdList.append(rrd_df)
 rrdList.append(rrd_ps)
-rrdList.append(rrd_mpstat)
-#rrdList.append(rrd_iostat)
 
-#for line in rrdList:
-#    print(line)
-#    print(type(line))
+#mpstat and iostat , rely on sysstat package
+
+if os.path.isfile('/usr/bin/mpstat'):
+    from rrd import mpstat
+    rrd_mpstat = mpstat.get_mpstat()
+    #print(json.dumps(rrd_mpstat, sort_keys=True, indent=4))
+    rrdList.append(rrd_mpstat)
+
+if os.path.isfile('/usr/bin/iostat'):
+    from rrd import iostat
+    rrd_iostat = iostat.get_iostat()
+    #print(json.dumps(rrd_iostat, sort_keys=True, indent=4))
+    rrdList.append(rrd_iostat)
+   
 
 
-#rrdDict = rrd_free + rrd_uptime
-#d3 = dict(rrd_free.iteritems(), rrd_uptime.iteritems())
-#print(d3)
-
-system_id = '1234567'
-
+system_id = get_system_id()
+#system_id = '1234567'
 json_data  = '{ "system_id": "' + str(system_id) + '",'
 json_data += '"meminfo": ' + str(json.dumps(proc_meminfo)) + ','
 json_data += '"rrdata": ' + str(json.dumps(rrdList)) 
@@ -68,6 +62,7 @@ json_data += '}'
 
 #print(json_data)
 #print(json.dumps(json.loads(json_data), sort_keys=True, indent=4))
+
 
 
 import urllib2

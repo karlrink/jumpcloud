@@ -30,12 +30,16 @@ def get_iostat():
         line = value.split()
         if line:
             this_disk_name = line[0]
+            #print(this_disk_name)
             if this_disk_name == 'Linux':
                 continue
             elif this_disk_name == 'Device:':
                 continue
+            elif this_disk_name == 'Device':
+                continue
 
             this_disk_tps  = line[1]
+            #print(this_disk_tps)
             this_disk_blkreads  = line[2]
             this_disk_blkwrtns  = line[3]
             this_disk_blkrd  = line[4]

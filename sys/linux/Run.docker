@@ -11,10 +11,10 @@ apt-get install -y python3
 apt-get install -y virtualenv
 
 #rrd
-apt-get install -y rrdtool python-rrdtool librrd-dev
+apt-get install -y python-rrdtool
 
-
-apt-get install build-essential
+#apt-get install -y rrdtool python-rrdtool librrd-dev
+#apt-get install build-essential
 
 
 
