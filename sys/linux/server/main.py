@@ -1,4 +1,6 @@
 
+__version__ = '001'
+
 from flask import Flask
 from flask import request
 from flask import jsonify
@@ -14,13 +16,12 @@ app = Flask(__name__)
 
 gunicorn_error_logger = logging.getLogger('gunicorn.error')
 app.logger.handlers.extend(gunicorn_error_logger.handlers)
-app.logger.setLevel(logging.DEBUG)
-
+app.logger.setLevel(logging.INFO)
 #app.logger.setLevel(logging.DEBUG)
 #app.logger.debug('this will show in the log')
 
 datadir = '/data/rrd'
-x_api_key_file = '/data/rrd/x-api-key.txt'
+x_api_key_file = '/data/x-api-key.txt'
 
 @app.route("/collector", methods=['POST']) #collector?system_id=5e30c0b9890a7a4766268b59
 def collector():
