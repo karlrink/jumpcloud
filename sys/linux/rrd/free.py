@@ -6,7 +6,6 @@ import subprocess
 import json
 
 def get_free():
-
     collect="free -m"
     p = subprocess.Popen(collect, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     output, err = p.communicate()
@@ -62,7 +61,5 @@ def get_free():
 if __name__ == "__main__":
     output = get_free()
     print(json.dumps(output, sort_keys=True, indent=4))
-    #print(output)
-    #print(json.dumps(json.loads([ output ])))
 
 
