@@ -1,0 +1,15 @@
+#!/bin/bash
+
+find /boot/ -type f  >/tmp/files.list
+find /bin/ -type f  >>/tmp/files.list
+find /usr/ -type f  >>/tmp/files.list
+find /etc/ -type f  >>/tmp/files.list
+find /root/ -type f >>/tmp/files.list
+
+opt_exclude="! -name managedUsers.json ! -name *.log"
+find /opt/ -type f $opt_exclude >>/tmp/files.list
+
+/opt/jc/bin/fim.py gen /tmp/files.list /tmp/files.json
+/opt/jc/bin/fim.py post /tmp/files.json
+
+
