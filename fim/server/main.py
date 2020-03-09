@@ -17,7 +17,7 @@ app.logger.setLevel(logging.DEBUG)
 #app.logger.debug('this will show in the log')
 
 datadir = '/data/fim'
-x_api_key_file = datadir + '/x-api-key.txt'
+x_api_key_file = '/data/x-api-key.txt'
 
 @app.route("/fim", methods=['GET','PUT','POST']) #fim?system_id=5e30c0b9890a7a4766268b59
 def fim():
