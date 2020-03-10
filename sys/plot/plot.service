@@ -1,0 +1,21 @@
+#file:/lib/systemd/system/plot.service
+
+[Unit]
+Description=Plotter Server
+After=network.target
+
+[Service]
+Type=forking
+Environment=""
+WorkingDirectory=/app/sys/plot
+RuntimeDirectory=/app/sys/plot
+ExecStart=/bin/bash -ce "cd /app/sys/plot/ && ./plotter.py >> /app/sys/plot/run/plot.log 2>&1 &"
+LimitNOFILE=500000
+ExecStop=/bin/kill $MAINPID
+ExecRestart=/bin/kill -HUP $MAINPID
+Restart=always
+User=ec2-user
+
+[Install]
+WantedBy=multi-user.target
+

@@ -7,9 +7,9 @@ After=network.target
 [Service]
 User=ec2-user
 Group=nginx
-WorkingDirectory=/app/sys/linux/server
-Environment="PATH=/app/sys/linux/server/env/bin"
-ExecStart=/app/sys/linux/server/env/bin/gunicorn --workers 3 --bind unix:app.sock -m 000 --log-level INFO --log-file /app/sys/linux/server/gunicorn.log wsgi:app
+WorkingDirectory=/app/sys/server
+Environment="PATH=/app/sys/server/env/bin"
+ExecStart=/app/sys/server/env/bin/gunicorn --workers 3 --bind unix:app.sock -m 000 --log-level INFO --log-file /app/sys/server/gunicorn.log wsgi:app
 
 [Install]
 WantedBy=multi-user.target
