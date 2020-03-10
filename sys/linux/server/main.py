@@ -179,7 +179,7 @@ def memRRD(rrdfile=None):
                    'DS:buffers:GAUGE:600:U:U',
                    'DS:cached:GAUGE:600:U:U' ]
 
-    rrdtool.create( rrdfile, '--start', '0',
+    rrdtool.create(str(rrdfile), '--start', '0',
                              '--step', '300',
                     data_sources,
                     'RRA:AVERAGE:0.5:1:360',
@@ -209,7 +209,7 @@ def swapRRD(rrdfile=None):
                    'DS:free:GAUGE:600:U:U'
                  ]
 
-    rrdtool.create( rrdfile, '--start', '0',
+    rrdtool.create(str(rrdfile), '--start', '0',
                              '--step', '300',
                     data_sources,
                     'RRA:AVERAGE:0.5:1:360',
@@ -242,7 +242,7 @@ def uptimeRRD(rrdfile=None):
                    'DS:fifteen:GAUGE:600:U:U'
                  ]
 
-    rrdtool.create( rrdfile, '--start', '0',
+    rrdtool.create(str(rrdfile), '--start', '0',
                              '--step', '300',
                     data_sources,
                     'RRA:AVERAGE:0.5:1:360',
@@ -274,7 +274,7 @@ def rootRRD(rrdfile=None):
                    'DS:use:GAUGE:600:U:U'
                  ]
 
-    rrdtool.create( rrdfile, '--start', '0',
+    rrdtool.create(str(rrdfile), '--start', '0',
                              '--step', '300',
                     data_sources,
                     'RRA:AVERAGE:0.5:1:360',
@@ -299,7 +299,7 @@ def psRRD(rrdfile=None):
                    'DS:defunct:GAUGE:600:U:U'
                  ]
 
-    rrdtool.create( rrdfile, '--start', '0',
+    rrdtool.create(str(rrdfile), '--start', '0',
                              '--step', '300',
                     data_sources,
                     'RRA:AVERAGE:0.5:1:360',
@@ -340,7 +340,7 @@ def mpstatRRD(rrdfile=None):
                    'DS:idle:GAUGE:600:U:U'
                  ]
 
-    rrdtool.create( rrdfile, '--start', '0',
+    rrdtool.create(str(rrdfile), '--start', '0',
                              '--step', '300',
                     data_sources,
                     'RRA:AVERAGE:0.5:1:360',
@@ -378,7 +378,7 @@ def iostatRRD(rrdfile=None):
                    'DS:blk_wrtn:GAUGE:600:U:U'
                  ]
 
-    rrdtool.create( rrdfile, '--start', '0',
+    rrdtool.create(str(rrdfile), '--start', '0',
                              '--step', '300',
                     data_sources,
                     'RRA:AVERAGE:0.5:1:360',
@@ -391,4 +391,5 @@ def iostatRRD(rrdfile=None):
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)
+
 
