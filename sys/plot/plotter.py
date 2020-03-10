@@ -20,7 +20,7 @@ saveq = multiprocessing.Queue()
 
 import config
 
-debug = True
+debug = False
 
 class httpServHandler(BaseHTTPServer.BaseHTTPRequestHandler):
   def do_GET(self):
