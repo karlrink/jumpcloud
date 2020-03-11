@@ -1,5 +1,5 @@
 
-__version__ = '001'
+__version__ = '001.a3'
 
 from flask import Flask
 from flask import request
@@ -110,6 +110,15 @@ def post_request(system_id):
                     iostatRRD(rrdfile)
                     continue
 
+                if rrd == 'sbm' and not os.path.isfile(rrdfile):
+                    sbmRRD(rrdfile)
+                    continue
+
+                if rrd == 'mysql' and not os.path.isfile(rrdfile):
+                    mysqlRRD(rrdfile)
+                    continue
+
+
 
                 if os.path.isfile(rrdfile):
                     rrdtool.update(str(rrdfile), str(val))
@@ -180,7 +189,7 @@ def memRRD(rrdfile=None):
                    'DS:cached:GAUGE:600:U:U' ]
 
     rrdtool.create(str(rrdfile), '--start', '0',
-                             '--step', '300',
+                                 '--step', '300',
                     data_sources,
                     'RRA:AVERAGE:0.5:1:360',
                     'RRA:AVERAGE:0.5:12:1008',
@@ -210,7 +219,7 @@ def swapRRD(rrdfile=None):
                  ]
 
     rrdtool.create(str(rrdfile), '--start', '0',
-                             '--step', '300',
+                                 '--step', '300',
                     data_sources,
                     'RRA:AVERAGE:0.5:1:360',
                     'RRA:AVERAGE:0.5:12:1008',
@@ -243,7 +252,7 @@ def uptimeRRD(rrdfile=None):
                  ]
 
     rrdtool.create(str(rrdfile), '--start', '0',
-                             '--step', '300',
+                                 '--step', '300',
                     data_sources,
                     'RRA:AVERAGE:0.5:1:360',
                     'RRA:AVERAGE:0.5:12:1008',
@@ -275,7 +284,7 @@ def rootRRD(rrdfile=None):
                  ]
 
     rrdtool.create(str(rrdfile), '--start', '0',
-                             '--step', '300',
+                                 '--step', '300',
                     data_sources,
                     'RRA:AVERAGE:0.5:1:360',
                     'RRA:AVERAGE:0.5:12:1008',
@@ -300,7 +309,7 @@ def psRRD(rrdfile=None):
                  ]
 
     rrdtool.create(str(rrdfile), '--start', '0',
-                             '--step', '300',
+                                 '--step', '300',
                     data_sources,
                     'RRA:AVERAGE:0.5:1:360',
                     'RRA:AVERAGE:0.5:12:1008',
@@ -341,7 +350,7 @@ def mpstatRRD(rrdfile=None):
                  ]
 
     rrdtool.create(str(rrdfile), '--start', '0',
-                             '--step', '300',
+                                 '--step', '300',
                     data_sources,
                     'RRA:AVERAGE:0.5:1:360',
                     'RRA:AVERAGE:0.5:12:1008',
@@ -379,14 +388,145 @@ def iostatRRD(rrdfile=None):
                  ]
 
     rrdtool.create(str(rrdfile), '--start', '0',
-                             '--step', '300',
+                                 '--step', '300',
                     data_sources,
                     'RRA:AVERAGE:0.5:1:360',
                     'RRA:AVERAGE:0.5:12:1008',
                     'RRA:AVERAGE:0.5:288:2016' )
     return True
 
+def sbmRRD(rrdfile=None):
+    #name = 'sbm'
+    #cmdline = 'rrdtool create ' + rrdfile
+    #cmdline += ' --start 0 --step 300 '
+    #cmdline += ' DS:%s:GAUGE:600:0:U ' % name
+    #cmdline += ' RRA:AVERAGE:0.5:1:360 '
+    #cmdline += ' RRA:AVERAGE:0.5:10:1008 '
+    #if debug: print "cmdline: " + cmdline
+    #os.system(cmdline)
 
+    data_sources=[ 'DS:sbm:GAUGE:600:U:U'
+                 ]
+
+    rrdtool.create(str(rrdfile), '--start', '0',
+                                 '--step', '300',
+                    data_sources,
+                    'RRA:AVERAGE:0.5:1:360',
+                    'RRA:AVERAGE:0.5:12:1008',
+                    'RRA:AVERAGE:0.5:288:2016' )
+    return True
+
+#Note: A ds-name must be 1 to 19 characters [a-zA-Z0-9_]
+def mysqlRRD(rrdfile=None):
+    #__name__ = 'mysql'
+    #print "running rrdtool create"
+    #cmdline = 'rrdtool create ' + rrdfile
+    #cmdline += ' --start 0 --step 300 '
+    #cmdline += ' DS:AbortedClients:GAUGE:600:U:U '
+    #cmdline += ' DS:AbortedConnects:GAUGE:600:U:U '
+    #cmdline += ' DS:AccessDeniedErrors:GAUGE:600:U:U '
+    #cmdline += ' DS:BytesReceived:GAUGE:600:U:U '
+    #cmdline += ' DS:BytesSent:GAUGE:600:U:U '
+    #cmdline += ' DS:Connections:GAUGE:600:U:U '
+    #cmdline += ' DS:CreatedTMPFiles:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoBufPoolPgsData:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoBufPoolBytsData:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoBufPoolBytsDrty:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoBufPoolPgsFlshd:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoBufPoolPgsFree:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoBufPoolPgsTotal:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoBufPoolReads:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoDataPendFsyncs:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoDataPendReads:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoDataPendWrites:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoDataReads:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoDataWrites:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoDblWrites:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoRowLockCurrWait:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoRowLockTime:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoRowLockTimeAvg:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoRowLockTimeMax:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoNumOpenFiles:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoRowLockWaits:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoRowsRead:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoRowsUpdated:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoRowsDeleted:GAUGE:600:U:U '
+    #cmdline += ' DS:InnoRowsInserted:GAUGE:600:U:U '
+    #cmdline += ' DS:MaxUsedConnections:GAUGE:600:U:U '
+    #cmdline += ' DS:MemoryUsed:GAUGE:600:U:U '
+    #cmdline += ' DS:OpenFiles:GAUGE:600:U:U '
+    #cmdline += ' DS:OpenTables:GAUGE:600:U:U '
+    #cmdline += ' DS:OpenedFiles:GAUGE:600:U:U '
+    #cmdline += ' DS:Opene_tables:GAUGE:600:U:U '
+    #cmdline += ' DS:QcacheHits:GAUGE:600:U:U '
+    #cmdline += ' DS:Queries:GAUGE:600:U:U '
+    #cmdline += ' DS:Questions:GAUGE:600:U:U '
+    #cmdline += ' DS:SlaveConnections:GAUGE:600:U:U '
+    #cmdline += ' DS:SlavesConnected:GAUGE:600:U:U '
+    #cmdline += ' DS:SlowQueries:GAUGE:600:U:U '
+    #cmdline += ' DS:ThreadsConnected:GAUGE:600:U:U '
+    #cmdline += ' DS:ThreadsRunning:GAUGE:600:U:U '
+    #cmdline += ' DS:Uptime:GAUGE:600:U:U '
+    #cmdline += ' RRA:AVERAGE:0.5:1:360 '
+    #cmdline += ' RRA:AVERAGE:0.5:12:1008 '
+    #cmdline += ' RRA:AVERAGE:0.5:288:2016 '
+    #if debug: print "cmdline: " + cmdline
+    #os.system(cmdline)
+
+    data_sources=[ 'DS:AbortedClients:GAUGE:600:U:U',
+                   'DS:AbortedConnects:GAUGE:600:U:U',
+                   'DS:AccessDeniedErrors:GAUGE:600:U:U',
+                   'DS:BytesReceived:GAUGE:600:U:U',
+                   'DS:BytesSent:GAUGE:600:U:U',
+                   'DS:Connections:GAUGE:600:U:U',
+                   'DS:CreatedTMPFiles:GAUGE:600:U:U',
+                   'DS:InnoBufPoolPgsData:GAUGE:600:U:U',
+                   'DS:InnoBufPoolBytsData:GAUGE:600:U:U',
+                   'DS:InnoBufPoolBytsDrty:GAUGE:600:U:U',
+                   'DS:InnoBufPoolPgsFlshd:GAUGE:600:U:U',
+                   'DS:InnoBufPoolPgsFree:GAUGE:600:U:U',
+                   'DS:InnoBufPoolPgsTotal:GAUGE:600:U:U',
+                   'DS:InnoBufPoolReads:GAUGE:600:U:U',
+                   'DS:InnoDataPendFsyncs:GAUGE:600:U:U',
+                   'DS:InnoDataPendReads:GAUGE:600:U:U',
+                   'DS:InnoDataPendWrites:GAUGE:600:U:U',
+                   'DS:InnoDataReads:GAUGE:600:U:U',
+                   'DS:InnoDataWrites:GAUGE:600:U:U',
+                   'DS:InnoDblWrites:GAUGE:600:U:U',
+                   'DS:InnoRowLockCurrWait:GAUGE:600:U:U',
+                   'DS:InnoRowLockTime:GAUGE:600:U:U',
+                   'DS:InnoRowLockTimeAvg:GAUGE:600:U:U',
+                   'DS:InnoRowLockTimeMax:GAUGE:600:U:U',
+                   'DS:InnoNumOpenFiles:GAUGE:600:U:U',
+                   'DS:InnoRowLockWaits:GAUGE:600:U:U',
+                   'DS:InnoRowsRead:GAUGE:600:U:U',
+                   'DS:InnoRowsUpdated:GAUGE:600:U:U',
+                   'DS:InnoRowsDeleted:GAUGE:600:U:U',
+                   'DS:InnoRowsInserted:GAUGE:600:U:U',
+                   'DS:MaxUsedConnections:GAUGE:600:U:U',
+                   'DS:MemoryUsed:GAUGE:600:U:U',
+                   'DS:OpenFiles:GAUGE:600:U:U',
+                   'DS:OpenTables:GAUGE:600:U:U',
+                   'DS:OpenedFiles:GAUGE:600:U:U',
+                   'DS:Opene_tables:GAUGE:600:U:U',
+                   'DS:QcacheHits:GAUGE:600:U:U',
+                   'DS:Queries:GAUGE:600:U:U',
+                   'DS:Questions:GAUGE:600:U:U',
+                   'DS:SlaveConnections:GAUGE:600:U:U',
+                   'DS:SlavesConnected:GAUGE:600:U:U',
+                   'DS:SlowQueries:GAUGE:600:U:U',
+                   'DS:ThreadsConnected:GAUGE:600:U:U',
+                   'DS:ThreadsRunning:GAUGE:600:U:U',
+                   'DS:Uptime:GAUGE:600:U:U'
+                 ]
+
+    rrdtool.create(str(rrdfile), '--start', '0',
+                                 '--step', '300',
+                    data_sources,
+                    'RRA:AVERAGE:0.5:1:360',
+                    'RRA:AVERAGE:0.5:12:1008',
+                    'RRA:AVERAGE:0.5:288:2016' )
+    return True
 
 
 if __name__ == '__main__':

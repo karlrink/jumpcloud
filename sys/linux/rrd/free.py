@@ -19,12 +19,19 @@ def get_free():
     odict = {}
     count = 0
     for line in multilines:
-       count += 1
-       #print(str(count) + ': ' + line)
-       odict[count] = line
+        if 'Mem:' in line:
+            #print(line)
+            free_mem_line = line
+        if 'Swap:' in line:
+            #print(line)
+            free_swap_line = line
 
-    free_mem_line = odict[2]
-    free_swap_line = odict[3]
+        #count += 1
+        #print(str(count) + ': ' + line)
+        #odict[count] = line
+       
+    #free_mem_line = odict[2]
+    #free_swap_line = odict[3]
     #print 'free_mem is: ' + free_mem_line
 
     mem_total = free_mem_line.split()[1]
