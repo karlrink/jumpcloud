@@ -2,7 +2,7 @@
 
 url = 'https://monitor.nationsinfocorp.com:443/collector'
 
-__version__ = 'mac.001'
+__version__ = 'mac.001.a1'
 
 import json
 import os
@@ -44,8 +44,8 @@ def collector(system_id):
 
     #from rrd import uptime
     #rrd_uptime = uptime.get_uptime()
-    #rrd_uptime = get_uptime()
-    #rrdList.append(rrd_uptime)
+    rrd_uptime = get_uptime()
+    rrdList.append(rrd_uptime)
 
     #from rrd import df
     #rrd_df = df.get_df()
@@ -261,35 +261,51 @@ def get_uptime():
        odict[count] = line
 
     ##########################################################
-    # uptime
+    # uptime (linux)
     # 21:46:27 up 1 day, 20:18,  2 users,  load average: 0.00, 0.00, 0.00
     # 21:49:47 up 0 min,  1 user,  load average: 0.21, 0.07, 0.03
     # uptime_line
     # { "rrd": "uptime", "val": "N:1:5:0.82:0.77:0.74" }
+    #
+    # uptime (mac)
+    # 21:57  up 34 days, 23:46, 7 users, load averages: 1.91 2.20 2.25
+    # 22:00  up 1 min, 2 users, load averages: 14.23 3.65 1.33
+
 
     uptime_line = odict[1]
     uptime_vals = uptime_line.split(",")
 
-    if len(uptime_vals) == 6:
+    if len(uptime_vals) == 4:
         #if _print: print('six items')
         offset = 1
-    elif len(uptime_vals) == 5:
+    elif len(uptime_vals) == 3:
         #if _print: print('five items')
         offset = 0
     else:
         offset = 0
 
+    #uptime_time_line = uptime_vals[0]
+    #if len(uptime_vals) == 6:
+    #    uptime_day = uptime_time_line.split()[2]
+    #else:
+    #    uptime_day = 0
+
     uptime_time_line = uptime_vals[0]
-    if len(uptime_vals) == 6:
-        uptime_day = uptime_time_line.split()[2]
-    else:
-        uptime_day = 0
+
     uptime_users_line = uptime_vals[1 + offset]
     uptime_users = uptime_users_line.split()[0]
+
     uptime_1_line = uptime_vals[2 + offset]
+
+    print(str(uptime_1_line))
+    print('EXIT.EXIT')
+    sys.exit()
+
     uptime_1 = uptime_1_line.split(":")[1]
-    uptime_5 = uptime_vals[3 + offset]
-    uptime_15 = uptime_vals[4 + offset]
+    uptime_5 = uptime_1_line.split(":")[2]
+    uptime_15 = uptime_1_line.split(":")[3]
+    #uptime_5 = uptime_vals[3 + offset]
+    #uptime_15 = uptime_vals[4 + offset]
 
     uptime_rrdupdate = 'N:' + str(uptime_day)
     uptime_rrdupdate += ':' + uptime_users.strip() + ':' + uptime_1.strip()
