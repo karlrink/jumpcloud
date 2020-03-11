@@ -98,6 +98,15 @@ def post(system_id, json_data):
         #print('HTTP Post error: ' + str(e))
         return str(e)
 
+def check_pid(pid):        
+    """ Check For the existence of a unix pid. """
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    else:
+        return True
+
 def daemonize():
     import time
     import signal
