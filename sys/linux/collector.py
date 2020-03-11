@@ -2,7 +2,7 @@
 
 url = 'https://monitor.nationsinfocorp.com:443/collector'
 
-__version__ = '001.a3'
+__version__ = '002'
 
 import json
 import os
@@ -100,19 +100,28 @@ def post(system_id, json_data):
 
 def daemonize():
     import time
+    import signal
     pidfile = '/var/run/collector.pid'
     if os.path.isfile(pidfile):
         with open(pidfile, 'r') as pidhandle:
             pid = pidhandle.read()
-        if os.path.isdir('/proc/' + str(pid)):
+        if len(pid) == 0:
+            print('Invalid ' + str(pidfile))
+            sys.exit(1)
+        if check_pid(int(pid)) is True:
             print('Already running pid: ' + str(pid))
             sys.exit(1)
     fpid = os.fork()
     if fpid != 0:
-        p = open(pidfile, 'w+')
-        p.write(str(fpid))
-        p.close()
+        try:
+            p = open(pidfile, 'w+')
+            p.write(str(fpid))
+            p.close()
+        except IOError as e:
+            print(str(e))
+            os.kill(fpid, signal.SIGSTOP)
         sys.exit(0)
+
     system_id = get_system_id()
     while True:
         json_data = collector(system_id)
