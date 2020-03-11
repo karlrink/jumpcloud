@@ -8,7 +8,7 @@ import re
 
 def get_ps():
 
-    collect="ps -f"
+    collect="ps -ef"
     p = subprocess.Popen(collect, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     output, err = p.communicate()
     exit_code = p.wait()
