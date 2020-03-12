@@ -57,11 +57,21 @@ def post_request(system_id):
 
     jdata = request.get_json()
 
-    rrdList = jdata['rrdata']
+    #rrdList = jdata['rrdata']
     #print(type(rrdList))
     #for rr in rrdList:
     #    print(rr)
     #    print(type(rr))
+    rrdList = jdata.get('rrdata', None)
+
+    #alert = jdata['alert']
+    alert = jdata.get('alert', None)
+    if alert:
+        receivers = list([config.ses['smtp_to']])
+        subject = 'Alert: system ' + str(system_id) + ' has encountered an error'
+        message = str(json.dumps(alert, indent=4))
+        send_ses_email(receivers, subject, message)
+        #print(message)
 
     if len(rrdList) == 0:
         return jsonify('{rrd:False}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
@@ -138,7 +148,7 @@ def post_request(system_id):
 
 
 def send_ses_email(receivers, subject, message):
-    import smtplib, ssl
+    import smtplib
     sender_email = config.ses['smtp_from']
     smtp_server  = config.ses['smtp_host']
     port         = config.ses['smtp_port']
@@ -150,15 +160,29 @@ def send_ses_email(receivers, subject, message):
     header += ("Subject: %s\r\n\r\n" % (subject))
     msg = header + message
 
-    context = ssl.create_default_context()
-    with smtplib.SMTP(smtp_server, port) as server:
+    try:
+        server = smtplib.SMTP(smtp_server, port)
         server.ehlo()
-        server.starttls(context=context)
-        server.ehlo()
+        server.starttls()
         server.login(smtp_user, smtp_pass)
         server.sendmail(sender_email, receivers, msg)
-    print('emailto: ' + str(receivers))
+    except Exception as e:
+        #print('smtplib.SMTP.Error ' + str(e))
+        app.logger.info('smtplib.SMTP.Error ' + str(e))
+        return False
 
+    return True
+
+    #python3
+    #context = ssl.create_default_context()
+    #with smtplib.SMTP(smtp_server, port) as server:
+    #    server.ehlo()
+    #    server.starttls(context=context)
+    #    server.ehlo()
+    #    server.login(smtp_user, smtp_pass)
+    #    server.sendmail(sender_email, receivers, msg)
+    #with smtplib.SMTP(smtp_server, port) as server:
+    #AttributeError: SMTP instance has no attribute '__exit__'
 
 def memRRD(rrdfile=None):
 # free -m

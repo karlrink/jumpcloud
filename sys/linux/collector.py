@@ -2,7 +2,7 @@
 
 url = 'https://monitor.nationsinfocorp.com:443/collector'
 
-__version__ = '002'
+__version__ = '003.alert'
 
 import json
 import os
@@ -26,6 +26,7 @@ def get_system_id():
 
 def collector(system_id):
 
+    alert_data = None
     rrdList = []
 
     #from proc import meminfo
@@ -72,15 +73,20 @@ def collector(system_id):
     mysqlSocket = '/var/run/mysqld/mysqld.sock'
     if os.path.isfile(dbconf):
         if os.path.exists(mysqlSocket):
-            mysql_json_data, sbm_json_data = get_mysql(dbconf, mysqlSocket)
-            if mysql_json_data:
-                rrdList.append(json.loads(mysql_json_data))
-            if sbm_json_data:
-                rrdList.append(json.loads(sbm_json_data))
-       
+            mysql_data, sbm_data, alert_data = get_mysql(dbconf, mysqlSocket)
+            if mysql_data:
+                rrdList.append(json.loads(mysql_data))
+            if sbm_data:
+                rrdList.append(json.loads(sbm_data))
+    
+    #alert_data = { 'Error': 'yes', 'Help': 'Please'}
+
     json_data  = '{ "system_id": "' + str(system_id) + '",'
     json_data += '"meminfo": ' + str(json.dumps(proc_meminfo)) + ','
     json_data += '"rrdata": ' + str(json.dumps(rrdList))
+    if alert_data:
+        #print(alert_data)
+        json_data += ',"alert": ' + str(json.dumps(alert_data))
     json_data += '}'
     return json.loads(json_data)
 
@@ -497,7 +503,7 @@ def get_mysql(dbconf, mysqlSocket):
     #dbconf = '/etc/db.conf'
     #mysqlSocket = '/var/run/mysqld/mysqld.sock'
 
-    mysql_json_data = sbm_json_data = ''
+    mysql_data = sbm_data = alert_data = ''
 
     try:
       import mysql.connector
@@ -822,7 +828,7 @@ def get_mysql(dbconf, mysqlSocket):
     mysql_rrdupdate +=  ':' + Threads_running
     mysql_rrdupdate +=  ':' + Uptime
 
-    mysql_json_data = '     {"rrd":"%s","val":"%s"}' % ('mysql', mysql_rrdupdate)
+    mysql_data = '     {"rrd":"%s","val":"%s"}' % ('mysql', mysql_rrdupdate)
 
     #collect sbm....
     slaveHost = False
@@ -856,21 +862,24 @@ def get_mysql(dbconf, mysqlSocket):
         if str(show_slave_status['Slave_SQL_Running']):
             Slave_SQL_Running = str(show_slave_status['Slave_SQL_Running'])
 
+        #Seconds_Behind_Master = 'NULL'
         if Seconds_Behind_Master == 'NULL' or Seconds_Behind_Master == 'None':
             if Slave_IO_Running == 'Preparing':
-                sbm_json_data = ''
+                sbm_data = ''
             else:
-                msg =  'Last_SQL_Error ' + str(Last_SQL_Error) + '\n'
-                msg += 'Last_SQL_Errno ' + str(Last_SQL_Errno) + '\n'
-                msg += 'Last_IO_Error ' + str(Last_IO_Error) + '\n'
-                msg += 'Last_IO_Errno ' + str(Last_IO_Errno) + '\n'
-                msg += 'Slave_IO_Running ' + str(Slave_IO_Running) + '\n'
-                msg += 'Slave_SQL_Running ' + str(Slave_SQL_Running) + '\n'
-                msg += ''
+                alert_data = { 'Seconds_Behind_Master': str('NULL'),
+                               'Last_SQL_Error': str(Last_SQL_Error),
+                               'Last_SQL_Errno': str(Last_SQL_Errno),
+                               'Last_IO_Error': str(Last_IO_Error),
+                               'Last_IO_Errno': str(Last_IO_Errno),
+                               'Slave_IO_Running': str(Slave_IO_Running),
+                               'Slave_SQL_Running': str(Slave_SQL_Running),
+                             }
+                #print(alert_data)
         else:
-            sbm_json_data = '     {"rrd":"sbm","val":"N:%s"} \n' % (Seconds_Behind_Master)
+            sbm_data = '{"rrd":"sbm","val":"N:%s"}' % (Seconds_Behind_Master)
 
-    return (mysql_json_data, sbm_json_data)
+    return (mysql_data, sbm_data, alert_data)
 
 if __name__ == '__main__':
     if sys.argv[1:]:
@@ -882,6 +891,5 @@ if __name__ == '__main__':
     print(json.dumps(json_data, sort_keys=True, indent=4))
     response = post(system_id, json.dumps(json_data))
     print(response)
-
 
 
