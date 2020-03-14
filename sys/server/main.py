@@ -1,5 +1,5 @@
 
-__version__ = '001.a3'
+__version__ = '001.b1'
 
 from flask import Flask
 from flask import request
@@ -131,7 +131,10 @@ def post_request(system_id):
 
 
                 if os.path.isfile(rrdfile):
-                    rrdtool.update(str(rrdfile), str(val))
+                    try:
+                        rrdtool.update(str(rrdfile), str(val))
+                    except Exception as e:
+                        app.logger.debug(str(e))
                 else:
                     app.logger.debug('missing ' + rrdfile)
 

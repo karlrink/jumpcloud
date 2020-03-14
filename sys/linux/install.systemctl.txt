@@ -25,8 +25,13 @@ WantedBy=multi-user.target
 
 EOE
 
+/bin/systemctl daemon-reload
+
+pid=$(ps -ef |grep collector | grep -v grep | awk '{print $2}')
+kill $pid >/dev/null 2>&1
+
 /bin/systemctl enable collector
-/bin/systemctl start collector
+/bin/systemctl restart collector
 
 else
   echo "no /bin/systemctl"
