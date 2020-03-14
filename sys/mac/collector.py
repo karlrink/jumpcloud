@@ -28,7 +28,7 @@ def get_system_id():
     return str(system_id)
 
 def collector(system_id):
-
+    alert_data = None
     rrdList = []
 
     #from proc import meminfo
@@ -44,8 +44,8 @@ def collector(system_id):
 
     #from rrd import uptime
     #rrd_uptime = uptime.get_uptime()
-    rrd_uptime = get_uptime()
-    rrdList.append(rrd_uptime)
+#    rrd_uptime = get_uptime()
+#    rrdList.append(rrd_uptime)
 
     #from rrd import df
     #rrd_df = df.get_df()
@@ -75,7 +75,12 @@ def collector(system_id):
 
     json_data  = '{ "system_id": "' + str(system_id) + '",'
     #json_data += '"meminfo": ' + str(json.dumps(proc_meminfo)) + ','
-    json_data += '"rrdata": ' + str(json.dumps(rrdList)) 
+    json_data += '"rrdata": ' + str(json.dumps(rrdList))
+
+    #alert_data = { 'Error': 'yes', 'Help': 'Please'}
+    if alert_data:
+        json_data += ',"alert": ' + str(json.dumps(alert_data))
+
     json_data += '}'
     return json.loads(json_data)
 
@@ -128,7 +133,7 @@ def daemonize():
     system_id = get_system_id()
     while True:
         json_data = collector(system_id)
-        #response = post(system_id, json.dumps(json_data))
+        response = post(system_id, json.dumps(json_data))
         time.sleep(300)
     return True
 
@@ -538,7 +543,7 @@ if __name__ == '__main__':
     system_id = get_system_id()
     json_data = collector(system_id)
     print(json.dumps(json_data, sort_keys=True, indent=4))
-    #response = post(system_id, json.dumps(json_data))
-    #print(response)
+    response = post(system_id, json.dumps(json_data))
+    print(response)
 
 

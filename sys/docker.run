@@ -1,6 +1,7 @@
 
 #docker run -it -v "$(pwd)":/app ubuntu:16.04 bash
 docker run -id -v "$(pwd)":/app ubuntu:16.04
+docker run -itd --privileged -v "$(pwd)":/app centos:latest /usr/sbin/init
 
 apt-get update
 apt-get install -y python
