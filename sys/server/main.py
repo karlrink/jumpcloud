@@ -1,5 +1,5 @@
 
-__version__ = '001.b1'
+__version__ = '001.b2'
 
 from flask import Flask
 from flask import request
@@ -73,8 +73,10 @@ def post_request(system_id):
         send_ses_email(receivers, subject, message)
         #print(message)
 
-    if len(rrdList) == 0:
-        return jsonify('{rrd:False}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+    if not rrdList:
+        return jsonify('{rrd:None}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+    elif len(rrdList) == 0:
+        return jsonify('{rrd:Zero}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
     else:
         for rr in rrdList:
             #rrd = rr['rrd']
