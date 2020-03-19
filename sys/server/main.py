@@ -178,8 +178,8 @@ def post_request(system_id):
             acknowledge_link= config.param['url'] + '/collector?alert_id=' + str(alert_hash)
             message += '\n' + str(acknowledge_link)
 
-            #send_ses_email(receivers, subject, message)
-            print('SEND_SES_EMAIL DISABLED. NO EMAIL SENT')
+            send_ses_email(receivers, subject, message)
+            #print('SEND_SES_EMAIL DISABLED. NO EMAIL SENT')
             return_data = '{"alert":"sent","alert_id":"' + str(acknowledge_link) +  '"}'
 
     if not rrdList:
