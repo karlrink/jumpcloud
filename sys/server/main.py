@@ -1,5 +1,5 @@
 
-__version__ = '002.0'
+__version__ = '002.1'
 
 from flask import Flask
 from flask import request
@@ -74,23 +74,23 @@ def get_request(alert_id):
                 jdata = json.load(jsonfile)
         except Exception as e:
             print(str(e))
-            return jsonify('{"alert":"error"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+            return jsonify({'alert':'error'}), 200, {'Content-Type': 'application/json; charset=utf-8'}
 
         acknowledged = jdata.get('acknowledged', None)
 
         if acknowledged:
-            return jsonify('{"alert":"acknowledged"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+            return jsonify({'alert':'acknowledged'}), 200, {'Content-Type': 'application/json; charset=utf-8'}
         else:
             jdata['acknowledged'] = 'True'
             try:
                 with open(alert_file, 'w+') as jsonfile:
                     json.dump(jdata, jsonfile)
             except Exception as e:
-                return jsonify('{"alert":"error"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+                return jsonify({'alert':'error'}), 200, {'Content-Type': 'application/json; charset=utf-8'}
 
-            return jsonify('{"alert":"updated"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+            return jsonify({'alert':'updated'}), 200, {'Content-Type': 'application/json; charset=utf-8'}
 
-        return jsonify('{"alert":"true"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+        return jsonify({'alert':'true'}), 200, {'Content-Type': 'application/json; charset=utf-8'}
     else:
         #return jsonify('{"get":"none"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
         return jsonify(''), 200, {'Content-Type': 'application/json; charset=utf-8'}
@@ -99,7 +99,7 @@ def get_request(alert_id):
 
 def post_request(system_id):
 
-    return_data = '{"post":"OK"}'
+    return_data = {'post':'ok'}
 
     jdata = request.get_json()
 
@@ -149,12 +149,13 @@ def post_request(system_id):
                 print(str(e))
                 app.logger.debug('ValueError with json ' + str(e))
                 send_alert = False
-                return_data = '{"alert":"Fail","Error":"ValueError with json"}'
+                return_data = {'alert':'Fail','Error':'ValueError with json'}
             except Exception as e:
                 print(str(e))
                 app.logger.debug('Error ' + str(e))
                 send_alert = False
-                return_data = '{"alert":"Fail","Error":"' + str(e) + '"}'
+                #return_data = {'alert':'Fail','Error': str(e) } #watch-out
+                return_data = {'alert':'Fail','Error':'True' }
         else:
             with open(alert_file, 'w+') as filehandle:
                 filehandle.write('{"system_id":"' + str(system_id) + '", \n')
@@ -165,7 +166,7 @@ def post_request(system_id):
         if acknowledged:
             #print('acknowledged')
             app.logger.debug('acknowledged')
-            return_data = '{"alert":"acknowledged"}'
+            return_data = {'alert':'acknowledged'}
             send_alert = False
 
         if send_alert:
@@ -180,12 +181,13 @@ def post_request(system_id):
 
             send_ses_email(receivers, subject, message)
             #print('SEND_SES_EMAIL DISABLED. NO EMAIL SENT')
-            return_data = '{"alert":"sent","alert_id":"' + str(acknowledge_link) +  '"}'
+            #return_data = '{"alert":"sent","alert_id":"' + str(acknowledge_link) +  '"}'
+            return_data = {'alert':'sent','alert_id': str(acknowledge_link) }
 
     if not rrdList:
-        return jsonify('{"rrd":"None"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+        return jsonify({'rrd':'None'}), 200, {'Content-Type': 'application/json; charset=utf-8'}
     elif len(rrdList) == 0:
-        return jsonify('{"rrd":"Zero"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+        return jsonify({'rrd':'Zero'}), 200, {'Content-Type': 'application/json; charset=utf-8'}
     else:
         for rr in rrdList:
             #rrd = rr['rrd']

@@ -77,7 +77,7 @@ def collector(system_id):
     #json_data += '"meminfo": ' + str(json.dumps(proc_meminfo)) + ','
     json_data += '"rrdata": ' + str(json.dumps(rrdList))
 
-    #alert_data = { 'Error': 'yes', 'Help': 'Please'}
+    #alert_data = { 'Error': 'False', 'Test': 'True'}
     if alert_data:
         json_data += ',"alert": ' + str(json.dumps(alert_data))
 
@@ -544,6 +544,10 @@ if __name__ == '__main__':
     json_data = collector(system_id)
     print(json.dumps(json_data, sort_keys=True, indent=4))
     response = post(system_id, json.dumps(json_data))
-    print(response)
+    try:
+        print(json.loads(response))
+    except ValueError as e:
+        print(response)
+
 
 
