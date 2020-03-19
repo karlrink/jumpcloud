@@ -2,7 +2,7 @@
 
 url = 'https://monitor.nationsinfocorp.com:443/collector'
 
-__version__ = '003.alert'
+__version__ = '004.0'
 
 import json
 import os
@@ -890,6 +890,15 @@ if __name__ == '__main__':
     json_data = collector(system_id)
     print(json.dumps(json_data, sort_keys=True, indent=4))
     response = post(system_id, json.dumps(json_data))
-    print(response)
+    #if response > 0:
+    #    print(json.loads(response))
+    #else:
+    #    print(response)
+    try:
+        print(json.loads(response))
+    except ValueError as e:
+        print(response)
+
+
 
 

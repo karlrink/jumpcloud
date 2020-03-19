@@ -93,7 +93,7 @@ b'{"op": "add", "type": "system", "id": "5e42f4885826553ee6383aa4"}'
 
 /opt/jc/jcagent.conf
 ```
-{"agentInstallDir":"/opt/jc/","agentLogDir":"/var/log/jcagent.log","agentServerGoPort":443,"agentServerHost":"agent.jumpcloud.com","agentServerPort":443,"automaticServiceAccountCreation":false,"caCrt":"/opt/jc/ca.crt","certuuid":"6ca1d31c01a045175810db7ec81169fa","clientCrt":"/opt/jc/client.crt","clientKey":"/opt/jc/client.key","heartbeatInterval":60000,"ipCheckUrl":"https://kickstart.jumpcloud.com/ip","osPlugin":"agent-darwin","passwordSyncEA":true,"returnCmdOutput":false,"systemKey":"5e30c0b9890a7a4766268b59","systemToken":"XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX","tls":true,"userMgmt":{"ldap_domain":"5cdc7f3c95a60d5c14488d5f.jumpcloud.com","local_ldap_auth_dn":"5e30c0b9890a7a4766268b59","local_ldap_bind_pwd":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX","local_ldap_bind_uid":"5e30c0b9890a7a4766268b59","sshd_service":"ssh"}}
+{"agentInstallDir":"/opt/jc/","agentLogDir":"/var/log/jcagent.log","agentServerGoPort":443,"agentServerHost":"agent.jumpcloud.com","agentServerPort":443,"automaticServiceAccountCreation":false,"caCrt":"/opt/jc/ca.crt","certuuid":"6ca1d31c01a045175810db7ec81169fa","clientCrt":"/opt/jc/client.crt","clientKey":"/opt/jc/client.key","heartbeatInterval":60000,"ipCheckUrl":"https://kickstart.jumpcloud.com/ip","osPlugin":"agent-darwin","passwordSyncEA":true,"returnCmdOutput":false,"systemKey":"5e30c0b9890a7a4766268b60","systemToken":"XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX","tls":true,"userMgmt":{"ldap_domain":"5cdc7f3c95a60d5c14488d5f.jumpcloud.com","local_ldap_auth_dn":"5e30c0b9890a7a4766268b59","local_ldap_bind_pwd":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX","local_ldap_bind_uid":"5e30c0b9890a7a4766268b59","sshd_service":"ssh"}}
 ```
 
 

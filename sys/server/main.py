@@ -1,5 +1,5 @@
 
-__version__ = '001.b2'
+__version__ = '002.0'
 
 from flask import Flask
 from flask import request
@@ -7,6 +7,7 @@ from flask import jsonify
 import logging
 import json
 import os
+import hashlib
 
 import rrdtool
 
@@ -23,37 +24,82 @@ app.logger.setLevel(logging.INFO)
 datadir = '/data/rrd'
 x_api_key_file = '/data/x-api-key.txt'
 
-@app.route("/collector", methods=['POST']) #collector?system_id=5e30c0b9890a7a4766268b59
-def collector():
+@app.route("/collector", methods=['POST', 'GET']) #POST collector?system_id=5e30c0b9890a7a4766268b59
+def collector():                                  #GET  collector?alert_id=01413b9e26f16700301ad0333d470fcc27c3d768
     app.logger.debug('app.logger.debug')
 
-    headers_api_key = request.headers.getlist("x-api-key", None)
-
-    if not headers_api_key:
-        app.logger.debug('no x-api-key')
-        return jsonify('{x-api-key:None}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
-
-    api_key = ''.join(headers_api_key)
-    found_api_key = False
-    with open(x_api_key_file, 'r') as filehandle:
-        filedata = filehandle.readlines()
-        for line in filedata:
-            if api_key in line:
-                found_api_key = True
-
-    if not found_api_key:
-        return jsonify('{x-api-key:NotFound}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
-
-    system_id = request.args.get("system_id", None)
-    if not system_id:
-        return jsonify('{system_id:None}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
-
     if request.method == 'POST':
+        headers_api_key = request.headers.getlist("x-api-key", None)
+        if not headers_api_key:
+            app.logger.debug('no x-api-key')
+            return jsonify('{"x-api-key":"None"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+        api_key = ''.join(headers_api_key)
+        found_api_key = False
+        with open(x_api_key_file, 'r') as filehandle:
+            filedata = filehandle.readlines()
+            for line in filedata:
+                if api_key in line:
+                    found_api_key = True
+
+        if not found_api_key:
+            return jsonify('{"x-api-key":"NotFound"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+        system_id = request.args.get("system_id", None)
+        if not system_id:
+            return jsonify('{"system_id":"None"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
         return post_request(system_id)
+
+    if request.method == 'GET':
+        alert_id = request.args.get("alert_id", None)
+        if not alert_id:
+            #return jsonify(''), 200, {'Content-Type': 'application/json; charset=utf-8'}
+            return jsonify('{"alert_id":"None"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+        #return get_request(acknowledge_id)
+        #try/check if alert...
+        return get_request(alert_id)
+        #return jsonify('{"alert_id":"Done"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
     else:
-        return ''
+        return jsonify(''), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+
+def get_request(alert_id):
+    alert_file = '/data/alerts/' + str(alert_id) + '.json'
+    if os.path.isfile(alert_file):
+
+        try:
+            with open(alert_file, 'r') as jsonfile:
+                jdata = json.load(jsonfile)
+        except Exception as e:
+            print(str(e))
+            return jsonify('{"alert":"error"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+        acknowledged = jdata.get('acknowledged', None)
+
+        if acknowledged:
+            return jsonify('{"alert":"acknowledged"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+        else:
+            jdata['acknowledged'] = 'True'
+            try:
+                with open(alert_file, 'w+') as jsonfile:
+                    json.dump(jdata, jsonfile)
+            except Exception as e:
+                return jsonify('{"alert":"error"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+            return jsonify('{"alert":"updated"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+        return jsonify('{"alert":"true"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+    else:
+        #return jsonify('{"get":"none"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+        return jsonify(''), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+
 
 def post_request(system_id):
+
+    return_data = '{"post":"OK"}'
 
     jdata = request.get_json()
 
@@ -67,16 +113,79 @@ def post_request(system_id):
     #alert = jdata['alert']
     alert = jdata.get('alert', None)
     if alert:
-        receivers = list([config.ses['smtp_to']])
-        subject = 'Alert: system ' + str(system_id) + ' has encountered an error'
-        message = str(json.dumps(alert, indent=4))
-        send_ses_email(receivers, subject, message)
-        #print(message)
+        acknowledged = None
+        send_alert = True
+
+        alert_hash = hashlib.sha1(str(system_id) + str(alert)).hexdigest()
+        #acknowledged = get_alert(alert_hash)
+
+        #print(str(alert_hash))
+        #print(type(alert))
+
+        alert_file = '/data/alerts/' + str(alert_hash) + '.json'
+
+        #acknowledged_alert_file = alert_file + '.acknowledged'
+        #if os.path.isfile(acknowledged_alert_file):
+        #if os.path.isfile(alert_file + '.ack'):
+        #    print('yes.alert_file ' + alert_file)
+        #    app.logger.debug('yes.alert_file ' + alert_file)
+        #    return_data = '{"alert":"acknowledged"}'
+        #else:
+        #    if not os.path.isfile(alert_file):
+        #        with open(alert_file, 'w+') as filehandle:
+        #            #print(type(alert))
+        #            filehandle.write('{"system_id":"' + str(system_id) + '", \n')
+        #            filehandle.write(' "alert": \n')
+        #            filehandle.write(json.dumps(alert, indent=4))
+        #            filehandle.write('}')
+
+        if os.path.isfile(alert_file):
+            try:
+                with open(alert_file, 'r') as jsonfile:
+                    alert_jdata = json.load(jsonfile)
+                    #print(alert_jdata.get('acknowledged', False))
+                    acknowledged = alert_jdata.get('acknowledged', None)
+            except ValueError as e:
+                print(str(e))
+                app.logger.debug('ValueError with json ' + str(e))
+                send_alert = False
+                return_data = '{"alert":"Fail","Error":"ValueError with json"}'
+            except Exception as e:
+                print(str(e))
+                app.logger.debug('Error ' + str(e))
+                send_alert = False
+                return_data = '{"alert":"Fail","Error":"' + str(e) + '"}'
+        else:
+            with open(alert_file, 'w+') as filehandle:
+                filehandle.write('{"system_id":"' + str(system_id) + '", \n')
+                filehandle.write(' "alert": \n')
+                filehandle.write(json.dumps(alert, indent=4))
+                filehandle.write('}\n')
+
+        if acknowledged:
+            #print('acknowledged')
+            app.logger.debug('acknowledged')
+            return_data = '{"alert":"acknowledged"}'
+            send_alert = False
+
+        if send_alert:
+
+            receivers = list([config.param['smtp_to']])
+            subject = 'Alert: system ' + str(system_id) + ' has encountered an error'
+            message = str(json.dumps(alert, indent=4))
+
+            #acknowledge_link='https://monitor.nationsinfocorp.com/collector?acknowledge=' + str(alert_hash)
+            acknowledge_link= config.param['url'] + '/collector?alert_id=' + str(alert_hash)
+            message += '\n' + str(acknowledge_link)
+
+            #send_ses_email(receivers, subject, message)
+            print('SEND_SES_EMAIL DISABLED. NO EMAIL SENT')
+            return_data = '{"alert":"sent","alert_id":"' + str(acknowledge_link) +  '"}'
 
     if not rrdList:
-        return jsonify('{rrd:None}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+        return jsonify('{"rrd":"None"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
     elif len(rrdList) == 0:
-        return jsonify('{rrd:Zero}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+        return jsonify('{"rrd":"Zero"}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
     else:
         for rr in rrdList:
             #rrd = rr['rrd']
@@ -149,16 +258,16 @@ def post_request(system_id):
     with open(system_id_file, 'w+') as jsonfile:
         json.dump(jdata, jsonfile)
 
-    return jsonify('{post:OK}'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+    return jsonify(return_data), 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 
 def send_ses_email(receivers, subject, message):
     import smtplib
-    sender_email = config.ses['smtp_from']
-    smtp_server  = config.ses['smtp_host']
-    port         = config.ses['smtp_port']
-    smtp_user    = config.ses['smtp_user']
-    smtp_pass    = config.ses['smtp_pass']
+    sender_email = config.param['smtp_from']
+    smtp_server  = config.param['smtp_host']
+    port         = config.param['smtp_port']
+    smtp_user    = config.param['smtp_user']
+    smtp_pass    = config.param['smtp_pass']
 
     header =  ("From: %s\r\nTo: %s\r\n"
             % (sender_email, ",".join(receivers)))
