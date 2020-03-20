@@ -2,7 +2,7 @@
 
 url = 'https://monitor.nationsinfocorp.com:443/collector'
 
-__version__ = '004.0'
+__version__ = '005'
 
 import json
 import os
@@ -26,7 +26,7 @@ def get_system_id():
 
 def collector(system_id):
 
-    alert_data = None
+    alert_data = {}
     rrdList = []
 
     #from proc import meminfo
@@ -52,8 +52,10 @@ def collector(system_id):
 
     #from rrd import ps
     #rrd_ps = ps.get_ps()
-    rrd_ps = get_ps()
+    rrd_ps, alert_ps = get_ps()
     rrdList.append(rrd_ps)
+    if alert_ps:
+        alert_data.update(alert_ps)
 
     #mpstat and iostat , rely on sysstat package
 
@@ -73,11 +75,13 @@ def collector(system_id):
     mysqlSocket = '/var/run/mysqld/mysqld.sock'
     if os.path.isfile(dbconf):
         if os.path.exists(mysqlSocket):
-            mysql_data, sbm_data, alert_data = get_mysql(dbconf, mysqlSocket)
+            mysql_data, sbm_data, mysql_alert = get_mysql(dbconf, mysqlSocket)
             if mysql_data:
                 rrdList.append(json.loads(mysql_data))
             if sbm_data:
                 rrdList.append(json.loads(sbm_data))
+            if mysql_alert:
+                alert_data.update(mysql_alert)
     
     #alert_data = { 'Error': 'yes', 'Help': 'Please'}
 
@@ -371,6 +375,7 @@ def get_df(disk='/'):
     return json.loads(json_data)
 
 def get_ps():
+    alert_data = {}
     collect="ps -ef"
     p = subprocess.Popen(collect, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     output, err = p.communicate()
@@ -395,11 +400,14 @@ def get_ps():
         
         if re.search(r'<defunct>', line):
             number_of_defunct += 1
+            alert_data[number_of_defunct] = str(line)
+
+    #alert_data[1] = '503 19591 19580   0  6:57PM ttys010    0:00.00 defunct'
 
     ps_rrdupdate = 'N:' + str(number_of_procs)
     ps_rrdupdate += ':' + str(number_of_defunct)
     json_data = '{"rrd":"%s","val":"%s"}' % ('ps', ps_rrdupdate)
-    return json.loads(json_data)
+    return json.loads(json_data), alert_data
 
 def get_mpstat():
     collect="mpstat"
@@ -882,14 +890,24 @@ def get_mysql(dbconf, mysqlSocket):
     return (mysql_data, sbm_data, alert_data)
 
 if __name__ == '__main__':
+    post_request = True
     if sys.argv[1:]:
         if sys.argv[1] == "--daemon":
             daemonize()
+            sys.exit(0)
+        if sys.argv[1] == "--disable-post":
+            post_request = False
 
     system_id = get_system_id()
     json_data = collector(system_id)
     print(json.dumps(json_data, sort_keys=True, indent=4))
-    response = post(system_id, json.dumps(json_data))
-    print(response)
+    if post_request:
+        response = post(system_id, json.dumps(json_data))
+        try:
+            print(json.loads(response))
+        except Exception as e:
+            print(response)
+    else:
+        print("POST DISABLED")
 
 

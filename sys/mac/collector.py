@@ -544,10 +544,6 @@ if __name__ == '__main__':
     json_data = collector(system_id)
     print(json.dumps(json_data, sort_keys=True, indent=4))
     response = post(system_id, json.dumps(json_data))
-    try:
-        print(json.loads(response))
-    except ValueError as e:
-        print(response)
-
+    print(response)
 
 
