@@ -98,3 +98,9 @@ b'{"op": "add", "type": "system", "id": "5e42f4885826553ee6383aa4"}'
 
 
 
+for i in $(./jumpcloud.py list_systems | grep Windows | awk '{print $1}')
+do
+ echo $i
+ ./jumpcloud list_systeminsights_programs $i
+
+done
