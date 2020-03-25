@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = 'hypervisor.001'
+__version__ = 'hypervisor.001a'
 
 import libvirt
 #apt-get install -y python-libvirt
@@ -61,7 +61,7 @@ class ListDomainsDetailedClass(ListDomainsClass):
     def get(self):
         runningDict = {}
         uri_handle = str(self.uri) + str(self.host) + '/system'
-        print('uri_handle ' + uri_handle)
+        #print('uri_handle ' + uri_handle)
         try:
             self.conn = libvirt.openReadOnly(uri_handle)
         except libvirt.libvirtError as e:
@@ -176,27 +176,23 @@ class ListDomainsDetailedClass(ListDomainsClass):
             xml = minidom.parseString(raw_xml)
 
             diskTypes = xml.getElementsByTagName('disk')
-            print('diskTypes ' + str(diskTypes))
             diskDict = {}
-            #source = 'UnKnown'
             source = ''
-
-
-            file_device = xml.getElementsByTagName('source')
-            print(file_device)
-            source_device = '/dev/file.disk'
 
             for diskType in diskTypes:
                 diskNodes = diskType.childNodes
                 for diskNode in diskNodes:
-                    print(str(diskNode))
                     if diskNode.nodeName[0:1] != '#':
                         if diskNode.nodeName == 'source':
-                            print('source ++ ' + str(source))
                             for attr in diskNode.attributes.keys():
+                                #print('NAME ' + str(diskNode.attributes[attr].name))
+                                #print('VALUE ' + str(diskNode.attributes[attr].value))
                                 if diskNode.attributes[attr].name == 'dev':
                                     source = str(diskNode.attributes[attr].value)
-                                    print('source +++ ' + str(source))
+                                elif diskNode.attributes[attr].name == 'file':
+                                    source = str(diskNode.attributes[attr].value)
+                                else:
+                                    source = 'Unknown'
                         if diskNode.nodeName == 'target':
                             for attr in diskNode.attributes.keys():
                                 if diskNode.attributes[attr].name == 'dev':
@@ -204,8 +200,7 @@ class ListDomainsDetailedClass(ListDomainsClass):
                                     rd_req, rd_bytes, wr_req, wr_bytes, err = dom.blockStats(source)
 
                                     diskDict[target] = {
-                                      #'device': str(source),
-                                      'device': str(source_device),
+                                      'device': str(source),
                                       'read_requests_issued': str(rd_req),
                                       'bytes_read': str(rd_bytes),
                                       'write_requests_issued': str(wr_req),
@@ -213,7 +208,6 @@ class ListDomainsDetailedClass(ListDomainsClass):
                                       'number_of_errors': str(err)
                                     }
             runningStatus['disk'] = diskDict
-
 
             netDict = {}
             interfaceTypes = xml.getElementsByTagName('interface')
@@ -271,5 +265,6 @@ if __name__ == "__main__":
     host = ''
     runningDict = ListDomainsDetailedClass(uri, host).get()
     print json.dumps(runningDict, indent=2, sort_keys=True)
+
 
 
