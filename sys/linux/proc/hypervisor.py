@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = 'hypervisor.001a'
+__version__ = 'hypervisor.collector:001b'
 
 import libvirt
 #apt-get install -y python-libvirt
@@ -85,6 +85,23 @@ class ListDomainsDetailedClass(ListDomainsClass):
           'iowait': str(stats['iowait'])
         }
 
+#  "hypervisor": {
+#    "cpu": {
+#      "count": "24", 
+#      "idle": "50414176940000000", 
+#      "iowait": "558116710000000", 
+#      "kernel": "794222650000000", 
+#      "type": "x86_64", 
+#      "user": "4615971910000000"
+#    }, 
+
+        hypervisor_cpu_rrd_val = 'N:' + str(hypervisor_cpu['count'])
+        hypervisor_cpu_rrd_val += ':' + str(hypervisor_cpu['idle'])
+        hypervisor_cpu_rrd_val += ':' + str(hypervisor_cpu['iowait'])
+        hypervisor_cpu_rrd_val += ':' + str(hypervisor_cpu['kernel'])
+        hypervisor_cpu_rrd_val += ':' + str(hypervisor_cpu['user'])
+        hypervisor_cpu_rrd = {'rrd':'hypervisor.cpu', 'val': str(hypervisor_cpu_rrd_val)}
+
         memfree = self.conn.getFreeMemory()
         memfreeMB = memfree / 1024 / 1024
         memusedMB = int(hvm_mem) - int(memfreeMB)
@@ -95,6 +112,18 @@ class ListDomainsDetailedClass(ListDomainsClass):
           'free': str(memfreeMB)
         }
 
+#    "mem": {
+#      "free": "195", 
+#      "total": "32116", 
+#      "used": "31921"
+#    }, 
+
+        hypervisor_mem_rrd_val = 'N:' + str(hypervisor_mem['free'])
+        hypervisor_mem_rrd_val += ':' + str(hypervisor_mem['total'])
+        hypervisor_mem_rrd_val += ':' + str(hypervisor_mem['used'])
+        hypervisor_mem_rrd = {'rrd':'hypervisor.mem', 'val': str(hypervisor_mem_rrd_val)}
+
+
         hypervisor = {
           'type': hypervisor_type,
           'cpu': hypervisor_cpu,
@@ -103,13 +132,15 @@ class ListDomainsDetailedClass(ListDomainsClass):
 
         runningDict['hypervisor'] = hypervisor
 
+#####################################################################################################
         def domStatus(domName=None):
             runningStatus = {}
 
             dom = self.conn.lookupByName(domName)
             if dom == None:
                 print json.dumps({"Error":"Failed to find domain " + str(domName)}, indent=2)
-                sys.exit(1)
+                #sys.exit(1)
+                return False
 
             state = self.domstate(domName)
 
@@ -127,7 +158,8 @@ class ListDomainsDetailedClass(ListDomainsClass):
                 pass
             else:
                 print json.dumps({"Error":"major error getting dom.Vcpus()"}, indent=2)
-                sys.exit(1)
+                #sys.exit(1)
+                return False
 
             cpu_stats = dom.getCPUStats(True)
             cpu_time = str(cpu_stats[0]['cpu_time'])
@@ -148,7 +180,8 @@ class ListDomainsDetailedClass(ListDomainsClass):
                 pass
             else:
                 print json.dumps({"Error":"major error getting dom.maxMemory()"}, indent=2)
-                sys.exit(1)
+                #sys.exit(1)
+                return False
 
             dom_mem = {}
             mem_stats  = dom.memoryStats()
@@ -245,7 +278,9 @@ class ListDomainsDetailedClass(ListDomainsClass):
             runningStatus['net'] = netDict
 
             return runningStatus
+#####################################################################################################
 
+        rrdList = []
         domDict = {}
         domains = self.conn.listAllDomains(0)
         if len(domains) != 0:
@@ -253,7 +288,163 @@ class ListDomainsDetailedClass(ListDomainsClass):
                 status = domStatus(domain.name())
                 domDict[domain.name()] = status
 
+                if status['state'] == 'running':
+                    mem = status.get('mem', None)
+                    if mem:
+                        #mem_actual = status['mem']['XXactual']
+                        actual = status.get('mem').get('actual', 0)
+                        available = status.get('mem').get('available', 0)
+                        major_fault = status.get('mem').get('major_fault', 0)
+                        minor_fault = status.get('mem').get('minor_fault', 0)
+                        rss = status.get('mem').get('rss', 0)
+                        swap_in = status.get('mem').get('swap_in', 0)
+                        swap_out = status.get('mem').get('swap_out', 0)
+                        unused = status.get('mem').get('unused', 0)
+
+                        rrd_val = 'N:' + str(actual)
+                        rrd_val += ':' + str(available)
+                        rrd_val += ':' + str(major_fault)
+                        rrd_val += ':' + str(minor_fault)
+                        rrd_val += ':' + str(rss)
+                        rrd_val += ':' + str(swap_in)
+                        rrd_val += ':' + str(swap_out)
+                        rrd_val += ':' + str(unused)
+                        rrd = {'rrd': str(domain.name()) + '.mem', 'val': rrd_val}
+                        rrdList.append(rrd)
+
+#      "mem": {
+#        "actual": "2097152", 
+#        "available": "2044968", 
+#        "major_fault": "0", 
+#        "minor_fault": "0", 
+#        "rss": "871248", 
+#        "swap_in": "0", 
+#        "swap_out": "0", 
+#        "unused": "1930192"
+#      }, 
+
+#      "mem": {
+#        "actual": "10485760", 
+#        "rss": "10304984"
+#      }, 
+
+                    cpu = status.get('cpu', None)
+                    if cpu:
+                        count = status.get('cpu').get('count', 0)
+                        cpu_time = status.get('cpu').get('cpu_time', 0)
+                        system_time = status.get('cpu').get('system_time', 0)
+                        user_time = status.get('cpu').get('suser_time', 0)
+
+                        rrd_val = 'N:' + str(count)
+                        rrd_val += ':' + str(cpu_time)
+                        rrd_val += ':' + str(system_time)
+                        rrd_val += ':' + str(user_time)
+                        rrd = {'rrd': str(domain.name()) + '.cpu', 'val': rrd_val}
+                        rrdList.append(rrd)
+
+#      "cpu": {
+#        "count": "1", 
+#        "cpu_time": "3128286556798", 
+#        "system_time": "736360000000", 
+#        "user_time": "36310000000"
+#      }, 
+
+
+                    net = status.get('net', None)
+                    if net:
+                        for item in net:
+                            #print(item) #eth0
+                            read_bytes = status.get('net').get(item).get('read_bytes', 0)
+                            read_drops = status.get('net').get(item).get('read_drops', 0)
+                            read_errors = status.get('net').get(item).get('read_errors', 0)
+                            read_packets = status.get('net').get(item).get('read_packets', 0)
+                            write_bytes = status.get('net').get(item).get('write_bytes', 0)
+                            write_drops = status.get('net').get(item).get('write_drops', 0)
+                            write_errors = status.get('net').get(item).get('write_errors', 0)
+                            write_packets = status.get('net').get(item).get('write_packets', 0)
+
+                            rrd_val = 'N:' + str(read_bytes)
+                            rrd_val += ':' + str(read_drops)
+                            rrd_val += ':' + str(read_errors)
+                            rrd_val += ':' + str(read_packets)
+                            rrd_val += ':' + str(write_bytes)
+                            rrd_val += ':' + str(write_drops)
+                            rrd_val += ':' + str(write_errors)
+                            rrd_val += ':' + str(write_packets)
+
+                            rrd = {'rrd': str(domain.name()) + '.' + str(item), 'val': rrd_val}
+                            rrdList.append(rrd)
+
+#      "net": {
+#        "eth0": {
+#          "bridge": "br0", 
+#          "mac": "52:54:00:a2:14:5b", 
+#          "read_bytes": "74962610801", 
+#          "read_drops": "0", 
+#          "read_errors": "0", 
+#          "read_packets": "46391059", 
+#          "write_bytes": "51867066125", 
+#          "write_drops": "0", 
+#          "write_errors": "0", 
+#          "write_packets": "38797256"
+#        }
+#      }, 
+
+                      
+                    disk = status.get('disk', None)
+                    if disk:
+                        for item in disk:
+                            #print(item) #hda
+                            bytes_read = status.get('disk').get(item).get('bytes_read', 0)
+                            bytes_written = status.get('disk').get(item).get('bytes_written', 0)
+                            read_requests_issued = status.get('disk').get(item).get('read_requests_issued', 0)
+                            write_requests_issued = status.get('disk').get(item).get('write_requests_issued', 0)
+
+                            rrd_val = 'N:' + str(bytes_read)
+                            rrd_val += ':' + str(bytes_written)
+                            rrd_val += ':' + str(read_requests_issued)
+                            rrd_val += ':' + str(write_requests_issued)
+                            
+                            rrd = {'rrd': str(domain.name()) + '.' + str(item), 'val': rrd_val}
+                            rrdList.append(rrd)
+
+#      "disk": {
+#        "hda": {
+#          "bytes_read": "2884285952", 
+#          "bytes_written": "14652522496", 
+#          "device": "/data/prod-proxy/hda.qcow2", 
+#          "number_of_errors": "-1", 
+#          "read_requests_issued": "91544", 
+#          "write_requests_issued": "498427"
+#        }
+#      }, 
+      
+                            
+
+
+
         runningDict['domains'] = domDict
+
+        #rrd1 = {'rrd':'appserv-sturm.cpu', 'val': 'N:8:563909918600212:42132930000000:393180000000'}
+        #rrd2 = {'rrd':'appserv-sturm.cpu', 'val': 'N:8:563909918600212:42132930000000:393180000000'}
+        #runningDict['rrdata'] = [ rrd1, rrd2]
+
+        #hypervisor_cpu
+        #hypervisor_cpu_rrd = {'rrd':'hypervisor.cpu', 'val': 'N:' + str(hypervisor_cpu['count'])}
+
+        #runningDict['rrdata'] = [ hypervisor_cpu_rrd, hypervisor_mem_rrd, rrdList ]
+
+        #mergedList = hypervisor_cpu_rrd + hypervisor_mem_rrd + rrdList
+        #runningDict['rrdata'] = [ mergedList ]
+
+        #rrDict.extend(hypervisor_cpu_rrd)
+        #rrDict.extend(hypervisor_mem_rrd)
+        #rrDict.update(rrdList)
+
+        #runningDict['rrdata'] = [ hypervisor_cpu_rrd, hypervisor_mem_rrd, rrDict ]
+        rrdList.append(hypervisor_cpu_rrd)
+        rrdList.append(hypervisor_mem_rrd)
+        runningDict['rrdata'] =  rrdList 
 
         self.conn.close()
         return runningDict
