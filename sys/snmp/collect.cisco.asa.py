@@ -98,14 +98,16 @@ def ifRRD(rrdfile=None):
 ##################################################################
 for k,v in rrDict.items():
     #print(k,v)
-    rrdfile = '/data/rrd/' + system_id + '/if.' + str(k) +'.rrd'
+    #rrdfile = '/data/rrd/' + system_id + '/if.' + str(k) +'.rrd'
+    rrdfile = '/data/rrd/' + system_id + '/' + str(k) +'.rrd'
     print(rrdfile)
     if not os.path.isfile(rrdfile):
         ifRRD(rrdfile)
     else:
         rrdtool.update(str(rrdfile), str(v))
 
-    rrdata = {'rrd': 'if.' + str(k), 'val': v}
+    #rrdata = {'rrd': 'if.' + str(k), 'val': v}
+    rrdata = {'rrd': str(k), 'val': v, 'type': 'cisco.asa.if'}
     rrList.append(rrdata)
 
 json_data = '{ "system_id":"' + str(system_id) + '",'
