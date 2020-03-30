@@ -2,6 +2,10 @@
 
 import netsnmp
 import json
+
+import rrdtool
+import os
+
 import config
 
 system_id = config.param['system_id']
@@ -28,6 +32,10 @@ rrList = []
 for i in returnList:
     #print(i)
     ifName = str(i[0])
+    #cleanup text, no '/'
+    ifName = ifName.replace('/','')
+
+
     ifOperStatus = str(i[1])
     ifInOctets = str(i[2])
     ifInUcastPkts = str(i[3])
@@ -62,20 +70,53 @@ for i in returnList:
 
     rrDict[ifName] = rr
 
+def ifRRD(rrdfile=None):
+    data_sources=[ 'DS:ifOperStatus:GAUGE:600:U:U',
+                   'DS:ifInOctets:GAUGE:600:U:U',
+                   'DS:ifInUcastPkts:GAUGE:600:U:U',
+                   'DS:ifInNUcastPkts:GAUGE:600:U:U',
+                   'DS:ifInDiscards:GAUGE:600:U:U',
+                   'DS:ifInErrors:GAUGE:600:U:U',
+                   'DS:ifOutOctets:GAUGE:600:U:U',
+                   'DS:ifOutUcastPkts:GAUGE:600:U:U',
+                   'DS:ifOutNUcastPkts:GAUGE:600:U:U',
+                   'DS:ifOutDiscards:GAUGE:600:U:U',
+                   'DS:ifOutErrors:GAUGE:600:U:U',
+                   'DS:ifInMulticastPkts:GAUGE:600:U:U',
+                   'DS:ifInBroadcastPkts:GAUGE:600:U:U',
+                   'DS:ifOutMulticastPkts:GAUGE:600:U:U',
+                   'DS:ifOutBroadcastPkts:GAUGE:600:U:U'
+                 ]
+    rrdtool.create(str(rrdfile), '--start', '0',
+                                 '--step', '300',
+                    data_sources,
+                    'RRA:AVERAGE:0.5:1:360',
+                    'RRA:AVERAGE:0.5:12:1008',
+                    'RRA:AVERAGE:0.5:288:2016' )
+    return True
+
+##################################################################
 for k,v in rrDict.items():
-    #print(k)
-    #print(v)
+    #print(k,v)
+    rrdfile = '/data/rrd/' + system_id + '/if.' + str(k) +'.rrd'
+    print(rrdfile)
+    if not os.path.isfile(rrdfile):
+        ifRRD(rrdfile)
+    else:
+        rrdtool.update(str(rrdfile), str(v))
+
     rrdata = {'rrd': 'if.' + str(k), 'val': v}
     rrList.append(rrdata)
 
-#print(json.dumps(rrDict, sort_keys=True, indent=4))
-
 json_data = '{ "system_id":"' + str(system_id) + '",'
-#json_data += '"rrdata": [' + str(json.dumps(json.loads(rrdata))) + ']'
 json_data += '"rrdata": ' + json.dumps(rrList)
 json_data += '}'
-print(json.dumps(json.loads(json_data), indent=4))
+#print(json.dumps(json.loads(json_data), indent=4))
 
+#        {
+#            "rrd": "if.inside1", 
+#            "val": "N:1:4019517575:3085930203:5417172:7138227:0:4177909917:3896715867:206898:0:0:0:0:0:0"
+#        }, 
 
 # the function snmpwalk returns a set of 4-tuples:
 #   var.tag  (the object OID)
