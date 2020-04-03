@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.3.17'
+__version__='1.0.4'
 
 import sys
 if sys.version_info[0] < 3:
@@ -18,7 +18,7 @@ def usage():
     options:
 
       list_systems [json|os|os_version|hostname|serial|insights|state|fde|agent|root_ssh]
-      list_systems_id [systems_os]
+      list_systems_id
       get_systems_json [system_id]
       get_systems_hostname [system_id]
       get_systems_users [system_id]
@@ -872,12 +872,19 @@ def print_systemgroups_name(group_id=None):
 
 
 #https://docs.jumpcloud.com/2.0/system-group-members-and-membership/list-system-groups-group-membership
-def list_systemgroups_membership(group_id=None):
+#def list_systemgroups_membership(group_id=None):
+#    pass
 
-    #print("group_id is " + str(group_id))
+#def get_systemgroups_membership(group_id=None, skip=0, limit=100):
+def list_systemgroups_membership(group_id=None, skip=0, limit=100):
+
     group_id = ''.join(group_id)
 
-    URL="https://console.jumpcloud.com/api/v2/systemgroups/" + str(group_id) + "/membership"
+    #default is limit 10
+    #URL="https://console.jumpcloud.com/api/v2/systemgroups/" + str(group_id) + "/membership"
+    #https://docs.jumpcloud.com/2.0/system-group-members-and-membership/list-the-system-group-s-membership
+
+    URL="https://console.jumpcloud.com/api/v2/systemgroups/" + str(group_id) + "/membership?limit=" + str(limit) + "&skip=" + str(skip)
 
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
@@ -898,12 +905,12 @@ def list_systemgroups_membership(group_id=None):
         print(data['id'] + ' ' + get_systems_hostname(data.get('id')))
 
 
-def list_usergroups_members(group_id=None):
+#def get_usergroups_members(group_id=None, skip=0, limit=100):
+def list_usergroups_members(group_id=None, skip=0, limit=100):
 
-    #print("group_id is " + str(group_id))
     group_id = ''.join(group_id)
 
-    URL="https://console.jumpcloud.com/api/v2/usergroups/" + str(group_id) + "/members"
+    URL="https://console.jumpcloud.com/api/v2/usergroups/" + str(group_id) + "/members?limit=" + str(limit) + "&skip=" + str(skip)
 
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,

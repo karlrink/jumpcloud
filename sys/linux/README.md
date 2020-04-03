@@ -24,4 +24,7 @@ root@b1c426a893fc:/app#
 
 
 
+# linux uniq id
+# cat /sys/class/dmi/id/product_uuid
+
 
