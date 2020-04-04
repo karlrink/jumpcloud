@@ -1,8 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '006.a'
-
-url = 'https://monitor.nationsinfocorp.com:443/collector'
+__version__ = '006.b'
 
 import json
 import os
@@ -21,7 +19,7 @@ try:
     import config
     url = config.param['url']
 except ImportError:
-    pass
+    url = 'https://monitor.nationsinfocorp.com:443/collector'
 
 def get_system_id():
     jcagent_conf = '/opt/jc/jcagent.conf'
