@@ -1,8 +1,8 @@
 #!/usr/bin/env python2
 
-url = 'https://monitor.nationsinfocorp.com:443/collector'
+__version__ = '006.a'
 
-__version__ = '006'
+url = 'https://monitor.nationsinfocorp.com:443/collector'
 
 import json
 import os
@@ -17,6 +17,11 @@ if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
     getattr(ssl, '_create_unverified_context', None)):
     ssl._create_default_https_context = ssl._create_unverified_context
 
+try:
+    import config
+    url = config.param['url']
+except ImportError:
+    pass
 
 def get_system_id():
     jcagent_conf = '/opt/jc/jcagent.conf'
@@ -1350,5 +1355,6 @@ if __name__ == '__main__':
             print(response)
     else:
         print("POST DISABLED")
+
 
 
