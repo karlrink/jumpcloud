@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '007'
+__version__ = '007b'
 
 import json
 import os
@@ -980,18 +980,42 @@ def get_chronyc():
 
     odict = {}
     count = 0
+    Stratum = System = RMS = Frequency = Skew = Root_dely = Root_dispersion = Update = 0
     for line in multilines:
             count += 1
-            #line = line.split()
+            line = line.split()
             #print(len(line))
             #print(line)
-            #if len(line) > 1:
-            #    print(line)
+            #print(line[0])
 
-    chronyc_data = {'rrd': 'chrony', 'val': 'N:' + str(count)}
+            if line[0] == 'Stratum':
+                Stratum = line[2]
+            if line[0] == 'System':
+                System = line[3]
+            if line[0] == 'RMS':
+                RMS = line[3]
+            if line[0] == 'Frequency':
+                Frequency = line[2]
+            if line[0] == 'Skew':
+                Skew = line[2]
+            if line[0] == 'Root':
+                if line[1] == 'delay':
+                    Root_delay = line[3]
+                if line[1] == 'dispersion':
+                    Root_dispersion = line[3]
+            if line[0] == 'Update':
+                Update = line[3]
+
+    rr_data = 'N:' + str(Stratum)
+    rr_data += ':' + str(System)
+    rr_data += ':' + str(RMS)
+    rr_data += ':' + str(Frequency)
+    rr_data += ':' + str(Skew)
+    rr_data += ':' + str(Root_delay)
+    rr_data += ':' + str(Root_dispersion)
+    rr_data += ':' + str(Update)
+    chronyc_data = {'rrd': 'chrony', 'val': rr_data}
     return chronyc_data, chronyc_alert
-
-
 
 ###############################################################################
 #hypervisor

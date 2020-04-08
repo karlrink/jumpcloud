@@ -120,6 +120,32 @@ json_data += '}'
 #            "val": "N:1:4019517575:3085930203:5417172:7138227:0:4177909917:3896715867:206898:0:0:0:0:0:0"
 #        }, 
 
+######################################################################
+
+jdata = None
+system_id_json = '/data/rrd/' + system_id + '/' + system_id + '.json'
+if not os.path.isfile(system_id_json):
+    with open(system_id_json, 'w') as jsonfile:
+        json.dump(json.loads(json_data), jsonfile, indent=4)
+        jdata = json.load(jsonfile)
+else:
+    #print('check.for.state')
+    with open(system_id_json, 'r') as jsonfile:
+        jdata = json.load(jsonfile)
+
+rr_data = jdata['rrdata']
+#print(rr_data)
+for line in rr_data:
+    #print(line['val'])
+    #valList = str(line['val']).split(':')
+    #print(valList[1])
+    OperStatus = str(line['val']).split(':')[1]
+    print(OperStatus)
+
+
+######################################################################
+
+
 # the function snmpwalk returns a set of 4-tuples:
 #   var.tag  (the object OID)
 #   var.iid   (the index)
