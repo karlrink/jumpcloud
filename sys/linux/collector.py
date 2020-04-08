@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '006.b'
+__version__ = '007'
 
 import json
 import os
@@ -15,18 +15,20 @@ if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
     getattr(ssl, '_create_unverified_context', None)):
     ssl._create_default_https_context = ssl._create_unverified_context
 
-try:
-    import config
-    url = config.param['url']
-except ImportError:
-    url = 'https://monitor.nationsinfocorp.com:443/collector'
-
 def get_system_id():
     jcagent_conf = '/opt/jc/jcagent.conf'
     with open(jcagent_conf, 'r') as jcconf:
         jdata = json.load(jcconf)
     system_id = jdata['systemKey']
     return str(system_id)
+
+try:
+    import config
+    url = config.param['url']
+    system_id = config.param['system_id']
+except ImportError:
+    url = 'https://monitor.nationsinfocorp.com:443/collector'
+    system_id = get_system_id()
 
 def collector(system_id):
 
@@ -96,6 +98,28 @@ def collector(system_id):
         runningDict = ListDomainsDetailedClass(_uri, _host).get()
         rrd_virsh = runningDict['rrdata'] 
         rrdList.extend(rrd_virsh)
+
+    #make sure time is working (ntp/time check)
+    #ntp = False
+    #if os.path.isfile('/usr/bin/ntpq'):
+    #    rrd_ntpq = get_ntpq()
+    #    if rrd_ntpq:
+    #        rrdList.append(rrd_ntpq)
+    #        ntp = True
+
+    if os.path.isfile('/usr/bin/chronyc'):
+        rrd_chronyc, alert_chronyc = get_chronyc()
+        if rrd_chronyc:
+            rrdList.append(rrd_chronyc)
+        if alert_chronyc:
+            alert_data = alert_chronyc
+    else:
+        alert_data = {'chrony': 'service not installed'}
+        
+
+    #if not ntp:
+    #    alert_data = { 'ntp': 'service not running'}
+        
     
     #alert_data = { 'Error': 'yes', 'Help': 'Please'}
 
@@ -155,7 +179,9 @@ def daemonize():
             os.kill(fpid, signal.SIGSTOP)
         sys.exit(0)
 
-    system_id = get_system_id()
+    if not system_id:
+        system_id = get_system_id()
+
     while True:
         json_data = collector(system_id)
         response = post(system_id, json.dumps(json_data))
@@ -226,7 +252,7 @@ def get_free():
     exit_code = p.wait()
     if (exit_code != 0):
         print('Error: ' + str(err) + ' ' + str(output))
-        sys.exit(1)
+        return False
 
     multilines = output.splitlines()
 
@@ -288,7 +314,7 @@ def get_uptime():
     exit_code = p.wait()
     if (exit_code != 0):
         print('Error: ' + str(err) + ' ' + str(output))
-        sys.exit(1)
+        return False
 
     multilines = output.splitlines()
 
@@ -343,7 +369,7 @@ def get_df(disk='/'):
     exit_code = p.wait()
     if (exit_code != 0):
         print('Error: ' + str(err) + ' ' + str(output))
-        sys.exit(1)
+        return False
 
     multilines = output.splitlines()
 
@@ -431,7 +457,6 @@ def get_mpstat():
     if (exit_code != 0):
         print('Error: ' + str(err) + ' ' + str(output))
         return exit_code
-        #sys.exit(1)
 
     multilines = output.splitlines()
 
@@ -903,6 +928,71 @@ def get_mysql(dbconf, mysqlSocket):
 
     return (mysql_data, sbm_data, alert_data)
 
+def get_ntpq():
+    ntpq_data = {}
+
+    collect="/usr/bin/ntpq -pn"
+    p = subprocess.Popen(collect, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output, err = p.communicate()
+
+    exit_code = p.wait()
+    if (exit_code != 0):
+        print('Error: ' + str(err) + ' ' + str(output))
+        return False
+
+    #print(err)
+    if 'Connection refused' in err:
+        #print('ntpd not running')
+        #return 'ntpd not running'
+        return None
+
+    multilines = output.splitlines()
+
+    odict = {}
+    count = 0
+    for line in multilines:
+            count += 1
+            #line = line.split()
+            #print(len(line))
+            #print(line)
+            #if len(line) > 1:
+            #    print(line)
+
+    ntpq_data = {'rrd': 'ntp', 'val': 'N:' + str(count)}
+    return ntpq_data
+
+
+def get_chronyc():
+    chronyc_data = {}
+    chronyc_alert = {}
+
+    collect="/usr/bin/chronyc -n tracking"
+    p = subprocess.Popen(collect, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output, err = p.communicate()
+
+    exit_code = p.wait()
+    if (exit_code != 0):
+        #print('Error: ' + str(err) + ' ' + str(output))
+        chronyc_alert = {'chrony': str(err) + ' ' + str(output)}
+        return chronyc_data, chronyc_alert
+
+    multilines = output.splitlines()
+
+    odict = {}
+    count = 0
+    for line in multilines:
+            count += 1
+            #line = line.split()
+            #print(len(line))
+            #print(line)
+            #if len(line) > 1:
+            #    print(line)
+
+    chronyc_data = {'rrd': 'chrony', 'val': 'N:' + str(count)}
+    return chronyc_data, chronyc_alert
+
+
+
 ###############################################################################
 #hypervisor
 
@@ -1036,7 +1126,6 @@ class ListDomainsDetailedClass(ListDomainsClass):
             dom = self.conn.lookupByName(domName)
             if dom == None:
                 print json.dumps({"Error":"Failed to find domain " + str(domName)}, indent=2)
-                #sys.exit(1)
                 return False
 
             state = self.domstate(domName)
@@ -1055,7 +1144,6 @@ class ListDomainsDetailedClass(ListDomainsClass):
                 pass
             else:
                 print json.dumps({"Error":"major error getting dom.Vcpus()"}, indent=2)
-                #sys.exit(1)
                 return False
 
             cpu_stats = dom.getCPUStats(True)
@@ -1077,7 +1165,6 @@ class ListDomainsDetailedClass(ListDomainsClass):
                 pass
             else:
                 print json.dumps({"Error":"major error getting dom.maxMemory()"}, indent=2)
-                #sys.exit(1)
                 return False
 
             dom_mem = {}
@@ -1337,7 +1424,8 @@ if __name__ == '__main__':
         if sys.argv[1] == "--disable-post":
             post_request = False
 
-    system_id = get_system_id()
+    if not system_id:
+        system_id = get_system_id()
 
     if os.path.isfile('/usr/bin/virsh'):
         #apt-get install -y python-libvirt
