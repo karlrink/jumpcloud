@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '007b'
+__version__ = '007c'
 
 import json
 import os
@@ -179,8 +179,11 @@ def daemonize():
             os.kill(fpid, signal.SIGSTOP)
         sys.exit(0)
 
-    if not system_id:
-        system_id = get_system_id()
+    #if not system_id:
+    #    system_id = get_system_id()
+    #UnboundLocalError: local variable 'system_id' referenced before assignment
+
+    system_id = get_system_id()
 
     while True:
         json_data = collector(system_id)
