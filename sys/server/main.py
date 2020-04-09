@@ -1,5 +1,5 @@
 
-__version__ = '002.1'
+__version__ = '002.2'
 
 from flask import Flask
 from flask import request
@@ -241,6 +241,10 @@ def post_request(system_id):
                     mysqlRRD(rrdfile)
                     continue
 
+                if rrd == 'chrony' and not os.path.isfile(rrdfile):
+                    chronyRRD(rrdfile)
+                    continue
+
 
 
                 if os.path.isfile(rrdfile):
@@ -446,6 +450,27 @@ def psRRD(rrdfile=None):
 
     data_sources=[ 'DS:procs:GAUGE:600:U:U',
                    'DS:defunct:GAUGE:600:U:U'
+                 ]
+
+    rrdtool.create(str(rrdfile), '--start', '0',
+                                 '--step', '300',
+                    data_sources,
+                    'RRA:AVERAGE:0.5:1:360',
+                    'RRA:AVERAGE:0.5:12:1008',
+                    'RRA:AVERAGE:0.5:288:2016' )
+    return True
+
+
+def chronyRRD(rrdfile=None):
+
+    data_sources=[ 'DS:Stratum:GAUGE:600:U:U',
+                   'DS:System:GAUGE:600:U:U',
+                   'DS:RMS:GAUGE:600:U:U',
+                   'DS:Frequency:GAUGE:600:U:U',
+                   'DS:Skew:GAUGE:600:U:U',
+                   'DS:Root_delay:GAUGE:600:U:U',
+                   'DS:Root_dispersion:GAUGE:600:U:U',
+                   'DS:Update:GAUGE:600:U:U'
                  ]
 
     rrdtool.create(str(rrdfile), '--start', '0',
