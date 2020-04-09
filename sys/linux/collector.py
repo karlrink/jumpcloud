@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '007c'
+__version__ = '007d'
 
 import json
 import os
@@ -1444,6 +1444,11 @@ class ListDomainsDetailedClass(ListDomainsClass):
 
 if __name__ == '__main__':
     post_request = True
+
+    if os.path.isfile('/usr/bin/virsh'):
+        #apt-get install -y python-libvirt
+        import libvirt
+
     if sys.argv[1:]:
         if sys.argv[1] == "--daemon":
             daemonize()
@@ -1451,12 +1456,8 @@ if __name__ == '__main__':
         if sys.argv[1] == "--disable-post":
             post_request = False
 
-    if not system_id:
-        system_id = get_system_id()
-
-    if os.path.isfile('/usr/bin/virsh'):
-        #apt-get install -y python-libvirt
-        import libvirt
+    #if not system_id:
+    system_id = get_system_id()
 
     json_data = collector(system_id)
     print(json.dumps(json_data, sort_keys=True, indent=4))
