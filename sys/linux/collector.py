@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '007d'
+__version__ = '008'
 
 import json
 import os
@@ -1114,7 +1114,9 @@ class ListDomainsDetailedClass(ListDomainsClass):
         hypervisor_cpu_rrd_val += ':' + str(hypervisor_cpu['iowait'])
         hypervisor_cpu_rrd_val += ':' + str(hypervisor_cpu['kernel'])
         hypervisor_cpu_rrd_val += ':' + str(hypervisor_cpu['user'])
-        hypervisor_cpu_rrd = {'rrd':'hypervisor.cpu', 'val': str(hypervisor_cpu_rrd_val)}
+        hypervisor_cpu_rrd = {'rrd':'hypervisor.cpu',
+                              'val': str(hypervisor_cpu_rrd_val),
+                              'type': 'libvirt.cpu'}
 
         memfree = self.conn.getFreeMemory()
         memfreeMB = memfree / 1024 / 1024
@@ -1135,7 +1137,9 @@ class ListDomainsDetailedClass(ListDomainsClass):
         hypervisor_mem_rrd_val = 'N:' + str(hypervisor_mem['free'])
         hypervisor_mem_rrd_val += ':' + str(hypervisor_mem['total'])
         hypervisor_mem_rrd_val += ':' + str(hypervisor_mem['used'])
-        hypervisor_mem_rrd = {'rrd':'hypervisor.mem', 'val': str(hypervisor_mem_rrd_val)}
+        hypervisor_mem_rrd = {'rrd':'hypervisor.mem', 
+                              'val': str(hypervisor_mem_rrd_val),
+                              'type': 'libvirt.mem'}
 
 
         hypervisor = {
@@ -1320,7 +1324,8 @@ class ListDomainsDetailedClass(ListDomainsClass):
                         rrd_val += ':' + str(swap_in)
                         rrd_val += ':' + str(swap_out)
                         rrd_val += ':' + str(unused)
-                        rrd = {'rrd': str(domain.name()) + '.mem', 'val': rrd_val}
+                        #rrd = {'rrd': str(domain.name()) + '.mem', 'val': rrd_val}
+                        rrd = {'rrd': str(domain.name()) + '.mem', 'val': rrd_val, 'type': 'qemu.mem'}
                         rrdList.append(rrd)
 
 #      "mem": {
@@ -1350,7 +1355,7 @@ class ListDomainsDetailedClass(ListDomainsClass):
                         rrd_val += ':' + str(cpu_time)
                         rrd_val += ':' + str(system_time)
                         rrd_val += ':' + str(user_time)
-                        rrd = {'rrd': str(domain.name()) + '.cpu', 'val': rrd_val}
+                        rrd = {'rrd': str(domain.name()) + '.cpu', 'val': rrd_val, 'type': 'qemu.cpu'}
                         rrdList.append(rrd)
 
 #      "cpu": {
@@ -1383,7 +1388,7 @@ class ListDomainsDetailedClass(ListDomainsClass):
                             rrd_val += ':' + str(write_errors)
                             rrd_val += ':' + str(write_packets)
 
-                            rrd = {'rrd': str(domain.name()) + '.' + str(item), 'val': rrd_val}
+                            rrd = {'rrd': str(domain.name()) + '.' + str(item), 'val': rrd_val, 'type': 'qemu.net'}
                             rrdList.append(rrd)
 
 #      "net": {
@@ -1416,7 +1421,7 @@ class ListDomainsDetailedClass(ListDomainsClass):
                             rrd_val += ':' + str(read_requests_issued)
                             rrd_val += ':' + str(write_requests_issued)
                             
-                            rrd = {'rrd': str(domain.name()) + '.' + str(item), 'val': rrd_val}
+                            rrd = {'rrd': str(domain.name()) + '.' + str(item), 'val': rrd_val, 'type': 'qemu.disk'}
                             rrdList.append(rrd)
 
 #      "disk": {
