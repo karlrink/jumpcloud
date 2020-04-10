@@ -1,5 +1,5 @@
 
-__version__ = '002.3'
+__version__ = '002.3b'
 
 from flask import Flask
 from flask import request
@@ -585,8 +585,8 @@ def qemu_diskRRD(rrdfile=None):
 
     data_sources=[ 'DS:bytes_read:COUNTER:600:U:U',
                    'DS:bytes_written:COUNTER:600:U:U',
-                   'DS:read_requests_issued:COUNTER:600:U:U',
-                   'DS:write_requests_issued:COUNTER:600:U:U'
+                   'DS:ReadRqstIssued:COUNTER:600:U:U',
+                   'DS:WriteRqstIssued:COUNTER:600:U:U'
                  ]
 
     rrdtool.create(str(rrdfile), '--start', '0',
@@ -596,6 +596,11 @@ def qemu_diskRRD(rrdfile=None):
                     'RRA:AVERAGE:0.5:12:1008',
                     'RRA:AVERAGE:0.5:288:2016' )
     return True
+#'DS:write_requests_issued:COUNTER:600:U:U' #size limit in rrd name
+#  File "/app/sys/server/main.py", line 597, in qemu_diskRRD
+#    'RRA:AVERAGE:0.5:288:2016' )
+#error: Invalid DS name
+
 
 def qemu_netRRD(rrdfile=None):
 
