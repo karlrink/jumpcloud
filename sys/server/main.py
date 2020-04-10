@@ -1,5 +1,5 @@
 
-__version__ = '002.2'
+__version__ = '002.3'
 
 from flask import Flask
 from flask import request
@@ -197,8 +197,15 @@ def post_request(system_id):
             #print(type(rr))
             if type(rr) is dict:
                 #print(rr['rrd'])
-                rrd = rr['rrd']
-                val = rr['val']
+
+                #rrd = rr['rrd']
+                #val = rr['val']
+                #_type = rr['type']
+
+                rrd = rr.get('rrd', None)
+                val = rr.get('val', None)
+                _type = rr.get('type', None)
+
                 path = datadir + '/' + system_id
                 if not os.path.isdir(path):
                     os.mkdir(path)
@@ -243,6 +250,30 @@ def post_request(system_id):
 
                 if rrd == 'chrony' and not os.path.isfile(rrdfile):
                     chronyRRD(rrdfile)
+                    continue
+
+                if _type == 'libvirt.cpu' and not os.path.isfile(rrdfile):
+                    libvirt_cpuRRD(rrdfile)
+                    continue
+
+                if _type == 'libvirt.mem' and not os.path.isfile(rrdfile):
+                    libvirt_memRRD(rrdfile)
+                    continue
+
+                if _type == 'qemu.cpu' and not os.path.isfile(rrdfile):
+                    qemu_cpuRRD(rrdfile)
+                    continue
+
+                if _type == 'qemu.mem' and not os.path.isfile(rrdfile):
+                    qemu_memRRD(rrdfile)
+                    continue
+
+                if _type == 'qemu.disk' and not os.path.isfile(rrdfile):
+                    qemu_diskRRD(rrdfile)
+                    continue
+
+                if _type == 'qemu.net' and not os.path.isfile(rrdfile):
+                    qemu_netRRD(rrdfile)
                     continue
 
 
@@ -480,6 +511,113 @@ def chronyRRD(rrdfile=None):
                     'RRA:AVERAGE:0.5:12:1008',
                     'RRA:AVERAGE:0.5:288:2016' )
     return True
+
+def libvirt_cpuRRD(rrdfile=None):
+
+    data_sources=[ 'DS:count:GAUGE:600:U:U',
+                   'DS:idle:GAUGE:600:U:U',
+                   'DS:iowait:GAUGE:600:U:U',
+                   'DS:kernel:GAUGE:600:U:U',
+                   'DS:user:GAUGE:600:U:U'
+                 ]
+
+    rrdtool.create(str(rrdfile), '--start', '0',
+                                 '--step', '300',
+                    data_sources,
+                    'RRA:AVERAGE:0.5:1:360',
+                    'RRA:AVERAGE:0.5:12:1008',
+                    'RRA:AVERAGE:0.5:288:2016' )
+    return True
+
+def libvirt_memRRD(rrdfile=None):
+
+    data_sources=[ 'DS:free:GAUGE:600:U:U',
+                   'DS:total:GAUGE:600:U:U',
+                   'DS:used:GAUGE:600:U:U'
+                 ]
+
+    rrdtool.create(str(rrdfile), '--start', '0',
+                                 '--step', '300',
+                    data_sources,
+                    'RRA:AVERAGE:0.5:1:360',
+                    'RRA:AVERAGE:0.5:12:1008',
+                    'RRA:AVERAGE:0.5:288:2016' )
+    return True
+
+def qemu_cpuRRD(rrdfile=None):
+
+    data_sources=[ 'DS:count:GAUGE:600:U:U',
+                   'DS:cpu_time:COUNTER:600:U:U',
+                   'DS:system_time:COUNTER:600:U:U',
+                   'DS:user_time:COUNTER:600:U:U'
+                 ]
+
+    rrdtool.create(str(rrdfile), '--start', '0',
+                                 '--step', '300',
+                    data_sources,
+                    'RRA:AVERAGE:0.5:1:360',
+                    'RRA:AVERAGE:0.5:12:1008',
+                    'RRA:AVERAGE:0.5:288:2016' )
+    return True
+
+def qemu_memRRD(rrdfile=None):
+
+    data_sources=[ 'DS:actual:GAUGE:600:U:U',
+                   'DS:available:GAUGE:600:U:U',
+                   'DS:major_fault:GAUGE:600:U:U',
+                   'DS:minor_fault:GAUGE:600:U:U',
+                   'DS:rss:GAUGE:600:U:U',
+                   'DS:swap_in:GAUGE:600:U:U',
+                   'DS:swap_out:GAUGE:600:U:U',
+                   'DS:unused:GAUGE:600:U:U'
+                 ]
+
+    rrdtool.create(str(rrdfile), '--start', '0',
+                                 '--step', '300',
+                    data_sources,
+                    'RRA:AVERAGE:0.5:1:360',
+                    'RRA:AVERAGE:0.5:12:1008',
+                    'RRA:AVERAGE:0.5:288:2016' )
+    return True
+
+
+def qemu_diskRRD(rrdfile=None):
+
+    data_sources=[ 'DS:bytes_read:COUNTER:600:U:U',
+                   'DS:bytes_written:COUNTER:600:U:U',
+                   'DS:read_requests_issued:COUNTER:600:U:U',
+                   'DS:write_requests_issued:COUNTER:600:U:U'
+                 ]
+
+    rrdtool.create(str(rrdfile), '--start', '0',
+                                 '--step', '300',
+                    data_sources,
+                    'RRA:AVERAGE:0.5:1:360',
+                    'RRA:AVERAGE:0.5:12:1008',
+                    'RRA:AVERAGE:0.5:288:2016' )
+    return True
+
+def qemu_netRRD(rrdfile=None):
+
+    data_sources=[ 'DS:read_bytes:COUNTER:600:U:U',
+                   'DS:read_drops:COUNTER:600:U:U',
+                   'DS:read_errors:COUNTER:600:U:U',
+                   'DS:read_packets:COUNTER:600:U:U',
+                   'DS:write_bytes:COUNTER:600:U:U',
+                   'DS:write_drops:COUNTER:600:U:U',
+                   'DS:write_errors:COUNTER:600:U:U',
+                   'DS:write_packets:COUNTER:600:U:U'
+                 ]
+
+    rrdtool.create(str(rrdfile), '--start', '0',
+                                 '--step', '300',
+                    data_sources,
+                    'RRA:AVERAGE:0.5:1:360',
+                    'RRA:AVERAGE:0.5:12:1008',
+                    'RRA:AVERAGE:0.5:288:2016' )
+    return True
+
+
 
 def mpstatRRD(rrdfile=None):
 # mpstat
