@@ -1,0 +1,8 @@
+
+param = dict(
+  ipmi_user = 'XXXX',
+  ipmi_pass = 'XXXXXXXXXXX',
+)
+
+hosts = [ '172.20.3.2', '172.20.3.3', '172.20.3.4' ]
+
