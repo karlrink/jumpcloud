@@ -1,5 +1,5 @@
 
-__version__ = '002.3b'
+__version__ = '002.4'
 
 from flask import Flask
 from flask import request
@@ -103,12 +103,12 @@ def post_request(system_id):
 
     jdata = request.get_json()
 
-    #rrdList = jdata['rrdata']
-    #print(type(rrdList))
-    #for rr in rrdList:
-    #    print(rr)
-    #    print(type(rr))
-    rrdList = jdata.get('rrdata', None)
+    try:
+        rrdList = jdata.get('rrdata', None)
+    except AttributeError as e:
+        print('AttributeError ' + str(e))
+        app.logger.debug('AttributeError ' + str(e))
+        rrdList = None
 
     #alert = jdata['alert']
     alert = jdata.get('alert', None)
@@ -276,7 +276,18 @@ def post_request(system_id):
                     qemu_netRRD(rrdfile)
                     continue
 
+                if rrd == 'ipmi' and not os.path.isfile(rrdfile):
+                    data_dict = json.loads(val)
+                    ipmiRRD(rrdfile, data_dict))
+                    val = 'N'
+                    continue
+                else:
+                    data_dict = json.loads(val)
+                    val = 'N'
+                    for k,v in data_dict.items():
+                        val += ':' + str(v)
 
+                print(str(rrdfile) + ' ' + str(val))
 
                 if os.path.isfile(rrdfile):
                     try:
@@ -835,6 +846,32 @@ def mysqlRRD(rrdfile=None):
                     'RRA:AVERAGE:0.5:12:1008',
                     'RRA:AVERAGE:0.5:288:2016' )
     return True
+
+def ipmiRRD(rrdfile, data_dict):
+    data_sources = []
+    for k,v in data_dict.items():
+        #print(k, v)
+        ds = 'DS:' + str(k) + ':GAUGE:600:U:U'
+        data_sources.append(ds)
+
+    rrdtool.create(str(rrdfile), '--start', '0',
+                                 '--step', '300',
+                    data_sources,
+                    'RRA:AVERAGE:0.5:1:360',
+                    'RRA:AVERAGE:0.5:12:1008',
+                    'RRA:AVERAGE:0.5:288:2016')
+    return True
+#data_sources=[ 'DS:total:GAUGE:600:U:U',
+#               'DS:used:GAUGE:600:U:U',
+#               'DS:free:GAUGE:600:U:U',
+#               'DS:shared:GAUGE:600:U:U',
+#               'DS:buffers:GAUGE:600:U:U',
+#               'DS:cached:GAUGE:600:U:U' ]
+
+#  File "./collect.ipmi.py", line 135, in ipmiRRD
+#    'RRA:AVERAGE:0.5:288:2016' )
+#rrdtool.OperationalError: invalid DS format
+
 
 
 if __name__ == '__main__':
