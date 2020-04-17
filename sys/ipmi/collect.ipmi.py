@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '0000.00'
+__version__ = '0000.000'
 
 import sys
 sys.dont_write_bytecode = True
@@ -14,6 +14,13 @@ ipmi_pass = config.param['ipmi_pass']
 
 import os
 import rrdtool
+
+def usage():
+    print("Usage: " + sys.argv[0] + " host [option]")
+    print("""
+        --disable-post
+        --write-local
+    """)
 
 def collect_ipmi(host):
 
@@ -117,6 +124,8 @@ def collect_ipmi(host):
         #if v == 'no reading':
         if v == 'no':
             del DDict[k]
+        if v == 'disabled':
+            del DDict[k]
 
     #print(DDict)
     return DDict
@@ -153,36 +162,73 @@ def ipmiRRD(rrdfile, data_dict):
 
 
 if __name__ == "__main__":
+    disable_post = write_local = False
+    if sys.argv[1:]:
+        for arg in sys.argv[1:]:
+            host = sys.argv[1]
+            if arg == '--disable-post':
+                disable_post = True
+            if arg == '--write-local':
+                write_local = True
+    else:
+        usage()
 
-    for host in config.hosts:
-        #print(host)
-        c = collect_ipmi(host)
-        #print(c)
+    try:
+        system_id = config.hosts[host]
+    except KeyError as e:
+        print('Host Not Found: ' + str(e))
+        sys.exit(1)
 
-        rrdfile = str(host) + '.rrd'
-        if not os.path.isfile(rrdfile):
-            ipmiRRD(rrdfile, c)
-        else:
-            val = 'N'
-            for k,v in c.items():
-                val += ':' + str(v)
-            rrdtool.update(str(rrdfile), str(val))
+    c = collect_ipmi(host)
+    hdr = 'N'
+    val = 'N'
+    for k,v in c.items():
+        hdr += ':' + str(k)
+        val += ':' + str(v)
 
-        #rrd = {'rrd': str(domain.name()) + '.' + str(item), 'val': rrd_val, 'type': 'ipmi.json'}
-        rrd = {'rrd': 'ipmi.json', 'val': val, 'type': 'ipmi.json'}
-        #print(rrd)
+    rrd = {'rrd': 'ipmi.json', 'val': val, 'hdr': hdr}
+    rrdList = [ rrd ]
 
-        rrdList = [rrd]
+    json_data  = '{ "system_id": "' + str(system_id) + '",'
+    json_data += '"rrdata": ' + str(json.dumps(rrdList))
+    json_data += '}'
 
-        system_id = '1234'
+    print(json.dumps(json.loads(json_data), sort_keys=True, indent=4))
 
-        json_data  = '{ "system_id": "' + str(system_id) + '",'
-        json_data += '"rrdata": ' + str(json.dumps(rrdList))
-        json_data += '}'
+    sys.exit(1)
 
-
-        print(json.dumps(json.loads(json_data), sort_keys=True, indent=4))
-
-
+#    for host, system_id in config.hosts.items():
+#        #print(system_id)
+#        c = collect_ipmi(host)
+#        
+#        #print(c)
+#        #sys.exit(99)
+#
+#        val = 'N'
+#        rrdfile = str(host) + '.rrd'
+#        if not os.path.isfile(rrdfile):
+#            ipmiRRD(rrdfile, c)
+#        else:
+#            for k,v in c.items():
+#                val += ':' + str(v)
+#
+#            try:
+#                rrdtool.update(str(rrdfile), str(val))
+#            except Exception as e:
+#                print(e)
+#
+#        #rrd = {'rrd': str(domain.name()) + '.' + str(item), 'val': rrd_val, 'type': 'ipmi.json'}
+#        rrd = {'rrd': 'ipmi.json', 'val': val, 'type': 'ipmi.json'}
+#        #print(rrd)
+#
+#        rrdList = [rrd]
+#
+#        #system_id = '1234'
+#
+#        json_data  = '{ "system_id": "' + str(system_id) + '",'
+#        json_data += '"rrdata": ' + str(json.dumps(rrdList))
+#        json_data += '}'
+#
+#        print(json.dumps(json.loads(json_data), sort_keys=True, indent=4))
 
 
