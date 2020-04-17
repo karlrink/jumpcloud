@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '01.a1'
+__version__ = '01.a2'
 
 import sys
 sys.dont_write_bytecode = True
@@ -88,8 +88,6 @@ def collect_ipmi(host):
         DDict[column0] = column1[0]
 
     for k,v in DDict.items():
-        if v == '0x00':
-            del DDict[k]
         #if v == 'no reading':
         if v == 'no':
             del DDict[k]
@@ -97,6 +95,14 @@ def collect_ipmi(host):
             del DDict[k]
         if v == 'disabled':
             del DDict[k]
+        if 'x' in v:
+            del DDict[k]
+        #if v == '0x00':
+        #    del DDict[k]
+        #if v == '0x99':
+        #    del DDict[k]
+        #if v == '0x8d':
+        #    del DDict[k]
 
     return DDict
 
