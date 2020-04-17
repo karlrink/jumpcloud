@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '01'
+__version__ = '01.a1'
 
 import sys
 sys.dont_write_bytecode = True
@@ -92,6 +92,8 @@ def collect_ipmi(host):
             del DDict[k]
         #if v == 'no reading':
         if v == 'no':
+            del DDict[k]
+        if v == 'Not':
             del DDict[k]
         if v == 'disabled':
             del DDict[k]
