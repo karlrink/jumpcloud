@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '01.a2'
+__version__ = '01.a3'
 
 import sys
 sys.dont_write_bytecode = True
@@ -37,7 +37,9 @@ def collect_ipmi(host):
     exit_code = p.wait()
     if (exit_code != 0):
         print('Error: ' + str(err) + ' ' + str(output))
-        return {}
+        #return {}
+        e = str(err) + ' ' + str(output)
+        return {}, {'error': e } #DDict, err
 
     multilines = output.splitlines()
 
@@ -104,7 +106,7 @@ def collect_ipmi(host):
         #if v == '0x8d':
         #    del DDict[k]
 
-    return DDict
+    return DDict, err
 
 def ipmiRRD(rrdfile, data_dict):
 
@@ -179,13 +181,19 @@ if __name__ == "__main__":
         print('Host Not Found: ' + str(e))
         sys.exit(1)
 
-    c = collect_ipmi(host)
+    alert_data = {}
+    c,e = collect_ipmi(host)
+    #print('Err' + str(e))
+    if e:
+        alert_data.update(e)
 
     rrd = {'rrd': 'ipmi', 'val': c, 'type': 'json'}
     rrdList = [ rrd ]
 
     json_data  = '{ "system_id": "' + str(system_id) + '",'
     json_data += '"rrdata": ' + str(json.dumps(rrdList))
+    if alert_data:
+        json_data += ',"alert": ' + str(json.dumps(alert_data))
     json_data += '}'
 
     print(json.dumps(json.loads(json_data), sort_keys=True, indent=4))
