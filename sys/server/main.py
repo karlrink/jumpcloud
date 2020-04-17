@@ -1,5 +1,5 @@
 
-__version__ = '002.4'
+__version__ = '002.5t1'
 
 from flask import Flask
 from flask import request
@@ -276,18 +276,34 @@ def post_request(system_id):
                     qemu_netRRD(rrdfile)
                     continue
 
-                if rrd == 'ipmi' and not os.path.isfile(rrdfile):
-                    data_dict = json.loads(val)
-                    ipmiRRD(rrdfile, data_dict))
-                    val = 'N'
-                    continue
-                else:
-                    data_dict = json.loads(val)
-                    val = 'N'
-                    for k,v in data_dict.items():
-                        val += ':' + str(v)
+                #if rrd == 'ipmi' and not os.path.isfile(rrdfile):
+                #    data_dict = json.loads(val)
+                #    ipmiRRD(rrdfile, data_dict)
+                #    val = 'N'
+                #    continue
+                #else:
+                #    data_dict = json.loads(val)
+                #    val = 'N'
+                #    for k,v in data_dict.items():
+                #        val += ':' + str(v)
 
-                print(str(rrdfile) + ' ' + str(val))
+                if rrd == 'ipmi' and not os.path.isfile(rrdfile):
+                    #val is <type 'dict'> 
+                    ipmiRRD(rrdfile, val)
+                    continue
+                elif rrd == 'ipmi' and type(val) is dict:
+                    #val = 'N'
+                    #for k,v in val.items():
+                    #    val += ':' + str(v)
+                    _val = 'N'
+                    for k in val:
+                        #print('K is ' + str(k))
+                        #print('V is ' + str(val[k]))
+                        v = str(val[k])
+                        _val += ':' + v
+                    val = _val
+
+                #print(str(type(val)) + ' ' + str(rrdfile) + ' ' + str(val))
 
                 if os.path.isfile(rrdfile):
                     try:
