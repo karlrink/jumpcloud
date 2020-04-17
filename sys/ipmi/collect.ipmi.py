@@ -1,17 +1,18 @@
 #!/usr/bin/env python2
 
-__version__ = '0000.0'
+__version__ = '0000.00'
 
 import sys
 sys.dont_write_bytecode = True
 
+import json
 import subprocess
-import os
 
 import config
 ipmi_user = config.param['ipmi_user']
 ipmi_pass = config.param['ipmi_pass']
 
+import os
 import rrdtool
 
 def collect_ipmi(host):
@@ -167,7 +168,21 @@ if __name__ == "__main__":
                 val += ':' + str(v)
             rrdtool.update(str(rrdfile), str(val))
 
-        #rr_val = 'N:' +
-        #rrdtool.update(str(rrdfile), str(val))
+        #rrd = {'rrd': str(domain.name()) + '.' + str(item), 'val': rrd_val, 'type': 'ipmi.json'}
+        rrd = {'rrd': 'ipmi.json', 'val': val, 'type': 'ipmi.json'}
+        #print(rrd)
+
+        rrdList = [rrd]
+
+        system_id = '1234'
+
+        json_data  = '{ "system_id": "' + str(system_id) + '",'
+        json_data += '"rrdata": ' + str(json.dumps(rrdList))
+        json_data += '}'
+
+
+        print(json.dumps(json.loads(json_data), sort_keys=True, indent=4))
+
+
 
 
