@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '0000.001'
+__version__ = '001'
 
 import sys
 sys.dont_write_bytecode = True
@@ -21,7 +21,7 @@ if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
     ssl._create_default_https_context = ssl._create_unverified_context
 
 
-import rrdtool
+#import rrdtool
 
 def usage():
     print("Usage: " + sys.argv[0] + " host [option]" + """
@@ -142,25 +142,24 @@ def collect_ipmi(host):
 def ipmiRRD(rrdfile, data_dict):
 
     data_sources = []
-    for k,v in c.items():
+    for k,v in data_dict.items():
         #print(k, v)
         ds = 'DS:' + str(k) + ':GAUGE:600:U:U'
         data_sources.append(ds)
+
     print(str(data_sources))
 
-    #data_sources=[ 'DS:total:GAUGE:600:U:U',
-    #               'DS:used:GAUGE:600:U:U',
-    #               'DS:free:GAUGE:600:U:U',
-    #               'DS:shared:GAUGE:600:U:U',
-    #               'DS:buffers:GAUGE:600:U:U',
-    #               'DS:cached:GAUGE:600:U:U' ]
+#data_sources=[ 'DS:total:GAUGE:600:U:U',
+#               'DS:used:GAUGE:600:U:U',
+#               'DS:free:GAUGE:600:U:U',
+#               'DS:shared:GAUGE:600:U:U',
+#               'DS:buffers:GAUGE:600:U:U',
+#               'DS:cached:GAUGE:600:U:U' ]
 
 #  File "./collect.ipmi.py", line 135, in ipmiRRD
 #    'RRA:AVERAGE:0.5:288:2016' )
 #rrdtool.OperationalError: invalid DS format
-
-
-
+    import rrdtool
     rrdtool.create(str(rrdfile), '--start', '0',
                                  '--step', '300',
                     data_sources,
@@ -168,6 +167,21 @@ def ipmiRRD(rrdfile, data_dict):
                     'RRA:AVERAGE:0.5:12:1008',
                     'RRA:AVERAGE:0.5:288:2016')
     return True
+
+def writeRRD(rrdfile, data_dict):
+    val = 'N'
+    if not os.path.isfile(rrdfile):
+        ipmiRRD(rrdfile, data_dict)
+    else:
+        for k,v in data_dict.items():
+            val += ':' + str(v)
+        try:
+            import rrdtool
+            rrdtool.update(str(rrdfile), str(val))
+        except Exception as e:
+            print(e)
+    return True
+
 
 def post(system_id, json_data):
     try:
@@ -219,8 +233,14 @@ if __name__ == "__main__":
     json_data += '}'
 
     print(json.dumps(json.loads(json_data), sort_keys=True, indent=4))
+
+    if write_local:
+        rrdfile = str(host) + '.rrd'
+        w = writeRRD(rrdfile, c)
+        print('{"write": "' + str(w) + '"}')
+
     if not disable_post:
-        response = post(system_id, json.dumps(json_data))
+        response = post(system_id, json.dumps(json.loads(json_data)))
         try:
             print(json.dumps(json.loads(response)))
         except Exception as e:
