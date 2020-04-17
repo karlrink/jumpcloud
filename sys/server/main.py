@@ -1,5 +1,5 @@
 
-__version__ = '002.5t1'
+__version__ = '002.5t2'
 
 from flask import Flask
 from flask import request
@@ -288,13 +288,20 @@ def post_request(system_id):
                 #        val += ':' + str(v)
 
                 if rrd == 'ipmi' and not os.path.isfile(rrdfile):
-                    #val is <type 'dict'> 
+                    #val is <type 'dict'>
+                    #print('VAL ------ ' + str(val))
+                    if len(val) == 0:
+                        #print('Empty')
+                        return jsonify({'val':'Empty'}), 200, {'Content-Type': 'application/json; charset=utf-8'}
                     ipmiRRD(rrdfile, val)
                     continue
                 elif rrd == 'ipmi' and type(val) is dict:
+                    #print('VAL2 ------ ' + str(val))
                     #val = 'N'
                     #for k,v in val.items():
                     #    val += ':' + str(v)
+                    if len(val) == 0:
+                        return jsonify({'val':'Empty'}), 200, {'Content-Type': 'application/json; charset=utf-8'}
                     _val = 'N'
                     for k in val:
                         #print('K is ' + str(k))
