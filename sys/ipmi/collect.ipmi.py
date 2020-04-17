@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = '0000.000'
+__version__ = '0000.001'
 
 import sys
 sys.dont_write_bytecode = True
@@ -11,16 +11,25 @@ import subprocess
 import config
 ipmi_user = config.param['ipmi_user']
 ipmi_pass = config.param['ipmi_pass']
+url = config.param['url']
 
+import urllib2
+import ssl
 import os
+if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
+    getattr(ssl, '_create_unverified_context', None)):
+    ssl._create_default_https_context = ssl._create_unverified_context
+
+
 import rrdtool
 
 def usage():
-    print("Usage: " + sys.argv[0] + " host [option]")
-    print("""
+    print("Usage: " + sys.argv[0] + " host [option]" + """
+
         --disable-post
         --write-local
     """)
+    sys.exit(0)
 
 def collect_ipmi(host):
 
@@ -57,7 +66,7 @@ def collect_ipmi(host):
         column0 = column0.replace('Temperature', 'Temp')
         column0 = column0.replace('%', '_P')
         column0 = column0.replace('+', '')
-        column0 = column0.replace('.', '')
+        column0 = column0.replace('.', '-')
 
         #print(len(column0))
         #print(column0)
@@ -160,6 +169,21 @@ def ipmiRRD(rrdfile, data_dict):
                     'RRA:AVERAGE:0.5:288:2016')
     return True
 
+def post(system_id, json_data):
+    try:
+        request = urllib2.Request(url + '?system_id=' + str(system_id))
+        request.add_header('content-type', 'application/json')
+        request.add_header('x-api-key', system_id)
+        post_data = json.dumps(json.JSONDecoder().decode(json_data))
+        response = urllib2.urlopen(request, post_data, timeout=20)
+        #print(response.read())
+        return response.read()
+    except Exception as e:
+        #print('HTTP Post error: ' + str(e))
+        return str(e)
+
+
+
 
 if __name__ == "__main__":
     disable_post = write_local = False
@@ -180,13 +204,14 @@ if __name__ == "__main__":
         sys.exit(1)
 
     c = collect_ipmi(host)
-    hdr = 'N'
-    val = 'N'
-    for k,v in c.items():
-        hdr += ':' + str(k)
-        val += ':' + str(v)
+    #hdr = 'N'
+    #val = 'N'
+    #for k,v in c.items():
+    #    hdr += ':' + str(k)
+    #    val += ':' + str(v)
 
-    rrd = {'rrd': 'ipmi.json', 'val': val, 'hdr': hdr}
+    rrd = {'rrd': 'ipmi', 'val': c, 'type': 'json'}
+    #rrd = {'rrd': 'ipmi.json', 'val': c} 
     rrdList = [ rrd ]
 
     json_data  = '{ "system_id": "' + str(system_id) + '",'
@@ -194,6 +219,12 @@ if __name__ == "__main__":
     json_data += '}'
 
     print(json.dumps(json.loads(json_data), sort_keys=True, indent=4))
+    if not disable_post:
+        response = post(system_id, json.dumps(json_data))
+        try:
+            print(json.dumps(json.loads(response)))
+        except Exception as e:
+            print(response)
 
     sys.exit(1)
 

@@ -1,7 +1,8 @@
 
 param = dict(
   ipmi_user = 'XXXX',
-  ipmi_pass = 'XXXXXXXXXXXX',
+  ipmi_pass = 'XXXXXXXXXX',
+  url = 'https://monitor.nationsinfocorp.com:443/collector'
 )
 
 hosts = {
