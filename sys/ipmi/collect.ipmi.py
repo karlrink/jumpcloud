@@ -1,15 +1,18 @@
 #!/usr/bin/env python2
 
-__version__ = '0000'
+__version__ = '0000.0'
 
 import sys
 sys.dont_write_bytecode = True
 
 import subprocess
+import os
 
 import config
 ipmi_user = config.param['ipmi_user']
 ipmi_pass = config.param['ipmi_pass']
+
+import rrdtool
 
 def collect_ipmi(host):
 
@@ -22,7 +25,8 @@ def collect_ipmi(host):
         print('Error: ' + str(err) + ' ' + str(output))
         #return chronyc_data, chronyc_alert
         #return False
-        sys.exit(exit_code)
+        #sys.exit(exit_code)
+        return {}
 
     multilines = output.splitlines()
 
@@ -43,6 +47,9 @@ def collect_ipmi(host):
         column0 = column0.replace(' ', '')
 
         column0 = column0.replace('Temperature', 'Temp')
+        column0 = column0.replace('%', '_P')
+        column0 = column0.replace('+', '')
+        column0 = column0.replace('.', '')
 
         #print(len(column0))
         #print(column0)
@@ -110,16 +117,57 @@ def collect_ipmi(host):
         if v == 'no':
             del DDict[k]
 
+    #print(DDict)
+    return DDict
+
+def ipmiRRD(rrdfile, data_dict):
+
+    data_sources = []
+    for k,v in c.items():
+        #print(k, v)
+        ds = 'DS:' + str(k) + ':GAUGE:600:U:U'
+        data_sources.append(ds)
+    print(str(data_sources))
+
+    #data_sources=[ 'DS:total:GAUGE:600:U:U',
+    #               'DS:used:GAUGE:600:U:U',
+    #               'DS:free:GAUGE:600:U:U',
+    #               'DS:shared:GAUGE:600:U:U',
+    #               'DS:buffers:GAUGE:600:U:U',
+    #               'DS:cached:GAUGE:600:U:U' ]
+
+#  File "./collect.ipmi.py", line 135, in ipmiRRD
+#    'RRA:AVERAGE:0.5:288:2016' )
+#rrdtool.OperationalError: invalid DS format
 
 
-    print(DDict)
+
+    rrdtool.create(str(rrdfile), '--start', '0',
+                                 '--step', '300',
+                    data_sources,
+                    'RRA:AVERAGE:0.5:1:360',
+                    'RRA:AVERAGE:0.5:12:1008',
+                    'RRA:AVERAGE:0.5:288:2016')
+    return True
+
 
 if __name__ == "__main__":
 
     for host in config.hosts:
         #print(host)
-        collect_ipmi(host)
+        c = collect_ipmi(host)
+        #print(c)
 
+        rrdfile = str(host) + '.rrd'
+        if not os.path.isfile(rrdfile):
+            ipmiRRD(rrdfile, c)
+        else:
+            val = 'N'
+            for k,v in c.items():
+                val += ':' + str(v)
+            rrdtool.update(str(rrdfile), str(val))
 
-    
+        #rr_val = 'N:' +
+        #rrdtool.update(str(rrdfile), str(val))
+
 
