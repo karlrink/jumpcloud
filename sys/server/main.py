@@ -1,5 +1,5 @@
 
-__version__ = '002.6.1'
+__version__ = '002.6.2'
 
 from flask import Flask
 from flask import request
@@ -8,6 +8,7 @@ import logging
 import json
 import os
 import hashlib
+import glob
 
 import rrdtool
 
@@ -311,15 +312,23 @@ def post_request(system_id):
                     val = _val
 
                 #print(str(type(val)) + ' ' + str(rrdfile) + ' ' + str(val))
-
                 if rrd == 'verifi' and _type == 'response_code':
                     if len(val) == 0:
                         return jsonify({'val':'Empty'}), 200, {'Content-Type': 'application/json; charset=utf-8'}
+                
+                    verifi_files = glob.glob(path + '/' + str(rrd) + '.*.rrd')
+                    #print('VERIFI FILES: ' + str(len(verifi_files)) + ' ' + str(verifi_files)) 
 
                     for k,v in val.iteritems():
                         #print('K: ' + str(k))
                         #print('V: ' + str(v))
                         rrdfile =  path + '/' + str(rrd) + '.' + str(k) + '.rrd'
+                        try:
+                            verifi_files.remove(rrdfile)
+                        except ValueError as e:
+                            #print(str(e))
+                            app.logger.debug(str(e))
+
                         val = 'N:' + str(v) 
                         if not os.path.isfile(rrdfile):
                             verifiRRD(rrdfile, {k:v})
@@ -327,6 +336,17 @@ def post_request(system_id):
                         try:
                             #print(str(type(val)) + ' ' + str(rrdfile) + ' ' + str(val))
                             rrdtool.update(str(rrdfile), str(val))
+                        except Exception as e:
+                            app.logger.debug(str(e))
+
+                    #print('VERIFI FILES 2: ' + str(len(verifi_files)) + ' ' + str(verifi_files)) 
+                    for f in verifi_files:
+                        #print('Auto Update N:0 for ' + str(f))
+                        app.logger.debug('Auto Update N:0 for ' + str(f))
+                        val = 'N:0'
+                        try:
+                            #print(str(type(val)) + ' ' + str(rrdfile) + ' ' + str(val))
+                            rrdtool.update(str(f), str(val))
                         except Exception as e:
                             app.logger.debug(str(e))
 
