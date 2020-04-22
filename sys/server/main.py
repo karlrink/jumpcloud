@@ -1,5 +1,5 @@
 
-__version__ = '002.5t2'
+__version__ = '002.5t3'
 
 from flask import Flask
 from flask import request
@@ -312,6 +312,26 @@ def post_request(system_id):
 
                 #print(str(type(val)) + ' ' + str(rrdfile) + ' ' + str(val))
 
+                if rrd == 'verifi' and _type == 'response_code':
+                    if len(val) == 0:
+                        return jsonify({'val':'Empty'}), 200, {'Content-Type': 'application/json; charset=utf-8'}
+                    #rrdfile =  path + '/' + rrd + '.rrd'
+                    #if not os.path.isfile(rrdfile):
+                    _val = 'N'
+                    for k in val:
+                        v = str(val[k])
+                        _val += ':' + v
+
+                        val = _val
+                        rrdfile =  path + '/' + str(rrd) + '.' + str(k) + '.rrd'
+                        if not os.path.isfile(rrdfile):
+                            verifiRRD(rrdfile, {k:v})
+                            continue
+
+                ####################################
+                # val, and rrdfile
+                print(str(type(val)) + ' ' + str(rrdfile) + ' ' + str(val))
+
                 if os.path.isfile(rrdfile):
                     try:
                         rrdtool.update(str(rrdfile), str(val))
@@ -368,6 +388,26 @@ def send_ses_email(receivers, subject, message):
     #    server.sendmail(sender_email, receivers, msg)
     #with smtplib.SMTP(smtp_server, port) as server:
     #AttributeError: SMTP instance has no attribute '__exit__'
+
+def verifiRRD(rrdfile, data_dict):
+
+    data_sources = []
+    for k,v in data_dict.items():
+        #print(k, v)
+        ds = 'DS:' + str(k) + ':GAUGE:600:U:U'
+        data_sources.append(ds)
+
+    print(str(data_sources))
+
+    rrdtool.create(str(rrdfile), '--start', '0',
+                                 '--step', '300',
+                    data_sources,
+                    'RRA:AVERAGE:0.5:1:360',
+                    'RRA:AVERAGE:0.5:12:1008',
+                    'RRA:AVERAGE:0.5:288:2016')
+    return True
+
+
 
 def memRRD(rrdfile=None):
 # free -m
