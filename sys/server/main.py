@@ -1,5 +1,5 @@
 
-__version__ = '002.5t3'
+__version__ = '002.6'
 
 from flask import Flask
 from flask import request
@@ -315,22 +315,20 @@ def post_request(system_id):
                 if rrd == 'verifi' and _type == 'response_code':
                     if len(val) == 0:
                         return jsonify({'val':'Empty'}), 200, {'Content-Type': 'application/json; charset=utf-8'}
-                    #rrdfile =  path + '/' + rrd + '.rrd'
-                    #if not os.path.isfile(rrdfile):
-                    _val = 'N'
-                    for k in val:
-                        v = str(val[k])
-                        _val += ':' + v
 
-                        val = _val
+                    for k,v in val.iteritems():
+                        #print('K: ' + str(k))
+                        #print('V: ' + str(v))
                         rrdfile =  path + '/' + str(rrd) + '.' + str(k) + '.rrd'
+                        val = 'N:' + str(v) 
                         if not os.path.isfile(rrdfile):
                             verifiRRD(rrdfile, {k:v})
                             continue
 
+
                 ####################################
                 # val, and rrdfile
-                print(str(type(val)) + ' ' + str(rrdfile) + ' ' + str(val))
+                #print(str(type(val)) + ' ' + str(rrdfile) + ' ' + str(val))
 
                 if os.path.isfile(rrdfile):
                     try:
