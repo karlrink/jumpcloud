@@ -1,5 +1,5 @@
 
-__version__ = '002.6'
+__version__ = '002.6.1'
 
 from flask import Flask
 from flask import request
@@ -324,6 +324,11 @@ def post_request(system_id):
                         if not os.path.isfile(rrdfile):
                             verifiRRD(rrdfile, {k:v})
                             continue
+                        try:
+                            #print(str(type(val)) + ' ' + str(rrdfile) + ' ' + str(val))
+                            rrdtool.update(str(rrdfile), str(val))
+                        except Exception as e:
+                            app.logger.debug(str(e))
 
 
                 ####################################
