@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-__version__ = "001"
+__version__ = "001.1"
 
 import BaseHTTPServer
 import cgi
@@ -395,6 +395,10 @@ def genGraph(rrd=None,dsdict=None,start=None,end=None,outdir=None,system_id=None
         else:
             cmdline  = 'rrdtool graph ' + outfile + ' -a PNG '
 
+        #cmdline += ' --alt-autoscale --alt-y-grid --rigid  '
+        #cmdline += ' --alt-autoscale-max '
+        #cmdline += ' --alt-autoscale '
+        cmdline += ' --lower-limit=0 '
         cmdline += ' --title="%s" ' % title
         cmdline += ' --start %s --end %s ' % (start,end)
         cmdline += ' DEF:%s=%s:%s:AVERAGE ' % (ds,db,ds)
