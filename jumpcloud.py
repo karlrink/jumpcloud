@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.4'
+__version__='1.0.5'
 
 import sys
 if sys.version_info[0] < 3:
@@ -1254,7 +1254,13 @@ def get_systeminsights_system_info_json(system_id=None, limit=None, skip=None):
 def list_systems():
     jdata = get_systems_json()
     for data in jdata['results']:
-        print(data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')  + ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch'))
+        #print(data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')  + ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch'))
+        print(str(data.get('_id')) + ' "' 
+              + str(data.get('displayName')) + '" (' 
+              + str(data.get('hostname'))  + ') ' 
+              + str(data.get('os')) + ' ' 
+              + str(data.get('version')) + ' ' 
+              + str(data.get('arch')))
     #print('totalCount: ' + str(jdata['totalCount']))
 
 def list_systems_hostname():
