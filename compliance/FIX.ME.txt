@@ -1,0 +1,12 @@
+
+🍗 karl.rink@Karl-MacBook-Pro compliance % ./compliance.py report systems_no_group  
+Traceback (most recent call last):
+  File "./compliance.py", line 434, in <module>
+    report = systems_no_group_report_text()
+  File "./compliance.py", line 41, in systems_no_group_report_text
+    hostname = jumpcloud.get_systems_hostname(system_id)
+  File "/Users/karl.rink/jumpcloud/jumpcloud.py", line 773, in get_systems_hostname
+    return jdata['hostname']
+KeyError: 'hostname'
+
+

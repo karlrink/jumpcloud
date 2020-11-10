@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.5'
+__version__='1.0.6'
 
 import sys
 if sys.version_info[0] < 3:
@@ -23,6 +23,7 @@ def usage():
       get_systems_hostname [system_id]
       get_systems_users [system_id]
       get_systems_memberof [system_id]
+      set_systems_memberof system_id group_id
       delete_system [system_id]
 
       list_users [json|suspended|locked|password_expired|not_activated|ldap_bind|mfa]
@@ -79,7 +80,7 @@ if os.environ.get('JUMPCLOUD_API_KEY') is None:
 debug=False
 
 content_type = 'application/json' # str |  (default application/json)
-accept_type  = 'application/json' # str |  (default application/json)
+accept_type = 'application/json' # str |  (default application/json)
 limit = 0 # int |  (optional) (default 10) (100 max)
 skip = 0 # int | The offset into the records to return. (optional) (default 0)
 
@@ -179,6 +180,30 @@ def get_systems_memberof_json(system_id=None):
     #if debug: print(str(len(response.data.decode('utf-8'))))
     #if debug: print(str(response.status))
     return json.loads(response.data.decode('utf-8'))
+
+def set_systems_memberof(system_id, group_id):
+    #https://docs.jumpcloud.com/2.0/system-group-members-and-membership/manage-the-members-of-a-system-group
+
+    #print('system_id ' + str(system_id))
+    #print('group_id ' + str(group_id))
+
+    URL="https://console.jumpcloud.com/api/v2/systemgroups/" + str(group_id) + "/members"
+
+    data = {'op': 'add', 'type': 'system', 'id': system_id}
+    encoded_body = json.dumps(data).encode('utf-8')
+    #print(encoded_body)
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('POST', URL,
+                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                    'Content-Type': content_type,
+                                    'Accept': accept_type},
+                           body=encoded_body)
+
+    #print(str(response.status))
+    #print(response.data.decode('utf-8'))
+    return str(response.status), str(response.data.decode('utf-8'))
+
+
    
 def print_systems_memberof(system_id=None):
     if system_id:
@@ -1414,6 +1439,7 @@ options = {
   'list_user_bindings_json'         : list_user_bindings_json,
   'get_systems_users'               : get_systems_users,
   'get_systems_memberof'            : print_systems_memberof,
+  'set_systems_memberof'            : set_systems_memberof,
   'get_systems_users_json'          : print_systems_users_json,
   'get_systems_hostname'            : print_systems_hostname,
   'get_user_email'                  : print_user_email,
@@ -1452,6 +1478,8 @@ if __name__ == '__main__':
                 options[sys.argv[1]](sys.argv[2],sys.argv[3])
             elif sys.argv[1] == "update_system" or sys.argv[1] == "mod_command":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
+            elif sys.argv[1] == "set_systems_memberof":
+                options[sys.argv[1]](sys.argv[2],sys.argv[3])
             elif len(sys.argv) > 2 and sys.argv[1] in args1:
                 options[str(sys.argv[1] + '_' + sys.argv[2])]()
             elif sys.argv[1] in args2:
