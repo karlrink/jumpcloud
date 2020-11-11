@@ -63,22 +63,46 @@ def send_systems_no_group():
     return True
 
 def systems_no_group_set_default():
+
+    systems_no_group = get_systems_no_group_osDct()
+    for k,v in systems_no_group.items():
+        #print(k,v)
+
+        if v.startswith('Windows'): #5e5d64fe45886d6c2066520c "Windows Systems"
+            set_group = jumpcloud.set_systems_memberof(k, '5e5d64fe45886d6c2066520c')
+            print('set Windows Systems ' + str(k))
+
+        elif v.startswith('Mac'): #5e59922a232e115836375f67 "Mac Systems"
+            set_group = jumpcloud.set_systems_memberof(k, '5e59922a232e115836375f67')
+            print('set Mac Systems ' + str(k))
+
+        elif v.startswith('Linux'): #5e59921b232e115836375f63 "Linux Systems"
+            set_group = jumpcloud.set_systems_memberof(k, '5e59921b232e115836375f63')
+            print('set Linux Systems ' + str(k))
+        elif v.startswith('Ubuntu'):
+            set_group = jumpcloud.set_systems_memberof(k, '5e59921b232e115836375f63')
+            print('set Linux Systems Ubuntu ' + str(k))
+        elif v.startswith('RedHat'):
+            set_group = jumpcloud.set_systems_memberof(k, '5e59921b232e115836375f63')
+            print('set Linux Systems RedHat ' + str(k))
+        elif v.startswith('Amazon'):
+            set_group = jumpcloud.set_systems_memberof(k, '5e59921b232e115836375f63')
+            print('set Linux Systems Amazon ' + str(k))
+
+        else:
+            print('unknown os ' + str(v))
+
+    return True
+
+def get_systems_no_group_osDct():
     systems_no_group = {}
     all_system_id = jumpcloud.get_systems_id()
     for system_id in all_system_id:
-        #if not jdata:
-        #    systemsos = jumpcloud.get_systems_os(system_id)
-        print(str(system_id))
-        #systems_json = jumpcloud.get_systems_json_single(system_id)
-
         jdata = jumpcloud.get_systems_memberof_json(system_id)
-        #print(jdata)
         if not jdata:
-            print(jdata)
-            
-
-
-
+            os = jumpcloud.get_systems_os(system_id, _print=False)
+            systems_no_group[system_id] = os
+    return systems_no_group
 
 
 #---------------------------------------------------------------------------
