@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0007'
+__version__ = '0008'
 
 import sys, os, json
 sys.dont_write_bytecode = True
@@ -16,7 +16,7 @@ def usage():
 
         report|send systems_root_ssh
         report|send systems_fde
-        report|send systems_no_group
+        report|send|set_default systems_no_group
         report|send users_mfa
         report|send users
         report|send systems
@@ -61,6 +61,24 @@ def send_systems_no_group():
     subject = 'Compliance: Systems Unidentified (no group assignment)'
     send_ses_email(receivers, subject, report)
     return True
+
+def systems_no_group_set_default():
+    systems_no_group = {}
+    all_system_id = jumpcloud.get_systems_id()
+    for system_id in all_system_id:
+        #if not jdata:
+        #    systemsos = jumpcloud.get_systems_os(system_id)
+        print(str(system_id))
+        #systems_json = jumpcloud.get_systems_json_single(system_id)
+
+        jdata = jumpcloud.get_systems_memberof_json(system_id)
+        #print(jdata)
+        if not jdata:
+            print(jdata)
+            
+
+
+
 
 
 #---------------------------------------------------------------------------
@@ -435,6 +453,9 @@ if __name__ == "__main__":
             print(report)
         elif sys.argv[1] == "send" and sys.argv[2] == "systems_no_group":
             email = send_systems_no_group()
+        elif sys.argv[1] == "set_default" and sys.argv[2] == "systems_no_group":
+            set_default = systems_no_group_set_default()
+            print(set_default)
         else:
             print('Unknown option')
     else:

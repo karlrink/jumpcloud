@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.6'
+__version__='1.0.7'
 
 import sys
 if sys.version_info[0] < 3:
@@ -20,6 +20,7 @@ def usage():
       list_systems [json|os|os_version|hostname|serial|insights|state|fde|agent|root_ssh]
       list_systems_id
       get_systems_json [system_id]
+      get_systems_os system_id
       get_systems_hostname [system_id]
       get_systems_users [system_id]
       get_systems_memberof [system_id]
@@ -1301,6 +1302,12 @@ def list_systems_os(_print=True):
         thisDict[data.get('_id')] = data.get('os')
     return thisDict
 
+def get_systems_os(system_id, _print=True):
+    system_id = ''.join(system_id)
+    jdata = get_systems_json_single(system_id)
+    if _print: print(jdata['os'])
+    return jdata['os']
+
 def list_systems_serial():
     jdata = get_systems_json()
     for data in jdata['results']:
@@ -1438,6 +1445,7 @@ options = {
   'list_user_bindings'              : list_user_bindings,
   'list_user_bindings_json'         : list_user_bindings_json,
   'get_systems_users'               : get_systems_users,
+  'get_systems_os'                  : get_systems_os,
   'get_systems_memberof'            : print_systems_memberof,
   'set_systems_memberof'            : set_systems_memberof,
   'get_systems_users_json'          : print_systems_users_json,
@@ -1467,7 +1475,7 @@ args2 = ['trigger','systeminsights_os_version','systeminsights_apps',
          'get_systeminsights_system_info','get_app','get_program','list_system_bindings',
          'list_user_bindings','list_user_bindings_json','list_system_bindings_json',
          'get_systems_users_json','delete_system','get_systems_memberof','get_systemgroups_name',
-         'list_command_results','delete_command_results']
+         'list_command_results','delete_command_results','get_systems_os']
 
 if __name__ == '__main__':
     try:
