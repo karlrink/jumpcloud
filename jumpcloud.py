@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.7'
+__version__='1.0.8'
 
 import sys
 if sys.version_info[0] < 3:
@@ -24,7 +24,6 @@ def usage():
       get_systems_hostname [system_id]
       get_systems_users [system_id]
       get_systems_memberof [system_id]
-      set_systems_memberof system_id group_id
       delete_system [system_id]
 
       list_users [json|suspended|locked|password_expired|not_activated|ldap_bind|mfa]
@@ -35,6 +34,11 @@ def usage():
       list_systemgroups_membership [group_id]
       get_systemgroups_name [group_id]
       get_user_email [user_id]
+
+      set_systems_memberof system_id group_id
+      set_users_memberof user_id system_id
+      set_users_memberof_admin user_id system_id
+      del_users_memberof user_id system_id
 
       list_systeminsights_hardware [json|csv]
       systeminsights_os_version [system_id]
@@ -182,7 +186,7 @@ def get_systems_memberof_json(system_id=None):
     #if debug: print(str(response.status))
     return json.loads(response.data.decode('utf-8'))
 
-def set_systems_memberof(system_id, group_id):
+def set_systems_memberof(system_id, group_id, verbose=True):
     #https://docs.jumpcloud.com/2.0/system-group-members-and-membership/manage-the-members-of-a-system-group
 
     #print('system_id ' + str(system_id))
@@ -202,8 +206,80 @@ def set_systems_memberof(system_id, group_id):
 
     #print(str(response.status))
     #print(response.data.decode('utf-8'))
+    if verbose: print(str(response.status), str(response.data.decode('utf-8')))
     return str(response.status), str(response.data.decode('utf-8'))
 
+
+def set_users_memberof(user_id, system_id, verbose=True):
+    #https://docs.jumpcloud.com/2.0/systems/manage-associations-of-a-system
+
+    #print('system_id ' + str(system_id))
+    #print('user_id ' + str(user_id))
+
+    URL="https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/associations"
+
+    data = {'op': 'add', 'type': 'user', 'id': user_id}
+    encoded_body = json.dumps(data).encode('utf-8')
+    #print(encoded_body)
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('POST', URL,
+                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                    'Content-Type': content_type,
+                                    'Accept': accept_type},
+                           body=encoded_body)
+
+    #print(str(response.status))
+    #print(response.data.decode('utf-8'))
+    if verbose: print(str(response.status), str(response.data.decode('utf-8')))
+    return str(response.status), str(response.data.decode('utf-8'))
+
+def set_users_memberof_admin(user_id, system_id, verbose=True):
+    #https://docs.jumpcloud.com/2.0/systems/manage-associations-of-a-system
+
+    #print('system_id ' + str(system_id))
+    #print('user_id ' + str(user_id))
+
+    URL="https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/associations"
+
+    data = {'op': 'add', 'type': 'user', 'id': user_id, 'attributes': {'sudo':{'enabled':True, 'withoutPassword': False}}}
+    encoded_body = json.dumps(data).encode('utf-8')
+    #print(encoded_body)
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('POST', URL,
+                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                    'Content-Type': content_type,
+                                    'Accept': accept_type},
+                           body=encoded_body)
+
+    #print(str(response.status))
+    #print(response.data.decode('utf-8'))
+    if verbose: print(str(response.status), str(response.data.decode('utf-8')))
+    return str(response.status), str(response.data.decode('utf-8'))
+
+
+
+def del_users_memberof(user_id, system_id, verbose=True):
+    #https://docs.jumpcloud.com/2.0/systems/manage-associations-of-a-system
+
+    #print('system_id ' + str(system_id))
+    #print('user_id ' + str(user_id))
+
+    URL="https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/associations"
+
+    data = {'op': 'remove', 'type': 'user', 'id': user_id}
+    encoded_body = json.dumps(data).encode('utf-8')
+    #print(encoded_body)
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('POST', URL,
+                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                    'Content-Type': content_type,
+                                    'Accept': accept_type},
+                           body=encoded_body)
+
+    #print(str(response.status))
+    #print(response.data.decode('utf-8'))
+    if verbose: print(str(response.status), str(response.data.decode('utf-8')))
+    return str(response.status), str(response.data.decode('utf-8'))
 
    
 def print_systems_memberof(system_id=None):
@@ -1448,6 +1524,9 @@ options = {
   'get_systems_os'                  : get_systems_os,
   'get_systems_memberof'            : print_systems_memberof,
   'set_systems_memberof'            : set_systems_memberof,
+  'set_users_memberof'              : set_users_memberof,
+  'set_users_memberof_admin'        : set_users_memberof_admin,
+  'del_users_memberof'              : del_users_memberof,
   'get_systems_users_json'          : print_systems_users_json,
   'get_systems_hostname'            : print_systems_hostname,
   'get_user_email'                  : print_user_email,
@@ -1486,7 +1565,10 @@ if __name__ == '__main__':
                 options[sys.argv[1]](sys.argv[2],sys.argv[3])
             elif sys.argv[1] == "update_system" or sys.argv[1] == "mod_command":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
-            elif sys.argv[1] == "set_systems_memberof":
+            elif sys.argv[1] == "set_systems_memberof" or sys.argv[1] == "set_users_memberof" \
+                    or sys.argv[1] == "set_users_memberof_admin":
+                options[sys.argv[1]](sys.argv[2],sys.argv[3])
+            elif sys.argv[1] == "del_users_memberof":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3])
             elif len(sys.argv) > 2 and sys.argv[1] in args1:
                 options[str(sys.argv[1] + '_' + sys.argv[2])]()
