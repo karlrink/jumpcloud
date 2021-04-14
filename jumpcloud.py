@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.8'
+__version__='1.0.9.dev.20210414-1'
 
 import sys
 if sys.version_info[0] < 3:
@@ -9,7 +9,7 @@ if sys.version_info[0] < 3:
 import time
 import os
 import json
-import urllib3
+import urllib3 #hmmm... requests still wasn't good enough for me then? eh, don't forget ignore ssl
 urllib3.disable_warnings()
 
 def usage():
@@ -20,6 +20,7 @@ def usage():
       list_systems [json|os|os_version|hostname|serial|insights|state|fde|agent|root_ssh]
       list_systems_id
       get_systems_json [system_id]
+      get_systems_remoteIP [system_id]
       get_systems_os system_id
       get_systems_hostname [system_id]
       get_systems_users [system_id]
@@ -879,6 +880,12 @@ def print_systems_hostname(system_id=None):
     jdata = get_systems_json_single(system_id)
     print(jdata['hostname'])
 
+def get_systems_remoteIP(system_id=None, verbose=True) -> None:
+    system_id = ''.join(system_id)
+    jdata = get_systems_json_single(system_id)
+    if verbose: print(str(jdata['remoteIP']))
+    return jdata['remoteIP']
+
 #api.v1
 #https://docs.jumpcloud.com/1.0/systems/list-all-systems
 #List All Systems GET /systems
@@ -1474,6 +1481,9 @@ def events(start=None, end=None):
     jdata = get_events_json(start, end)
     print(json.dumps(jdata, sort_keys=False, indent=4))
 
+#hmmm...  these options are looking ugly... is this a case for python 3.10 new switch case statements? double pun intended. 
+#https://www.python.org/dev/peps/pep-3103/
+
 options = {
   'list_systems'                    : list_systems,
   'list_systems_id'                 : list_systems_id,
@@ -1481,6 +1491,7 @@ options = {
   'list_systems_serial'             : list_systems_serial,
   'list_systems_json'               : list_systems_json,
   'get_systems_json'                : list_systems_json,
+  'get_systems_remoteIP'            : get_systems_remoteIP,
   'list_systems_os'                 : list_systems_os,
   'list_systems_agent'              : list_systems_agent,
   'list_systems_os_version'         : list_systems_os_version,
@@ -1548,7 +1559,7 @@ args1 = ['list_systems','list_users','list_commands','list_systeminsights_hardwa
 
 args2 = ['trigger','systeminsights_os_version','systeminsights_apps',
          'systeminsights_programs','get_systems_json','get_systems_users',
-         'get_systems_hostname','get_user_email',
+         'get_systems_hostname','get_user_email','get_systems_remoteIP',
          'list_systems_id','list_usergroups_members','list_usergroups_details',
          'list_systemgroups_membership','list_systeminsights_apps','list_systeminsights_programs',
          'get_systeminsights_system_info','get_app','get_program','list_system_bindings',
