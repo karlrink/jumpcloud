@@ -183,4 +183,19 @@ nice!
 174.194.134.239
 
 
+#########################################################################################################################################3
+
+
+need this to work...
+
+🐰 karl.rink@Karl-MacBook-Pro jumpcloud % jumpcloud add_systems_remoteIP_to_awsSG 5e30c0b9890a7a4766268b59 sg-0347e06ea035f9e86
+KeyError: 'add_systems_remoteIP_to_awsSG'
+
+
+for now we'll just hardcode --port 3389
+really just need to re-write cli args that are currently limited.  perhaps re-visit argspars or getops...
+
+
+
+
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.9.dev.20210414-1'
+__version__='1.0.9.dev.20210414-2'
 
 import sys
 if sys.version_info[0] < 3:
@@ -21,6 +21,7 @@ def usage():
       list_systems_id
       get_systems_json [system_id]
       get_systems_remoteIP [system_id]
+      add_systems_remoteIP_awsSG [system_id] [awsSG_id]
       get_systems_os system_id
       get_systems_hostname [system_id]
       get_systems_users [system_id]
@@ -886,6 +887,22 @@ def get_systems_remoteIP(system_id=None, verbose=True) -> None:
     if verbose: print(str(jdata['remoteIP']))
     return jdata['remoteIP']
 
+
+def add_systems_remoteIP_awsSG(system_id, awsSG_id):
+
+    system_id = get_systems_remoteIP(system_id, verbose=False)
+    print(system_id)
+    print(awsSG_id)
+
+    import subprocess
+
+
+    return True
+
+
+
+
+
 #api.v1
 #https://docs.jumpcloud.com/1.0/systems/list-all-systems
 #List All Systems GET /systems
@@ -1492,6 +1509,7 @@ options = {
   'list_systems_json'               : list_systems_json,
   'get_systems_json'                : list_systems_json,
   'get_systems_remoteIP'            : get_systems_remoteIP,
+  'add_systems_remoteIP_awsSG'      : add_systems_remoteIP_awsSG,
   'list_systems_os'                 : list_systems_os,
   'list_systems_agent'              : list_systems_agent,
   'list_systems_os_version'         : list_systems_os_version,
@@ -1573,6 +1591,8 @@ if __name__ == '__main__':
             if sys.argv[1] == "--help":
                 usage()
             elif sys.argv[1] == "events" or sys.argv[1] == "get_command":
+                options[sys.argv[1]](sys.argv[2],sys.argv[3])
+            elif sys.argv[1] == "add_systems_remoteIP_awsSG":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3])
             elif sys.argv[1] == "update_system" or sys.argv[1] == "mod_command":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
