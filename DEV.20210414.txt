@@ -198,4 +198,17 @@ really just need to re-write cli args that are currently limited.  perhaps re-vi
 
 
 
+ok, this is working now...
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % jumpcloud add_systems_remoteIP_awsSG 5e30c0b9890a7a4766268b59 sg-0347e06ea035f9e86
+172.251.165.173
+sg-0347e06ea035f9e86
+
+
+An error occurred (InvalidPermission.Duplicate) when calling the AuthorizeSecurityGroupIngress operation: the specified rule "peer: 172.251.165.173/32, TCP, from port: 3389, to port: 3389, ALLOW" already exists
+
+🐰 karl.rink@Karl-MacBook-Pro ~ %
+
+
+
 

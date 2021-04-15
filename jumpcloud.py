@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.9.dev.20210414-2'
+__version__='1.0.9.dev.20210414-3'
 
 import sys
 if sys.version_info[0] < 3:
@@ -890,19 +890,32 @@ def get_systems_remoteIP(system_id=None, verbose=True) -> None:
 
 def add_systems_remoteIP_awsSG(system_id, awsSG_id):
 
-    system_id = get_systems_remoteIP(system_id, verbose=False)
-    print(system_id)
+    remote_ip = get_systems_remoteIP(system_id, verbose=False)
+    print(remote_ip)
     print(awsSG_id)
 
-    import subprocess
+    #import subprocess
+    from subprocess import Popen, PIPE, STDOUT
 
+    cmd = 'aws ec2 authorize-security-group-ingress --group-id '+str(awsSG_id)+' --protocol tcp --port 3389 --cidr '+str(remote_ip)+'/32'
+
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    out = proc.stdout.readlines()
+    err = proc.stderr.readlines()
+
+    for o in out:
+        print('out: '+str(o.decode('utf-8')))
+
+    for e in err:
+        print('err: '+str(e.decode('utf-8')))
 
     return True
 
 
 
 
-
+#####################################################################################################################################################
+#
 #api.v1
 #https://docs.jumpcloud.com/1.0/systems/list-all-systems
 #List All Systems GET /systems
