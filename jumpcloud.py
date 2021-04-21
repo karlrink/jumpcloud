@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.9.dev.20210414-3'
+__version__='1.0.9.dev.20210421-1'
 
 import sys
 if sys.version_info[0] < 3:
@@ -844,11 +844,12 @@ def list_system_bindings(user_id=None):
         hostname = get_systems_hostname(line['id'])
         print(line['id'] + ' ' + str(hostname))
 
+#https://docs.jumpcloud.com/2.0/systems/list-the-users-bound-to-a-system
 #List the Users bound to a System
 #GET/systems/{system_id}/users
 def get_user_bindings_json(system_id=None):
     #system_id = ''.join(system_id)
-    URL="https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/users"
+    URL="https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/users?limit=100"
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
@@ -864,11 +865,46 @@ def list_user_bindings_json(system_id=None):
 def list_user_bindings(system_id=None):
     system_id = ''.join(system_id)
     jdata = get_user_bindings_json(system_id)
-    #print(jdata)
+
     for line in jdata:
-        #print(line)
         user_email = get_user_email(line['id'])
         print(line['id'] + ' ' + str(user_email))
+
+
+
+    #print(jdata)
+    #for line in jdata:
+        #print(line)
+    #    user_email = get_user_email(line['id'])
+    #    print(line['id'] + ' ' + str(user_email))
+    #print(json.dumps(jdata, indent=2))
+    #List=[]
+    #for line in jdata:
+    #    #print(line)
+    #    List.append(line['id'])
+    #print(List)
+
+    #List = json_extract(jdata, 'id')
+    #dList=[]
+
+    #print(List)
+    #dList = list(dict.fromkeys(List))
+    #print(dList)
+    #for i in dList:
+
+    #for i in List:
+    #    if i not in dList:
+    #        dList.append(i)
+
+    #for i in dList:
+    #    try:
+    #        user_email = get_user_email(i)
+    #    except KeyError as e:
+    #        error = e
+    #        user_email = None
+    #    print(str(i) + ' ' + str(user_email))
+
+
 
 
 def get_systems_hostname(system_id=None):
@@ -880,6 +916,29 @@ def print_systems_hostname(system_id=None):
     system_id = ''.join(system_id)
     jdata = get_systems_json_single(system_id)
     print(jdata['hostname'])
+
+def json_extract(obj, key):
+    """Recursively fetch values from nested JSON."""
+    arr = []
+
+    def extract(obj, arr, key):
+        """Recursively search for values of key in JSON tree."""
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if isinstance(v, (dict, list)):
+                    extract(v, arr, key)
+                elif k == key:
+                    arr.append(v)
+        elif isinstance(obj, list):
+            for item in obj:
+                extract(item, arr, key)
+        return arr
+
+    values = extract(obj, arr, key)
+    return values
+
+
+#######################################################################
 
 def get_systems_remoteIP(system_id=None, verbose=True) -> None:
     system_id = ''.join(system_id)

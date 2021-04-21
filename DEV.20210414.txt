@@ -211,4 +211,15 @@ An error occurred (InvalidPermission.Duplicate) when calling the AuthorizeSecuri
 
 
 
+######################
+
+
+testing how long it takes to update...
+
+curl http://checkip.amazonaws.com/
+172.251.165.173
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % jumpcloud get_systems_remoteIP 5e30c0b9890a7a4766268b59
+107.77.227.212
+
 
