@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.9.dev.20210421-1'
+__version__='1.0.10'
 
 import sys
 if sys.version_info[0] < 3:
@@ -1193,9 +1193,9 @@ def list_users():
             #if debug: print(str(data.get('middlename')))
             middlename = ' ' + str(data.get('middlename')) + ' '
 
-        _line = data.get('_id') + ' ' + data.get('username') + ' (' + data.get('displayname') + ') '
-        _line += '["' + data.get('firstname') + str(middlename) + data.get('lastname') + '"] '
-        _line += data.get('email')
+        _line = str(data.get('_id')) + ' ' + str(data.get('username')) + ' (' + str(data.get('displayname')) + ') '
+        _line += '["' + str(data.get('firstname')) + str(middlename) + str(data.get('lastname')) + '"] '
+        _line += str(data.get('email'))
         print(_line)
 
 def list_users_suspended(_print=True):
