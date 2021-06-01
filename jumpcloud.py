@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.0.10'
+__version__='1.1.0'
 
 import sys
 if sys.version_info[0] < 3:
@@ -940,7 +940,8 @@ def json_extract(obj, key):
 
 #######################################################################
 
-def get_systems_remoteIP(system_id=None, verbose=True) -> None:
+#def get_systems_remoteIP(system_id=None, verbose=True) -> None:
+def get_systems_remoteIP(system_id=None, verbose=True):
     system_id = ''.join(system_id)
     jdata = get_systems_json_single(system_id)
     if verbose: print(str(jdata['remoteIP']))
@@ -1657,7 +1658,7 @@ args2 = ['trigger','systeminsights_os_version','systeminsights_apps',
          'get_systems_users_json','delete_system','get_systems_memberof','get_systemgroups_name',
          'list_command_results','delete_command_results','get_systems_os']
 
-if __name__ == '__main__':
+def main():
     try:
         if sys.argv[1:]:
             if sys.argv[1] == "--help":
@@ -1685,4 +1686,9 @@ if __name__ == '__main__':
     except KeyError as e:
         print("KeyError: " + str(e))
         sys.exit(1)
+
+if __name__ == '__main__':
+    sys.exit(main())
+
+
 #EOF
