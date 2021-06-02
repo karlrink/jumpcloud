@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__='1.1.0'
+__version__='1.1.1'
 
 import sys
 if sys.version_info[0] < 3:
@@ -9,7 +9,7 @@ if sys.version_info[0] < 3:
 import time
 import os
 import json
-import urllib3 #hmmm... requests still wasn't good enough for me then? eh, don't forget ignore ssl
+import urllib3
 urllib3.disable_warnings()
 
 def usage():
@@ -170,8 +170,6 @@ def get_systems_users_json(system_id=None):
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
-    #if debug: print(str(len(response.data.decode('utf-8'))))
-    #if debug: print(str(response.status))
     return json.loads(response.data.decode('utf-8'))
 
 def get_systems_memberof_json(system_id=None):
@@ -184,21 +182,15 @@ def get_systems_memberof_json(system_id=None):
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
-    #if debug: print(str(len(response.data.decode('utf-8'))))
-    #if debug: print(str(response.status))
     return json.loads(response.data.decode('utf-8'))
 
 def set_systems_memberof(system_id, group_id, verbose=True):
     #https://docs.jumpcloud.com/2.0/system-group-members-and-membership/manage-the-members-of-a-system-group
 
-    #print('system_id ' + str(system_id))
-    #print('group_id ' + str(group_id))
-
     URL="https://console.jumpcloud.com/api/v2/systemgroups/" + str(group_id) + "/members"
 
     data = {'op': 'add', 'type': 'system', 'id': system_id}
     encoded_body = json.dumps(data).encode('utf-8')
-    #print(encoded_body)
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('POST', URL,
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
@@ -206,8 +198,6 @@ def set_systems_memberof(system_id, group_id, verbose=True):
                                     'Accept': accept_type},
                            body=encoded_body)
 
-    #print(str(response.status))
-    #print(response.data.decode('utf-8'))
     if verbose: print(str(response.status), str(response.data.decode('utf-8')))
     return str(response.status), str(response.data.decode('utf-8'))
 
@@ -215,14 +205,10 @@ def set_systems_memberof(system_id, group_id, verbose=True):
 def set_users_memberof(user_id, system_id, verbose=True):
     #https://docs.jumpcloud.com/2.0/systems/manage-associations-of-a-system
 
-    #print('system_id ' + str(system_id))
-    #print('user_id ' + str(user_id))
-
     URL="https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/associations"
 
     data = {'op': 'add', 'type': 'user', 'id': user_id}
     encoded_body = json.dumps(data).encode('utf-8')
-    #print(encoded_body)
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('POST', URL,
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
@@ -230,22 +216,16 @@ def set_users_memberof(user_id, system_id, verbose=True):
                                     'Accept': accept_type},
                            body=encoded_body)
 
-    #print(str(response.status))
-    #print(response.data.decode('utf-8'))
     if verbose: print(str(response.status), str(response.data.decode('utf-8')))
     return str(response.status), str(response.data.decode('utf-8'))
 
 def set_users_memberof_admin(user_id, system_id, verbose=True):
     #https://docs.jumpcloud.com/2.0/systems/manage-associations-of-a-system
 
-    #print('system_id ' + str(system_id))
-    #print('user_id ' + str(user_id))
-
     URL="https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/associations"
 
     data = {'op': 'add', 'type': 'user', 'id': user_id, 'attributes': {'sudo':{'enabled':True, 'withoutPassword': False}}}
     encoded_body = json.dumps(data).encode('utf-8')
-    #print(encoded_body)
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('POST', URL,
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
@@ -253,8 +233,6 @@ def set_users_memberof_admin(user_id, system_id, verbose=True):
                                     'Accept': accept_type},
                            body=encoded_body)
 
-    #print(str(response.status))
-    #print(response.data.decode('utf-8'))
     if verbose: print(str(response.status), str(response.data.decode('utf-8')))
     return str(response.status), str(response.data.decode('utf-8'))
 
@@ -288,13 +266,6 @@ def print_systems_memberof(system_id=None):
     if system_id:
         system_id = ''.join(system_id)
     jdata = get_systems_memberof_json(system_id)
-    #print(json.dumps(jdata, sort_keys=True, indent=4))
-    #if debug: print(system_id)
-    #for line in jdata:
-    #    #print(str(line))
-    #    group_id = str(line['id'])
-    #    group_name = get_systemgroups_name(group_id)
-    #    print(str(group_id) + ' "' + str(group_name) + '"')
     if jdata:
         groups = []
         for line in jdata:
@@ -313,7 +284,6 @@ def get_systems_users(system_id=None):
     jdata = get_systems_users_json(system_id)
 
     if len(jdata) == 1:
-        #return print(jdata)
         print(jdata)
         return
 
@@ -409,24 +379,18 @@ def systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
 
     if len(response) == 1:
         if debug: print('I have spoken.') #Kuiil
-        #sys.exit(0)
         return
 
-    #responseList = response
-    #if debug: print(len(responseList))
     count += len(response)
 
     while len(response) > 0:
         skip += 100
         response = get_systeminsights_list_apps_json(system_id, skip, limit)
-        #responseList = responseList + response
         count += len(response)
-        #if debug: print(str(len(responseList)) + ' ' + str(len(response)))
         print(json.dumps(response, sort_keys=False, indent=4))
         if system_id is None:
             print('Count: ' + str(count))
         
-    #print(str(len(responseList)))
     print('Count: ' + str(count))
 
 
@@ -467,7 +431,6 @@ def systeminsights_programs(system_id=None): #GET /systeminsights/{system_id}/pr
 
     if len(response) == 1:
         if debug: print('I have spoken.') #Kuiil
-        #sys.exit(0)
         return
 
     count += len(response)
@@ -546,7 +509,6 @@ def get_commands_api2_json(command_id=None, segment=None): #GET/api/v2/commands/
     skip  = 0
 
     URL="https://console.jumpcloud.com/api/v2/commands/" + str(command_id) + "/" + str(segment) + "?limit=" + str(limit) + "&skip=" + str(skip) + str(param)
-    #print(URL)
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
@@ -580,8 +542,6 @@ def mod_command(command_id=None, op=None, system_id=None): #POST/api/v2/commands
 
     URL="https://console.jumpcloud.com/api/v2/commands/" + str(command_id) + "/associations"
 
-    #encoded_body = json.dumps('{"op":"' + str(op) + '","type":"system","id":"' + str(system_id) + '"}')
-    #encoded_body = json.dumps('{"op":"' + str(op) + '","type":"system","id":"' + str(system_id) + '"}').encode('utf-8')
     data = {'op': op, 'type': 'system', 'id': system_id}
     encoded_body = json.dumps(data).encode('utf-8')
     print(encoded_body)
@@ -592,13 +552,8 @@ def mod_command(command_id=None, op=None, system_id=None): #POST/api/v2/commands
                                     'Accept': accept_type},
                            body=encoded_body)
 
-    #return json.loads(response.data.decode('utf-8'))
-    #print(json.loads(response.data.decode('utf-8')))
     print(str(response.status))
     print(response.data.decode('utf-8'))
-
-
-
 
 
 #https://docs.jumpcloud.com/2.0/traits/filter
@@ -614,13 +569,10 @@ def list_systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/a
     response = get_systeminsights_apps_json(system_id, skip, limit)
     responseList = response
 
-    #print(len(responseList))
-
     while len(response) > 0:
         skip += 100
         response = get_systeminsights_apps_json(system_id, skip, limit)
         responseList = responseList + response
-        #print(str(len(responseList)) + ' ' + str(len(response)))
 
     for line in responseList:
         count += 1
@@ -630,7 +582,6 @@ def list_systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/a
 def get_systeminsights_apps_json(system_id=None, skip=0, limit=100): #GET /systeminsights/{system_id}/apps
 
     system_id = ''.join(system_id)
-    #print(system_id)
     URL="https://console.jumpcloud.com/api/v2/systeminsights/" + str(system_id) + "/apps?limit=" + str(limit) + "&skip=" + str(skip)
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
@@ -651,25 +602,19 @@ def list_systeminsights_programs(system_id=None): #GET /systeminsights/{system_i
 
     response = get_systeminsights_programs_json(system_id, skip, limit)
     responseList = response
-    #print(len(responseList))
 
     while len(response) > 0:
         skip += 100
         response = get_systeminsights_programs_json(system_id, skip, limit)
         responseList = responseList + response
-        #print(str(len(responseList)) + ' ' + str(len(response)))
-
-    #print(str(len(responseList)))
 
     for line in responseList:
         count += 1
         print(str(count) + ' ' + line['name'] + ' (' + line['publisher'] + ') Version: ' + line['version'])
-        #print(str(count) + ' ' + str(line))
 
 def get_systeminsights_programs_json(system_id=None, skip=0, limit=100): #GET /systeminsights/{system_id}/programs
 
     system_id = ''.join(system_id)
-    #print(system_id)
     URL="https://console.jumpcloud.com/api/v2/systeminsights/" + str(system_id) + "/programs?limit=" + str(limit) + "&skip=" + str(skip)
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
@@ -681,28 +626,17 @@ def get_systeminsights_programs_json(system_id=None, skip=0, limit=100): #GET /s
 # api/v2/systeminsights/apps?limit=100&skip=0&filter=bundle_name:eq:Maps
 def get_app(name=None): #GET /systeminsights/apps
 
-    #name = ''.join(name)
-    #print(str(name) + ' my name is')
-
-    #count=0
     skip=0
     limit=100
 
     response = get_systeminsights_app_json(name, skip, limit)
     responseList = response
 
-    #print(len(responseList))
-
     while len(response) > 0:
         skip += 100
         response = get_systeminsights_app_json(name, skip, limit)
         responseList = responseList + response
-        #print(str(len(responseList)) + ' ' + str(len(response)))
 
-    #for line in responseList:
-    #    count += 1
-    #    print(line['system_id']  + ' ' + line['name'] + ' (' + line['bundle_name'] + ') Version: ' + line['bundle_short_version'])
-    #    #print(str(count) + str(line))
     return responseList
 
 def print_get_app(name=None):
@@ -718,8 +652,6 @@ def print_get_app(name=None):
 # api/v2/systeminsights/apps?limit=100&skip=0&filter=bundle_name:eq:Maps
 def get_systeminsights_app_json(name=None, skip=0, limit=100): #GET /systeminsights/apps
 
-    #name = ''.join(name)
-    #print('Name is ' + str(name))
     URL="https://console.jumpcloud.com/api/v2/systeminsights/apps?limit=" + str(limit) + "&skip=" + str(skip) + "&filter=bundle_name:eq:" + str(name)
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
@@ -733,7 +665,6 @@ def get_systeminsights_app_json(name=None, skip=0, limit=100): #GET /systeminsig
 def get_program(name=None): #GET /systeminsights/programs
 
     name = ''.join(name)
-    #print(str(name) + ' my name is')
 
     count=0
     skip=0
@@ -742,28 +673,20 @@ def get_program(name=None): #GET /systeminsights/programs
     response = get_systeminsights_program_json(name, skip, limit)
     responseList = response
 
-    #print(len(responseList))
-
     while len(response) > 0:
         skip += 100
         response = get_systeminsights_program_json(name, skip, limit)
         responseList = responseList + response
-        #print(str(len(responseList)) + ' ' + str(len(response)))
-
-    #print(str(len(responseList)))
 
     for line in responseList:
         count += 1
         print(line['system_id']  + ' ' + line['name'] + ' (' + line['publisher'] + ') Version: ' + line['version'])
-        #print(str(count) + str(line))
 
 
 
 # api/v2/systeminsights/programs?limit=100&skip=0&filter=name:eq:Microsoft Teams
 def get_systeminsights_program_json(name=None, skip=0, limit=100): #GET /systeminsights/programs
 
-    #name = ''.join(name)
-    #print('Name is ' + str(name))
     URL="https://console.jumpcloud.com/api/v2/systeminsights/programs?limit=" + str(limit) + "&skip=" + str(skip) + "&filter=name:eq:" + str(name)
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
@@ -775,18 +698,15 @@ def get_systeminsights_program_json(name=None, skip=0, limit=100): #GET /systemi
 
 def run_trigger(trigger=None):
 
-    #print("trigger is " + str(trigger))
     trigger = ''.join(trigger)
 
     URL="https://console.jumpcloud.com/api/command/trigger/" + str(trigger)
-    #print(URL)
     encoded_body = json.dumps({}) 
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('POST', URL,
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                     'Content-Type': content_type},
                            body=encoded_body)
-    #print(response.read())
     print(response.data.decode('utf-8'))
 
 
@@ -806,7 +726,6 @@ def update_system(system_id=None, key=None, value=None):
     print(encoded_body)
 
     URL="https://console.jumpcloud.com/api/systems/" + str(system_id)
-    #print(URL)
 
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('PUT', URL,
@@ -821,7 +740,6 @@ def update_system(system_id=None, key=None, value=None):
 #https://github.com/TheJumpCloud/SystemContextAPI/blob/master/examples/instance-shutdown-initd
 
 def get_system_bindings_json(user_id=None):
-    #user_id = ''.join(user_id)
     URL="https://console.jumpcloud.com/api/v2/users/" + str(user_id) + "/systems"
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
@@ -848,7 +766,6 @@ def list_system_bindings(user_id=None):
 #List the Users bound to a System
 #GET/systems/{system_id}/users
 def get_user_bindings_json(system_id=None):
-    #system_id = ''.join(system_id)
     URL="https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/users?limit=100"
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', URL,
@@ -869,43 +786,6 @@ def list_user_bindings(system_id=None):
     for line in jdata:
         user_email = get_user_email(line['id'])
         print(line['id'] + ' ' + str(user_email))
-
-
-
-    #print(jdata)
-    #for line in jdata:
-        #print(line)
-    #    user_email = get_user_email(line['id'])
-    #    print(line['id'] + ' ' + str(user_email))
-    #print(json.dumps(jdata, indent=2))
-    #List=[]
-    #for line in jdata:
-    #    #print(line)
-    #    List.append(line['id'])
-    #print(List)
-
-    #List = json_extract(jdata, 'id')
-    #dList=[]
-
-    #print(List)
-    #dList = list(dict.fromkeys(List))
-    #print(dList)
-    #for i in dList:
-
-    #for i in List:
-    #    if i not in dList:
-    #        dList.append(i)
-
-    #for i in dList:
-    #    try:
-    #        user_email = get_user_email(i)
-    #    except KeyError as e:
-    #        error = e
-    #        user_email = None
-    #    print(str(i) + ' ' + str(user_email))
-
-
-
 
 def get_systems_hostname(system_id=None):
     system_id = ''.join(system_id)
@@ -954,7 +834,6 @@ def add_systems_remoteIP_awsSG(system_id, awsSG_id):
     print(remote_ip)
     print(awsSG_id)
 
-    #import subprocess
     from subprocess import Popen, PIPE, STDOUT
 
     cmd = 'aws ec2 authorize-security-group-ingress --group-id '+str(awsSG_id)+' --protocol tcp --port 3389 --cidr '+str(remote_ip)+'/32'
@@ -1026,13 +905,11 @@ def get_systems_json():
     skip=0
     data = get_systems_json_multi(skip, limit=100)
     totalCount = data['totalCount']
-    #print(len(data['results']))
     resultList = data['results']
 
     while len(data['results']) > 0:
         skip += 100
         data = get_systems_json_multi(skip, limit=100)
-        #print(len(data['results']))
         resultList.extend(data['results'])
 
     dictdata = { 'totalCount': totalCount, 'results': resultList }
@@ -1071,10 +948,6 @@ def print_systemgroups_name(group_id=None):
 
 
 #https://docs.jumpcloud.com/2.0/system-group-members-and-membership/list-system-groups-group-membership
-#def list_systemgroups_membership(group_id=None):
-#    pass
-
-#def get_systemgroups_membership(group_id=None, skip=0, limit=100):
 def list_systemgroups_membership(group_id=None, skip=0, limit=100):
 
     group_id = ''.join(group_id)
@@ -1096,7 +969,6 @@ def list_systemgroups_membership(group_id=None, skip=0, limit=100):
     if response.status == 200:
         jdata = json.loads(response.data.decode('utf-8'))
     else:
-        #return print(str(response.data.decode('utf-8')))
         print(str(response.data.decode('utf-8')))
         return
 
@@ -1104,7 +976,6 @@ def list_systemgroups_membership(group_id=None, skip=0, limit=100):
         print(data['id'] + ' ' + get_systems_hostname(data.get('id')))
 
 
-#def get_usergroups_members(group_id=None, skip=0, limit=100):
 def list_usergroups_members(group_id=None, skip=0, limit=100):
 
     group_id = ''.join(group_id)
@@ -1116,9 +987,6 @@ def list_usergroups_members(group_id=None, skip=0, limit=100):
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
-    #print(str(len(response.data.decode('utf-8'))))
-    #print(str(response.status))
-    #print(response.data.decode('utf-8'))
     if response.status == 200:
         jdata = json.loads(response.data.decode('utf-8'))
     else:
@@ -1130,7 +998,6 @@ def list_usergroups_members(group_id=None, skip=0, limit=100):
     for user in jdata:
         users.append(user.get('to').get('id'))
 
-    #print(users)
     for user_id in users:
         user_email = get_user_email(user_id)
         print(str(user_id) + ' ' + str(user_email))
@@ -1146,9 +1013,6 @@ def list_usergroups_details(group_id=None):
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': content_type,
                                      'Accept': accept_type})
-    #print(str(len(response.data.decode('utf-8'))))
-    #print(str(response.status))
-    #print(response.data.decode('utf-8'))
     if response.status == 200:
         jdata = json.loads(response.data.decode('utf-8'))
     else:
@@ -1184,14 +1048,11 @@ def list_users():
     if len(jdata) == 0:
         print('Zero (0) response')
 
-    #print('totalCount: ' + str(jdata['totalCount']))
     for data in jdata['results']:
         middlename = data.get('middlename')
         if middlename == "" or middlename is None:
-            #if debug: print('blank middlename')
             middlename = ' '
         else:
-            #if debug: print(str(data.get('middlename')))
             middlename = ' ' + str(data.get('middlename')) + ' '
 
         _line = str(data.get('_id')) + ' ' + str(data.get('username')) + ' (' + str(data.get('displayname')) + ') '
@@ -1204,7 +1065,6 @@ def list_users_suspended(_print=True):
     jdata = get_systemusers_json()
     if len(jdata) == 0:
         print('Zero (0) response')
-    #print('totalCount: ' + str(jdata['totalCount']))
     for data in jdata['results']:
         suspended = data.get('suspended')
         if str(suspended) == 'True':
@@ -1219,7 +1079,6 @@ def list_users_locked(_print=True):
     jdata = get_systemusers_json()
     if len(jdata) == 0:
         print('Zero (0) response')
-    #print('totalCount: ' + str(jdata['totalCount']))
     for data in jdata['results']:
         account_locked = data.get('account_locked')
         if str(account_locked) != 'False':
@@ -1234,7 +1093,6 @@ def list_users_password_expired(_print=True):
     jdata = get_systemusers_json()
     if len(jdata) == 0:
         print('Zero (0) response')
-    #print('totalCount: ' + str(jdata['totalCount']))
     for data in jdata['results']:
         password_expired = data.get('password_expired')
         if str(password_expired) != 'False':
@@ -1249,7 +1107,6 @@ def list_users_not_activated(_print=True):
     jdata = get_systemusers_json()
     if len(jdata) == 0:
         print('Zero (0) response')
-    #print('totalCount: ' + str(jdata['totalCount']))
     for data in jdata['results']:
         activated = data.get('activated')
         if str(activated) != 'True':
@@ -1264,7 +1121,6 @@ def list_users_ldap_bind(_print=True):
     jdata = get_systemusers_json()
     if len(jdata) == 0:
         print('Zero (0) response')
-    #print('totalCount: ' + str(jdata['totalCount']))
     for data in jdata['results']:
         ldap_binding_user = data.get('ldap_binding_user')
         if str(ldap_binding_user) == 'True':
@@ -1278,7 +1134,6 @@ def list_users_mfa():
     jdata = get_systemusers_json()
     if len(jdata) == 0:
         print('Zero (0) response')
-    #print('totalCount: ' + str(jdata['totalCount']))
     for data in jdata['results']:
         mfa_json = json.dumps(data.get('mfa'), sort_keys=True)
         _output = data.get('_id') + ' "' + data.get('email') + ' ' + str(mfa_json)
@@ -1371,13 +1226,11 @@ def list_systeminsights_hardware():
     idList = get_systems_id()
 
     for system_id in idList:
-        #print(system_id)
         response = get_systeminsights_system_info_json(system_id, skip=0, limit=100)
         if len(response) == 0:
             print(str(system_id))
         for line in response:
             memGB = round(int(line['physical_memory']) / 1024 / 1024 / 1024)
-            #print(line)
             _line =  str(system_id) + ' ' + line['computer_name'] + ' (' + line['hostname'] + ') '
             _line += line['hardware_model'] + ' (' + line['hardware_vendor'] + ') '
             _line += line['cpu_type'] + ' (' + str(line['cpu_physical_cores']) + ') '
@@ -1447,20 +1300,17 @@ def get_systeminsights_system_info_json(system_id=None, limit=None, skip=None):
                                      'Accept': accept_type})
 
     count = len(json.loads(response.data.decode('utf-8')))
-    #jdata = json.loads(response.data.decode('utf-8'))
     return json.loads(response.data.decode('utf-8'))
 
 def list_systems():
     jdata = get_systems_json()
     for data in jdata['results']:
-        #print(data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')  + ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch'))
         print(str(data.get('_id')) + ' "' 
               + str(data.get('displayName')) + '" (' 
               + str(data.get('hostname'))  + ') ' 
               + str(data.get('os')) + ' ' 
               + str(data.get('version')) + ' ' 
               + str(data.get('arch')))
-    #print('totalCount: ' + str(jdata['totalCount']))
 
 def list_systems_hostname():
     jdata = get_systems_json()
@@ -1499,7 +1349,6 @@ def list_systems_os_version():
 def list_systems_insights():
     jdata = get_systems_json()
     for data in jdata['results']:
-        #print(data.get('_id') + ' ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch') + ' ' + json.dumps(data.get('systemInsights')))
         _line = data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')  + ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch')
         _line += ' ' + json.dumps(data.get('systemInsights'))
         print(_line)
@@ -1518,7 +1367,6 @@ def list_systems_fde():
     if len(jdata) == 1:
         print(str(jdata))
         if debug: print('I have spoken.') #Kuiil
-        #sys.exit(0)
         return
 
     for data in jdata['results']:
@@ -1534,13 +1382,11 @@ def list_systems_root_ssh():
         _line = data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')  + ') ' + data.get('os')
         _line += ' allowSshRootLogin ' + ' [' + str(root_ssh) + ']'
         print(_line)
-        #print('root_ssh')
 
 def delete_system(system_id=None):
     if system_id:
         system_id = ''.join(system_id)
     else:
-        #return print('system_id required')
         print('system_id required')
         return
 
@@ -1570,9 +1416,6 @@ def get_events_json(startDate=None, endDate=None):
 def events(start=None, end=None):
     jdata = get_events_json(start, end)
     print(json.dumps(jdata, sort_keys=False, indent=4))
-
-#hmmm...  these options are looking ugly... is this a case for python 3.10 new switch case statements? double pun intended. 
-#https://www.python.org/dev/peps/pep-3103/
 
 options = {
   'list_systems'                    : list_systems,
