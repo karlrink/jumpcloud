@@ -1,6 +1,8 @@
 
 jumpcloud - wrapper script around jcapiv1, jcapiv2, and console rest api
 
+https://jumpcloud.com/
+
 ----
 usage:
 
