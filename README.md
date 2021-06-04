@@ -81,4 +81,13 @@ jumpcloud option
 Version: 1.1.1
 ```
 
+---   
+
+```
+python3
+>>> import jumpcloud
+>>> jumpcloud.list_users()
+```
+
+
 
