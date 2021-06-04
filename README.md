@@ -78,7 +78,6 @@ jumpcloud option
       Note: Dates must be formatted as RFC3339: "2020-01-15T16:20:01Z"
 
     
-Version: 1.1.1
 ```
 
 ---   
