@@ -1,0 +1,12 @@
+
+param = dict(
+  url = 'http://127.0.0.1:5000',
+  # Amazon Simple Email Service (ses)
+  smtp_host = 'email-smtp.us-west-2.amazonaws.com',
+  smtp_port = '587',
+  smtp_user = 'XXXXXXXXXXXXXXXXXXXX',
+  smtp_pass = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+  smtp_from = 'karl.rink@nationsinfocorp.com',
+  smtp_to   = 'karl.rink@nationsinfocorp.com'
+)
+

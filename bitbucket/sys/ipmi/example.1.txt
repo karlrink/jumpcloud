@@ -1,0 +1,61 @@
+
+karlr@hwmon-dc1-01:~/jumpcloud/sys/ipmi $ ./collect.ipmi.py 172.20.3.4
+{
+    "rrdata": [
+        {
+            "rrd": "ipmi", 
+            "type": "json", 
+            "val": {
+                "AggThermMgn1_C": "-25", 
+                "AggThermMgn2_C": "-35", 
+                "BB12-0V": "12.32", 
+                "BB3-3VVbat": "3.09", 
+                "BBBMCTemp_C": "37", 
+                "BBLftRearTemp_C": "36", 
+                "BBP1VRTemp_C": "33", 
+                "BBP2VRTemp_C": "34", 
+                "BBRtRearTemp_C": "37", 
+                "DIMMThrmMrgn1_C": "-55", 
+                "DIMMThrmMrgn3_C": "-57", 
+                "ExitAirTemp_C": "39", 
+                "FrontPanelTemp_C": "28", 
+                "HSBP1Temp_C": "27", 
+                "LANNICTemp_C": "43", 
+                "MTTCPU1": "0", 
+                "MTTCPU2": "0", 
+                "P1DTSThermMgn_C": "-41", 
+                "P1Temp_C": "39", 
+                "P1ThermCtrl_P": "0", 
+                "P2DTSThermMgn_C": "-38", 
+                "P2Temp_C": "43", 
+                "P2ThermCtrl_P": "0", 
+                "PS1CurrOut_P": "0", 
+                "PS1InputPower_Wtts": "7", 
+                "PS1Temp_C": "28", 
+                "PS2CurrOut_P": "13", 
+                "PS2InputPower_Wtts": "182", 
+                "PS2Temp_C": "30", 
+                "Riser1Temp_C": "33", 
+                "Riser2Temp_C": "31", 
+                "SSBTemp_C": "46", 
+                "SystemAirflow_CFM": "37", 
+                "SystemFan1A_RPM": "9975", 
+                "SystemFan1B_RPM": "9660", 
+                "SystemFan2A_RPM": "9880", 
+                "SystemFan2B_RPM": "9660", 
+                "SystemFan3A_RPM": "9975", 
+                "SystemFan3B_RPM": "9568", 
+                "SystemFan4A_RPM": "10070", 
+                "SystemFan4B_RPM": "9660", 
+                "SystemFan5A_RPM": "9880", 
+                "SystemFan5B_RPM": "9660", 
+                "SystemFan6A_RPM": "9880", 
+                "SystemFan6B_RPM": "9660"
+            }
+        }
+    ], 
+    "system_id": "5e5823d1c7e2bf693f5e5c95"
+}
+{"post": "ok"}
+karlr@hwmon-dc1-01:~/jumpcloud/sys/ipmi $ 
+

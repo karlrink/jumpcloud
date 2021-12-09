@@ -1,0 +1,1 @@
+*/5 * * * * /app/sys/snmp/collect.cisco.asa.py >/dev/null 2>&1

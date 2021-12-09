@@ -1,0 +1,11 @@
+
+
+#virtualenv --python python3 env
+virtualenv --python python2 env
+source env/bin/activate
+pip install flask
+pip install gunicorn
+#pip install python-rrdtool #manual install
+python main.py
+gunicorn --bind 0.0.0.0:5000 --log-level=debug wsgi:app
+
