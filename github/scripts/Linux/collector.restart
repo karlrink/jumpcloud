@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ -f /bin/systemctl ]; then
+    /bin/systemctl restart collector
+else
+    kill $(ps -ef |grep collector.py | grep -v grep | awk '{print $2}') >/dev/null 2>&1
+    /opt/jc/bin/collector.py --daemon
+fi
+
