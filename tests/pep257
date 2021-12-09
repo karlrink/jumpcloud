@@ -1,0 +1,9 @@
+
+#pip3 install pep257
+
+python3 -m pep257 ../src/jumpcloud/jumpcloud.py
+
+python3 -m pep257 ../src/jumpcloud/__init__.py
+
+python3 -m pep257 ../src/jumpcloud/__main__.py
+

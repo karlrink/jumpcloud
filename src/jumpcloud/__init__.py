@@ -1,5 +1,6 @@
 
 # -*- coding: utf-8 -*-
 
-from .jumpcloud import *
+"""jumpcloud.__init__: executed when directory is called."""
 
+from .jumpcloud import *
