@@ -1,0 +1,21 @@
+
+#docker run -it -v "$(pwd)":/app ubuntu:16.04 bash
+docker run -id -v "$(pwd)":/app ubuntu:16.04
+docker run -itd --privileged -v "$(pwd)":/app centos:latest /usr/sbin/init
+
+apt-get update
+apt-get install -y python
+#mpstat,iostat
+apt-get install -y sysstat
+#server
+apt-get install -y python3
+apt-get install -y virtualenv
+
+#rrd
+apt-get install -y python-rrdtool
+
+#apt-get install -y rrdtool python-rrdtool librrd-dev
+#apt-get install build-essential
+
+
+

@@ -1,0 +1,21 @@
+#file:/lib/systemd/system/collector.service
+
+[Unit]
+Description=Collector Server
+After=network.target
+
+[Service]
+Type=forking
+Environment=""
+WorkingDirectory=/opt/jc
+RuntimeDirectory=/opt/jc
+ExecStart=/opt/jc/bin/collector.py --daemon
+ExecStop=/bin/kill $MAINPID
+ExecRestart=/bin/kill -HUP $MAINPID
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
+
+

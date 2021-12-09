@@ -1,0 +1,40 @@
+
+% for i in `jumpcloud list_systems id`
+do
+jumpcloud get_systems_memberof $i
+done
+
+5f7ba8726fc6bd6b0fd0783d []
+5f9069d4ff38bc246a40703f ['Linux Systems']
+5fa3689dfd9b786f36bac814 []
+5fa368b13363966955a8d02b []
+5fa36b7657fa037127974646 []
+5fa36bb747e357527b4c5871 []
+5fa5f431cc5ea60bc0671cd8 ['Windows Systems']
+
+
+jumpcloud list_systemgroups 
+5e5d64fe45886d6c2066520c "Windows Systems"
+5e59922a232e115836375f67 "Mac Systems"
+5e59921b232e115836375f63 "Linux Systems"
+
+---
+
+% jumpcloud set_systems_memberof 5fa36bb747e357527b4c5871 5e59921b232e115836375f63
+
+
+---
+
+🍗 karl.rink@Karl-MacBook-Pro ~ % jumpcloud set_systems_memberof 5fa36bb747e357527b4c5871 5e59921b232e115836375f63
+system_id 5fa36bb747e357527b4c5871
+group_id 5e59921b232e115836375f63
+b'{"op": "add", "type": "system", "id": "5fa36bb747e357527b4c5871"}'
+204
+
+🍗 karl.rink@Karl-MacBook-Pro ~ % jumpcloud get_systems_memberof 5fa36bb747e357527b4c5871
+5fa36bb747e357527b4c5871 ['Linux Systems']
+
+
+
+
+ 

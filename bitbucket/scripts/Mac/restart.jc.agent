@@ -1,0 +1,3 @@
+
+launchctl stop com.jumpcloud.darwin-agent
+

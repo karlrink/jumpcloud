@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [ -f /usr/bin/apt-get ]; then
+  export DEBIAN_FRONTEND=noninteractive
+  installer="/usr/bin/apt-get"
+else
+  installer="/usr/bin/yum"
+fi
+
+$installer install -y python
+$installer install -y sysstat
+

@@ -1,0 +1,10 @@
+
+wmic product get Name,Vendor
+
+wmic product where "Name like '%Office%'"
+
+wmic product where name="name of program" call uninstall /nointeractive
+
+
+
+
