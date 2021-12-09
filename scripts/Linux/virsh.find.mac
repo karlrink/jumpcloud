@@ -1,7 +1,0 @@
-
-vms=$(virsh -q list |awk '{print $2}')
-for vm in $vms
-do
-  echo $vm
-  virsh dumpxml $vm | grep '52:54:00:81:a1:37'
-done
