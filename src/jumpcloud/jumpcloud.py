@@ -26,7 +26,7 @@ if os.environ.get('JUMPCLOUD_API_KEY') is None:
 
 def usage():
     """self: usage."""
-    print("Usage: " + sys.argv[0] + " option")
+    print("Usage: " + sys.argv[0] + " option ")
     print("""
     options:
 
@@ -87,7 +87,6 @@ def usage():
 
       events [startDate] [endDate] 
       Note: Dates must be formatted as RFC3339: "2020-01-15T16:20:01Z"
-
     """)
     print('Version: ' + str(__version__))
     sys.exit(0)
