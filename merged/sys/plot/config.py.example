@@ -1,6 +1,0 @@
-
-plot = dict(
-  workdir = '/app/sys/plot',
-  datadir = '/data/rrd',
-)
-

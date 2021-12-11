@@ -1,6 +1,0 @@
-
-curl -k -X GET https://monitor.nationsinfocorp.com/fim?system_id=5e30c0b9890a7a4766268b59 \
-  -H 'Accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -H 'x-api-key: 5e30c0b9890a7a4766268b59' 
-

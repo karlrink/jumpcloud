@@ -1,7 +1,0 @@
-#!/bin/bash
-
-if [ ! -d /etc/resolver ]; then
-  mkdir /etc/resolver
-fi
-cat > /etc/resolver/nationsinfo.internal <<< 'nameserver 172.20.0.1'
-

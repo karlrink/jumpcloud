@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '2.0.0-PRE-20211210-5'
+__version__ = '2.0.0-PRE-20211210-6'
 
 import sys
 #import time
@@ -1678,7 +1678,9 @@ def main():
     """main: app."""
     try:
         if sys.argv[1:]:
-            if sys.argv[1] == "--version":
+            if sys.argv[1] == "--help":
+                usage()
+            elif sys.argv[1] == "--version":
                 print(__version__)
             elif sys.argv[1] == "events" or sys.argv[1] == "get-command":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3])
