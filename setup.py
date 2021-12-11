@@ -17,6 +17,6 @@ setup(
     author = "Karl Rink",
     author_email = "karl@rink.us",
     url = "https://gitlab.com/krink/jumpcloud",
-    install_requires = [ 'urllib3', ]
+    install_requires = [ 'requests', ]
     )
 

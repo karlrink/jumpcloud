@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '2.0.0-PRE-20211211-0'
+__version__ = '2.0.0-PRE-20211211-1'
 
 import sys
 #import time
@@ -15,9 +15,6 @@ import json
 from subprocess import Popen, PIPE
 
 import requests
-
-import urllib3
-urllib3.disable_warnings()
 
 if sys.version_info[0] < 3:
     raise Exception("Python 3 Please")
@@ -99,58 +96,79 @@ ACCEPT_TYPE = 'application/json' # str |  (default application/json)
 #limit=100 # int | (optional) (default 100) (100 max)
 #skip=0 # int | The offset into the records to return. (optional) (default 0)
 
+#def systeminsights_os_version(system_id=None):
+#    """get: api v2 systeminsights system_id os_version."""
+#    skip = 0
+#    limit = 100
+#
+#    jumpcloud_url = "https://console.jumpcloud.com/api/v2/systeminsights"
+#
+#    if system_id:
+#        system_id = ''.join(system_id)
+#        _url = jumpcloud_url + "/" + str(system_id) + "/os_version"
+#    else:
+#        _url = jumpcloud_url + "/os_version?limit=" + str(limit) + "&skip=" + str(skip)
+#
+#    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+#    response = http.request('GET', _url,
+#                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+#                                     'Content-Type': CONTENT_TYPE,
+#                                     'Accept': ACCEPT_TYPE})
+#
+#    count = len(json.loads(response.data.decode('utf-8')))
+#    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
+#    print(str(count))
+#
+#    #and after 100...
+#    #is also limited by systeminsights being enabled
+#    return True
+
 def systeminsights_os_version(system_id=None):
     """get: api v2 systeminsights system_id os_version."""
     skip = 0
     limit = 100
-
     jumpcloud_url = "https://console.jumpcloud.com/api/v2/systeminsights"
 
     if system_id:
         system_id = ''.join(system_id)
         _url = jumpcloud_url + "/" + str(system_id) + "/os_version"
+        response = get_response_json(_url)
+        print(json.dumps(response, indent=4))
+        return response
     else:
         _url = jumpcloud_url + "/os_version?limit=" + str(limit) + "&skip=" + str(skip)
-
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', _url,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': CONTENT_TYPE,
-                                     'Accept': ACCEPT_TYPE})
-
-    count = len(json.loads(response.data.decode('utf-8')))
-    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
-    print(str(count))
-
-    #and after 100...
-    #is also limited by systeminsights being enabled
-    return True
+        response = get_response_json(_url)
+        resultlist = response
+        while len(response) > 0:
+            skip += 100
+            _url = jumpcloud_url + "/os_version?limit=" + str(limit) + "&skip=" + str(skip)
+            response = get_response_json(_url)
+            resultlist.extend(response)
+        return resultlist
 
 
 def list_command_results(command_id=None):
     """get: api commandresults command_id."""
     skip = 0
     limit = 100
-
     jumpcloud_url = "https://console.jumpcloud.com/api/commandresults"
 
     if command_id:
         command_id = ''.join(command_id)
         _url = jumpcloud_url + "/" + str(command_id)
+        response = get_response_json(_url)
+        print(json.dumps(response, indent=4))
+        return response
     else:
         _url = jumpcloud_url + "?limit=" + str(limit) + "&skip=" + str(skip)
-
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', _url,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': CONTENT_TYPE,
-                                     'Accept': ACCEPT_TYPE})
-
-    count = len(json.loads(response.data.decode('utf-8')))
-    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
-    print(str(count))
-    #and then after 100... limit
-    return True
+        response = get_response_json(_url)
+        resultlist = response
+        while len(response) > 0:
+            skip += 100
+            _url = jumpcloud_url + "?limit=" + str(limit) + "&skip=" + str(skip)
+            response = get_response_json(_url)
+            resultlist.extend(response)
+        return resultlist
 
 
 def delete_command_results(command_id):
@@ -181,32 +199,20 @@ def get_systems_users_json(system_id=None):
     """get: api v2 systems system_id users."""
     skip = 0
     limit = 100
-
     jumpcloud_url = "https://console.jumpcloud.com/api/v2/systems/"
-
     _url = jumpcloud_url + str(system_id) + "/users?limit=" + str(limit) + "&skip=" + str(skip)
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', _url,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': CONTENT_TYPE,
-                                     'Accept': ACCEPT_TYPE})
-    return json.loads(response.data.decode('utf-8'))
+    response_json = get_response_json(_url)
+    return response_json
 
 
 def get_systems_memberof_json(system_id=None):
     """get: api v2 systems system_id memberof."""
     skip = 0
     limit = 100
-
     jumpcloud_url = "https://console.jumpcloud.com/api/v2/systems/"
-
     _url = jumpcloud_url + str(system_id) + "/memberof?limit=" + str(limit) + "&skip=" + str(skip)
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', _url,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': CONTENT_TYPE,
-                                     'Accept': ACCEPT_TYPE})
-    return json.loads(response.data.decode('utf-8'))
+    response_json = get_response_json(_url)
+    return response_json
 
 
 #https://docs.jumpcloud.com/2.0/system-group-members-and-membership/
@@ -317,11 +323,13 @@ def get_systems_users(system_id=None):
     jdata = get_systems_users_json(system_id)
 
     if len(jdata) == 1:
-        print(jdata)
-        return
+        print(json.dumps(jdata, indent=4))
+        return True
 
     for line in jdata:
         print(line['id'])
+
+    return True
 
 
 #https://docs.jumpcloud.com/2.0/user-groups/list-all-users-groups
@@ -369,13 +377,8 @@ def get_systemgroups_json(group_id=None):
     else:
         group_id = ''
         _url = jumpcloud_url + "?limit=100&skip=0"
-
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', _url,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': CONTENT_TYPE,
-                                     'Accept': ACCEPT_TYPE})
-    return json.loads(response.data.decode('utf-8'))
+    response_json = get_response_json(_url)
+    return response_json
 
 
 def list_systemgroups_json(group_id=None):
@@ -516,12 +519,8 @@ def get_commands_json(command_id=None): #GET/api/commands/{id} #api.v1
     else:
         command_id = ''
     _url = "https://console.jumpcloud.com/api/commands/" + str(command_id)
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', _url,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': CONTENT_TYPE,
-                                     'Accept': ACCEPT_TYPE})
-    return json.loads(response.data.decode('utf-8'))
+    response_json = get_response_json(_url)
+    return response_json
 
 
 def list_commands_json():
@@ -819,13 +818,20 @@ def update_system(system_id=None, key=None, value=None):
 
 def get_system_bindings_json(user_id=None):
     """get: api v2 users user_id systems."""
+    skip = 0
+    limit = 100
     _url = "https://console.jumpcloud.com/api/v2/users/" + str(user_id) + "/systems"
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', _url,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': CONTENT_TYPE,
-                                     'Accept': ACCEPT_TYPE})
-    return json.loads(response.data.decode('utf-8'))
+    _url += "?limit=" + str(limit) + "&skip=" + str(skip)
+    response = get_response_json(_url)
+    resultlist = response
+    while len(response) > 0:
+        skip += 100
+        _url = "https://console.jumpcloud.com/api/v2/users/" + str(user_id) + "/systems"
+        _url += "?limit=" + str(limit) + "&skip=" + str(skip)
+        response = get_response_json(_url)
+        resultlist.extend(response)
+
+    return resultlist
 
 
 def list_system_bindings_json(user_id=None):
@@ -838,10 +844,10 @@ def list_system_bindings_json(user_id=None):
 def list_system_bindings(user_id=None):
     """print: get_system_bindings_json hostname."""
     user_id = ''.join(user_id)
-    jdata = get_system_bindings_json(user_id)
-    #print(jdata)
-    for line in jdata:
-        #print(line)
+    data = get_system_bindings_json(user_id)
+    #print(data)
+    #print(str(type(data)))
+    for line in data:
         hostname = get_systems_hostname(line['id'])
         print(line['id'] + ' ' + str(hostname))
 
@@ -932,36 +938,27 @@ def get_systems_json_single(system_id=None):
         _url = "https://console.jumpcloud.com/api/systems/" + str(system_id)
     else:
         _url = "https://console.jumpcloud.com/api/systems"
-
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', _url,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': CONTENT_TYPE,
-                                     'Accept': ACCEPT_TYPE})
-    return json.loads(response.data.decode('utf-8'))
+    response_json = get_response_json(_url)
+    return response_json
 
 
-def get_systems_json_multi(skip, limit):
+def get_systems_json_response(skip, limit):
     """get: api systems multi."""
     _url = "https://console.jumpcloud.com/api/systems?skip=" + str(skip) + '&limit=' + str(limit)
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', _url,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': CONTENT_TYPE,
-                                     'Accept': ACCEPT_TYPE})
-    return json.loads(response.data.decode('utf-8'))
+    response_json = get_response_json(_url)
+    return response_json
 
 
 def get_systems_json():
-    """return: json get_systems_json_multi."""
+    """return: json get_systems_json_response."""
     skip = 0
-    data = get_systems_json_multi(skip, limit = 100)
+    data = get_systems_json_response(skip, limit = 100)
     totalcount = data['totalCount']
     resultlist = data['results']
 
     while len(data['results']) > 0:
         skip += 100
-        data = get_systems_json_multi(skip, limit = 100)
+        data = get_systems_json_response(skip, limit = 100)
         resultlist.extend(data['results'])
 
     dictdata = { 'totalCount': totalcount, 'results': resultlist }
@@ -1088,24 +1085,13 @@ def list_usergroups_details(group_id=None):
 
 def get_systemusers_json_single(user_id=None):
     """get: api systemusers user_id."""
-    #WARNING: this method prone to skip,limit 100
     if user_id:
         user_id = ''.join(user_id)
     else:
         user_id = ''
     _url = "https://console.jumpcloud.com/api/systemusers/" + str(user_id)
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', _url,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': CONTENT_TYPE})
-    if response.status == 200:
-        if len(response.data.decode('utf-8')) == 0:
-            return json.loads('{}')
-        return json.loads(response.data.decode('utf-8'))
-
-    jdata = response.data.decode('utf-8')
-    print(str(jdata))
-    return str(jdata)
+    response_json = get_response_json(_url)
+    return response_json
 
 
 def get_systemusers_json():
@@ -1126,17 +1112,34 @@ def get_systemusers_json():
     return json.loads(jdata)
 
 
-def get_systemusers_json_multi(skip, limit):
-    """get: api systemusers json multi."""
-    _url = "https://console.jumpcloud.com/api/systemusers"
-    _url += "?skip=" + str(skip) + '&limit=' + str(limit)
+#def get_systemusers_json_multi(skip, limit):
+#    """get: api systemusers json multi."""
+#    _url = "https://console.jumpcloud.com/api/systemusers"
+#    _url += "?skip=" + str(skip) + '&limit=' + str(limit)
+#
+#    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+#    response = http.request('GET', _url,
+#                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+#                                     'Content-Type': CONTENT_TYPE,
+#                                     'Accept': ACCEPT_TYPE})
+#    return json.loads(response.data.decode('utf-8'))
 
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', _url,
+
+def get_response_json(_url):
+    """get: url: return json."""
+    response = requests.get(_url,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': CONTENT_TYPE,
                                      'Accept': ACCEPT_TYPE})
-    return json.loads(response.data.decode('utf-8'))
+    return response.json()
+
+
+def get_systemusers_json_multi(skip, limit):
+    """get: api systemusers json: return dict."""
+    _url = "https://console.jumpcloud.com/api/systemusers"
+    _url += "?skip=" + str(skip) + '&limit=' + str(limit)
+    response = get_response_json(_url)
+    return response
 
 
 def list_users():
@@ -1292,12 +1295,8 @@ def list_systems_id(skip=0):
 def get_systems_id_json(skip, limit):
     """get: api systems."""
     _url = "https://console.jumpcloud.com/api/systems?skip=" + str(skip) + '&limit=' + str(limit)
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', _url,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': CONTENT_TYPE,
-                                     'Accept': ACCEPT_TYPE})
-    return json.loads(response.data.decode('utf-8'))
+    response_json = get_response_json(_url)
+    return response_json
 
 
 def get_systems_id():
@@ -1393,15 +1392,8 @@ def get_systeminsights_system_info_json(system_id=None, limit=None, skip=None):
     jumpcloud_url = "https://console.jumpcloud.com/api/v2/systeminsights/system_info"
     _url = jumpcloud_url + "?limit=" + str(limit) + "&skip=" + str(skip)
     _url += "&filter=system_id:eq:" + str(system_id)
-
-    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-    response = http.request('GET', _url,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': CONTENT_TYPE,
-                                     'Accept': ACCEPT_TYPE})
-
-    #count = len(json.loads(response.data.decode('utf-8')))
-    return json.loads(response.data.decode('utf-8'))
+    response_json = get_response_json(_url)
+    return response_json
 
 
 def list_systems():
