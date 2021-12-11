@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '2.0.0-PRE-20211210-1'
+__version__ = '2.0.0-PRE-20211210-2'
 
 import sys
 #import time
@@ -216,7 +216,6 @@ def get_systems_memberof_json(system_id=None):
 #manage-the-members-of-a-system-group
 def set_systems_memberof(system_id, group_id, verbose=True):
     """post: api v2 systemgroups group_id members."""
-
     _url = "https://console.jumpcloud.com/api/v2/systemgroups/" + str(group_id) + "/members"
 
     data = {'op': 'add', 'type': 'system', 'id': system_id}
@@ -1700,9 +1699,7 @@ def main():
     """main: app."""
     try:
         if sys.argv[1:]:
-            if sys.argv[1] == "--help":
-                usage()
-            elif sys.argv[1] == "--version":
+            if sys.argv[1] == "--version":
                 print(__version__)
             elif sys.argv[1] == "events" or sys.argv[1] == "get-command":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3])

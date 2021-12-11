@@ -1,7 +1,0 @@
-🎄 karl.rink@Karl-MacBook-Pro tests % python3 -m pylint ../src/jumpcloud/jumpcloud.py
-************* Module jumpcloud.jumpcloud
-/Users/karl.rink/jumpcloud/src/jumpcloud/jumpcloud.py:1:0: C0302: Too many lines in module (1693/1000) (too-many-lines)
-
-------------------------------------------------------------------
-Your code has been rated at 9.99/10 (previous run: 9.99/10, +0.00)
-
