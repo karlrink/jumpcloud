@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '2.0.0-PRE-20211210-0'
+__version__ = '2.0.0-PRE-20211210-1'
 
 import sys
 #import time
@@ -30,7 +30,7 @@ def usage():
     print("""
     options:
 
-      list-systems [json|os|os_version|hostname|serial|insights|state|fde|agent|root_ssh]
+      list-systems [json|os|os-version|hostname|serial|insights|state|fde|agent|root-ssh]
       list-systems-id
       get-systems-json [system_id]
       get-systems-remoteip [system_id]
@@ -41,7 +41,7 @@ def usage():
       delete-system [system_id]
       add-systems-remoteip-awssg [system_id] [awssg_id]
 
-      list-users [json|suspended|locked|password_expired|not_activated|ldap_bind|mfa]
+      list-users [json|suspended|locked|password-expired|not-activated|ldap-bind|mfa]
       list-usergroups [json]
       list-usergroups-members [group_id]
       list-usergroups-details [group_id]
@@ -1015,7 +1015,7 @@ def get_user_email(user_id=None):
     """return: str get_systemusers_json email."""
     if user_id:
         user_id = ''.join(user_id)
-    jdata = get_systemusers_json(user_id)
+    jdata = get_systemusers_json_single(user_id)
     return str(jdata['email'])
 
 
@@ -1023,7 +1023,7 @@ def print_user_email(user_id=None):
     """print: get_systemusers_json email."""
     if user_id:
         user_id = ''.join(user_id)
-        jdata = get_systemusers_json(user_id)
+        jdata = get_systemusers_json_single(user_id)
         #print(jdata)
         print(jdata['email'])
     else:
@@ -1132,7 +1132,7 @@ def list_usergroups_details(group_id=None):
     print(str(json.dumps(jdata, sort_keys=True, indent=4)))
 
 
-def get_systemusers_json(user_id=None):
+def get_systemusers_json_single(user_id=None):
     """get: api systemusers user_id."""
     #WARNING: this method prone to skip,limit 100
     if user_id:
@@ -1152,6 +1152,37 @@ def get_systemusers_json(user_id=None):
     jdata = response.data.decode('utf-8')
     print(str(jdata))
     return str(jdata)
+
+
+def get_systemusers_json():
+    """return: json get_systemusers_json_multi."""
+    skip = 0
+    limit = 100
+    data = get_systemusers_json_multi(skip, limit)
+    totalcount = data['totalCount']
+    resultlist = data['results']
+
+    while len(data['results']) > 0:
+        skip += 100
+        data = get_systemusers_json_multi(skip, limit=100)
+        resultlist.extend(data['results'])
+
+    dictdata = { 'totalCount': totalcount, 'results': resultlist }
+    jdata = json.dumps(dictdata)
+    return json.loads(jdata)
+
+
+def get_systemusers_json_multi(skip, limit):
+    """get: api systemusers json multi."""
+    _url = "https://console.jumpcloud.com/api/systemusers"
+    _url += "?skip=" + str(skip) + '&limit=' + str(limit)
+
+    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
+    response = http.request('GET', _url,
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': CONTENT_TYPE,
+                                     'Accept': ACCEPT_TYPE})
+    return json.loads(response.data.decode('utf-8'))
 
 
 def list_users():
@@ -1289,17 +1320,17 @@ def list_systems_json(system_id=None):
     print(json.dumps(jdata, sort_keys=True, indent=4))
 
 
-#def list_systems_id(operatingsystem=None):
-def list_systems_id():
+#def list_systems_id():
+def list_systems_id(skip=0):
     """print: get_systems_id_json system_id."""
     skip = 0
-    jdata = get_systems_id_json(skip, limit = 100)
+    jdata = get_systems_id_json(skip, limit=100)
     for data in jdata['results']:
         print(data.get('_id'))
 
     while len(jdata['results']) > 0:
         skip += 100
-        jdata = get_systems_id_json(skip, limit = 100)
+        jdata = get_systems_id_json(skip, limit=100)
         for data in jdata['results']:
             print(data.get('_id'))
 
@@ -1437,7 +1468,7 @@ def list_systems_hostname():
     """print: get_systems_json hostname."""
     jdata = get_systems_json()
     for data in jdata['results']:
-        print(data.get('_id') + ' ' + data.get('hostname'))
+        print(str(data.get('_id')) + ' ' + str(data.get('hostname')))
 
 
 def list_systems_os(_print=True):
@@ -1446,7 +1477,7 @@ def list_systems_os(_print=True):
     jdata = get_systems_json()
     for data in jdata['results']:
         if _print:
-            print(data.get('_id') + ' ' + data.get('os'))
+            print(str(data.get('_id')) + ' ' + str(data.get('os')))
         thisdict[data.get('_id')] = data.get('os')
     return thisdict
 
@@ -1456,7 +1487,7 @@ def get_systems_os(system_id, _print=True):
     system_id = ''.join(system_id)
     jdata = get_systems_json_single(system_id)
     if _print:
-        print(jdata['os'])
+        print(str(jdata['os']))
     return jdata['os']
 
 
@@ -1464,15 +1495,15 @@ def list_systems_serial():
     """print: get_systems_json serialNumber."""
     jdata = get_systems_json()
     for data in jdata['results']:
-        print(data.get('_id') + ' ("' + data.get('serialNumber') + '") ')
+        print(str(data.get('_id')) + ' ("' + str(data.get('serialNumber')) + '") ')
 
 
 def list_systems_agent():
     """print: get_systems_json agentVersion."""
     jdata = get_systems_json()
     for data in jdata['results']:
-        data_str = data.get('_id') + ' ' + data.get('hostname')
-        data_str += ' ("' + data.get('agentVersion') + '") '
+        data_str = str(data.get('_id')) + ' ' + str(data.get('hostname'))
+        data_str += ' ("' + str(data.get('agentVersion')) + '") '
         print(data_str)
 
 
@@ -1480,8 +1511,8 @@ def list_systems_os_version():
     """print: get_systems_json os version."""
     jdata = get_systems_json()
     for data in jdata['results']:
-        data_str = data.get('_id') + ' ' + data.get('os') + ' ' + data.get('version')
-        data_str += ' ' + data.get('arch')
+        data_str = str(data.get('_id')) + ' ' + str(data.get('os')) + ' ' + str(data.get('version'))
+        data_str += ' ' + str(data.get('arch'))
         print(data_str)
 
 
@@ -1489,9 +1520,11 @@ def list_systems_insights():
     """print: get_systems_json systemInsights."""
     jdata = get_systems_json()
     for data in jdata['results']:
-        _line = data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')
-        _line += ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch')
-        _line += ' ' + json.dumps(data.get('systemInsights'))
+        _line = str(data.get('_id')) + ' "' + str(data.get('displayName'))
+        _line += '" (' + str(data.get('hostname'))
+        _line += ') ' + str(data.get('os')) + ' ' + str(data.get('version'))
+        _line += ' ' + str(data.get('arch'))
+        _line += ' ' + json.dumps(str(data.get('systemInsights')))
         print(_line)
 
 
@@ -1499,7 +1532,8 @@ def list_systems_state():
     """print: get_systems_json lastContact."""
     jdata = get_systems_json()
     for data in jdata['results']:
-        _line = data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')
+        _line = str(data.get('_id')) + ' "' + str(data.get('displayName'))
+        _line += '" (' + str(data.get('hostname'))
         _line += ') '+ str(data.get('lastContact')) + ' active: '
         _line += str(json.dumps(data.get('active')))
         print(_line)
@@ -1518,8 +1552,10 @@ def list_systems_fde():
 
     for data in jdata['results']:
         fde_json = json.dumps(data.get('fde'), sort_keys=True)
-        _line = data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')
-        _line += ') ' + data.get('os') + ' ' + data.get('version') + ' ' + data.get('arch')
+        _line = str(data.get('_id')) + ' "' + str(data.get('displayName'))
+        _line += '" (' + str(data.get('hostname'))
+        _line += ') ' + str(data.get('os')) + ' ' + str(data.get('version'))
+        _line += ' ' + str(data.get('arch'))
         _line += ' ' + str(data.get('fileSystem')) + ' [' + str(fde_json) + ']'
         print(_line)
 
@@ -1529,8 +1565,9 @@ def list_systems_root_ssh():
     jdata = get_systems_json()
     for data in jdata['results']:
         root_ssh = json.dumps(data.get('allowSshRootLogin'), sort_keys=True)
-        _line = data.get('_id') + ' "' + data.get('displayName') + '" (' + data.get('hostname')
-        _line += ') ' + data.get('os')
+        _line = str(data.get('_id')) + ' "' + str(data.get('displayName'))
+        _line += '" (' + str(data.get('hostname'))
+        _line += ') ' + str(data.get('os'))
         _line += ' allowSshRootLogin ' + ' [' + str(root_ssh) + ']'
         print(_line)
 
@@ -1665,6 +1702,8 @@ def main():
         if sys.argv[1:]:
             if sys.argv[1] == "--help":
                 usage()
+            elif sys.argv[1] == "--version":
+                print(__version__)
             elif sys.argv[1] == "events" or sys.argv[1] == "get-command":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3])
             elif sys.argv[1] == "add-systems-remoteip-awssg":
