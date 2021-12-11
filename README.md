@@ -2,7 +2,8 @@
 
 jumpcloud command for jumpcloud.com  
 
-https://pypi.org/project/jumpcloud/  
+https://jumpcloud.com  
+https://pypi.org/project/jumpcloud  
 https://gitlab.com/krink/jumpcloud  
 
 [![Package Version](https://img.shields.io/pypi/v/db-api-server.svg)](https://pypi.python.org/pypi/db-api-server/)  
@@ -86,7 +87,7 @@ Usage: jumpcloud.py option
       events [startDate] [endDate] 
       Note: Dates must be formatted as RFC3339: "2020-01-15T16:20:01Z"
     
-Version: 2.0.0-PRE-20211210-6
+Version: 2.0.0-PRE
 ```
 
 ---   
