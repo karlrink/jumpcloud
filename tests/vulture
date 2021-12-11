@@ -3,5 +3,5 @@
 
 # python3 -m vulture file.py --min-confidence 100
 #
-python3 -m vulture ../src/jumpcloud/jc.py
+python3 -m vulture ../src/jumpcloud/jumpcloud.py
 

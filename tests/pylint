@@ -5,5 +5,5 @@ python3 -m pylint ../src/jumpcloud/__init__.py
 
 python3 -m pylint ../src/jumpcloud/__main__.py
 
-python3 -m pylint ../src/jumpcloud/jc.py
+python3 -m pylint ../src/jumpcloud/jumpcloud.py
 
