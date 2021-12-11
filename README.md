@@ -1,12 +1,17 @@
-# jumpcloud 
+# jumpcloud  
 
-jumpcloud command for jumpcloud.com
+jumpcloud command for jumpcloud.com  
 
-https://gitlab.com/krink/jumpcloud
+https://pypi.org/project/jumpcloud/  
+https://gitlab.com/krink/jumpcloud  
 
-https://pypi.org/project/jumpcloud/
+[![Package Version](https://img.shields.io/pypi/v/db-api-server.svg)](https://pypi.python.org/pypi/db-api-server/)  
+[![Python Versions](https://img.shields.io/pypi/pyversions/pypistats.svg?logo=python&logoColor=FFE873)](https://pypi.org/project/pypistats/)  
 
----
+Run from source
+```
+./src/jumpcloud/jumpcloud.py
+```
 
 ```
 pip install jumpcloud
@@ -16,68 +21,72 @@ jumpcloud --help
 
 ```
 jumpcloud option
+```
+
+```
+Usage: jumpcloud.py option 
 
     options:
 
-      list_systems [json|os|os_version|hostname|serial|insights|state|fde|agent|root_ssh]
-      list_systems_id
-      get_systems_json [system_id]
-      get_systems_remoteIP [system_id]
-      add_systems_remoteIP_awsSG [system_id] [awsSG_id]
-      get_systems_os system_id
-      get_systems_hostname [system_id]
-      get_systems_users [system_id]
-      get_systems_memberof [system_id]
-      delete_system [system_id]
+      list-systems [json|os|os-version|hostname|serial|insights|state|fde|agent|root-ssh]
+      list-systems-id
+      get-systems-json [system_id]
+      get-systems-remoteip [system_id]
+      get-systems-os system_id
+      get-systems-hostname [system_id]
+      get-systems-users [system_id]
+      get-systems-memberof [system_id]
+      delete-system [system_id]
+      add-systems-remoteip-awssg [system_id] [awssg_id]
 
-      list_users [json|suspended|locked|password_expired|not_activated|ldap_bind|mfa]
-      list_usergroups [json]
-      list_usergroups_members [group_id]
-      list_usergroups_details [group_id]
-      list_systemgroups [json]
-      list_systemgroups_membership [group_id]
-      get_systemgroups_name [group_id]
-      get_user_email [user_id]
+      list-users [json|suspended|locked|password-expired|not-activated|ldap-bind|mfa]
+      list-usergroups [json]
+      list-usergroups-members [group_id]
+      list-usergroups-details [group_id]
+      list-systemgroups [json]
+      list-systemgroups-membership [group_id]
+      get-systemgroups-name [group_id]
+      get-user-email [user_id]
 
-      set_systems_memberof system_id group_id
-      set_users_memberof user_id system_id
-      set_users_memberof_admin user_id system_id
-      del_users_memberof user_id system_id
+      set-systems-memberof system_id group_id
+      set-users-memberof user_id system_id
+      set-users-memberof_admin user_id system_id
+      del-users-memberof user_id system_id
 
-      list_systeminsights_hardware [json|csv]
-      systeminsights_os_version [system_id]
-      get_systeminsights_system_info [system_id]
+      list-systeminsights-hardware [json|csv]
+      systeminsights-os-version [system_id]
+      get-systeminsights-system-info [system_id]
 
-      list_systeminsights_apps [system_id]
-      list_systeminsights_programs [system_id]
+      list-systeminsights-apps [system_id]
+      list-systeminsights-programs [system_id]
 
-      systeminsights_apps [system_id]
-      systeminsights_programs [system_id]
+      systeminsights-apps [system_id]
+      systeminsights-programs [system_id]
 
-      get_app [bundle_name]
-      get_program [name]
+      get-app [bundle_name]
+      get-program [name]
 
-      systeminsights_browser_plugins
-      systeminsights_firefox_addons
+      systeminsights-browser-plugins
+      systeminsights-firefox-addons
 
-      list_system_bindings [user_id]
-      list_user_bindings [system_id]
+      list-system-bindings [user_id]
+      list-user-bindings [system_id]
 
-      list_commands [json]
-      get_command [command_id] [associations|systems|systemgroups]
-      mod_command [command_id] [add|remove] [system_id]
+      list-commands [json]
+      get-command [command_id] [associations|systems|systemgroups]
+      mod-command [command_id] [add|remove] [system_id]
 
       trigger [name]
 
-      list_command_results [command_id]
-      delete_command_results [command_id]
+      list-command-results [command_id]
+      delete-command-results [command_id]
 
-      update_system [system_id] [key] [value]
+      update-system [system_id] [key] [value]
 
       events [startDate] [endDate] 
       Note: Dates must be formatted as RFC3339: "2020-01-15T16:20:01Z"
-
     
+Version: 2.0.0-PRE-20211210-6
 ```
 
 ---   
@@ -87,6 +96,4 @@ python3
 >>> import jumpcloud
 >>> jumpcloud.list_users()
 ```
-
-
 
