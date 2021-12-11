@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '2.0.0-PRE-20211210-4'
+__version__ = '2.0.0-PRE-20211210-5'
 
 import sys
 #import time
@@ -909,27 +909,6 @@ def print_systems_hostname(system_id=None):
     system_id = ''.join(system_id)
     jdata = get_systems_json_single(system_id)
     print(jdata['hostname'])
-
-
-def json_extract(obj, key):
-    """Recursively fetch values from nested JSON."""
-    arr = []
-
-    def extract(obj, arr, key):
-        """Recursively search for values of key in JSON tree."""
-        if isinstance(obj, dict):
-            for _k,_v in obj.items():
-                if isinstance(_v, (dict, list)):
-                    extract(_v, arr, key)
-                elif _k == key:
-                    arr.append(_v)
-        elif isinstance(obj, list):
-            for item in obj:
-                extract(item, arr, key)
-        return arr
-
-    values = extract(obj, arr, key)
-    return values
 
 
 #def get_systems_remoteip(system_id=None, verbose=True) -> None:
