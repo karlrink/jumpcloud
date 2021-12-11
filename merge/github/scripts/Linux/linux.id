@@ -1,8 +1,0 @@
-
-#via hardware dmi (not always available)
-cat /sys/class/dmi/id/product_uuid
-
-#raspberry pi hardware
-grep Serial /proc/cpuinfo
-
-
