@@ -3,5 +3,5 @@
 
 """jumpcloud.__main__: executed when jumpcloud directory is called as script."""
 
-from .jc import main
+from .jumpcloud import main
 main()

@@ -3,4 +3,4 @@
 
 """jumpcloud.__init__: executed when directory is called."""
 
-from .jc import *
+from .jumpcloud import *

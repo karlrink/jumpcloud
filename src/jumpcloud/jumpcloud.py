@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '2.0.0-PRE-20211210-2'
+__version__ = '2.0.0-PRE-20211210-3'
 
 import sys
 #import time
@@ -1726,4 +1726,4 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    main()

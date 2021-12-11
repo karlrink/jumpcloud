@@ -9,7 +9,7 @@ setup(
     name = "jumpcloud",
     packages = ["jumpcloud"],
     entry_points = {
-        "console_scripts": ['jumpcloud = jumpcloud.jc:main']
+        "console_scripts": ['jumpcloud = jumpcloud.jumpcloud:main']
         },
     version = '2.0.0-0-DEV0',
     description = "jumpcloud command for jumpcloud.com",
