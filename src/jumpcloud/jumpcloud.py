@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '2.0.0-PRE-20211210-6'
+__version__ = '2.0.0-PRE-20211211-0'
 
 import sys
 #import time
@@ -13,6 +13,9 @@ import os
 import json
 #from subprocess import Popen, PIPE, STDOUT
 from subprocess import Popen, PIPE
+
+import requests
+
 import urllib3
 urllib3.disable_warnings()
 
@@ -91,24 +94,23 @@ def usage():
     print('Version: ' + str(__version__))
     sys.exit(0)
 
-DEBUG = False
 CONTENT_TYPE = 'application/json' # str |  (default application/json)
 ACCEPT_TYPE = 'application/json' # str |  (default application/json)
-#limit = 0 # int |  (optional) (default 10) (100 max)
-#skip = 0 # int | The offset into the records to return. (optional) (default 0)
+#limit=100 # int | (optional) (default 100) (100 max)
+#skip=0 # int | The offset into the records to return. (optional) (default 0)
 
 def systeminsights_os_version(system_id=None):
     """get: api v2 systeminsights system_id os_version."""
     skip = 0
     limit = 100
 
-    jumpcloud_url = "https://console.jumpcloud.com/api/v2/systeminsights/"
+    jumpcloud_url = "https://console.jumpcloud.com/api/v2/systeminsights"
 
     if system_id:
         system_id = ''.join(system_id)
-        _url = jumpcloud_url + str(system_id) + "/os_version"
+        _url = jumpcloud_url + "/" + str(system_id) + "/os_version"
     else:
-        _url = jumpcloud_url + "os_version?limit=" + str(limit) + "&skip=" + str(skip)
+        _url = jumpcloud_url + "/os_version?limit=" + str(limit) + "&skip=" + str(skip)
 
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', _url,
@@ -122,8 +124,6 @@ def systeminsights_os_version(system_id=None):
 
     #and after 100...
     #is also limited by systeminsights being enabled
-    if DEBUG:
-        print('all done.')
     return True
 
 
@@ -175,8 +175,6 @@ def print_systems_users_json(system_id=None):
         system_id = ''.join(system_id)
     jdata = get_systems_users_json(system_id)
     print(json.dumps(jdata, sort_keys=True, indent=4))
-    if DEBUG:
-        print(system_id)
 
 
 def get_systems_users_json(system_id=None):
@@ -428,8 +426,7 @@ def systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
     print(json.dumps(response, sort_keys=False, indent=4))
 
     if len(response) == 1:
-        if DEBUG:
-            print('I have spoken.') #Kuiil
+        print('I have spoken.') #Kuiil
         return
 
     count += len(response)
@@ -455,9 +452,6 @@ def get_systeminsights_list_apps_json(system_id=None, skip=0, limit=100):
     else:
         _url = jumpcloud_url + "/apps?limit=" + str(limit) + "&skip=" + str(skip)
 
-    if DEBUG:
-        print(str(_url))
-
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', _url,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
@@ -468,18 +462,12 @@ def get_systeminsights_list_apps_json(system_id=None, skip=0, limit=100):
 
 def systeminsights_programs(system_id=None): #GET /systeminsights/{system_id}/programs
     """get: get_systeminsights_list_programs_json."""
-    if DEBUG:
-        print('system_id type: ' + str(type(system_id)))
-        print('system_id len: ' + str(len(system_id)))
-
     if len(system_id) != 0:
         system_id = ''.join(system_id)
-        if DEBUG:
-            print('Using system_id (' + system_id + ')')
     else:
         system_id = None
 
-    count=0
+    count = 0
     skip = 0
     limit = 100
 
@@ -487,8 +475,7 @@ def systeminsights_programs(system_id=None): #GET /systeminsights/{system_id}/pr
     print(json.dumps(response, sort_keys=False, indent=4))
 
     if len(response) == 1:
-        if DEBUG:
-            print('I have spoken.') #Kuiil
+        print('I have spoken.') #Kuiil
         return
 
     count += len(response)
@@ -508,17 +495,11 @@ def systeminsights_programs(system_id=None): #GET /systeminsights/{system_id}/pr
 def get_systeminsights_list_programs_json(system_id=None, skip=0, limit=100):
     """get: api v2 systeminsights programs."""
     jumpcloud_url = "https://console.jumpcloud.com/api/v2/systeminsights"
-    if DEBUG:
-        print('get_systeminsights_list_programs_json')
-
     if system_id is None:
         _url = jumpcloud_url + "/programs?limit=" + str(limit) + "&skip=" + str(skip)
     else:
         _url = jumpcloud_url + "/" + str(system_id)
         _url += "/programs?limit=" + str(limit) + "&skip=" + str(skip)
-
-    if DEBUG:
-        print(str(_url))
 
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', _url,
@@ -1045,10 +1026,6 @@ def list_systemgroups_membership(group_id=None, skip=0, limit=100):
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': CONTENT_TYPE,
                                      'Accept': ACCEPT_TYPE})
-    if DEBUG:
-        print(str(response.status))
-        print(str(len(response.data.decode('utf-8'))))
-
     if response.status == 200:
         jdata = json.loads(response.data.decode('utf-8'))
     else:
@@ -1417,8 +1394,6 @@ def get_systeminsights_system_info_json(system_id=None, limit=None, skip=None):
     _url = jumpcloud_url + "?limit=" + str(limit) + "&skip=" + str(skip)
     _url += "&filter=system_id:eq:" + str(system_id)
 
-    if DEBUG:
-        print(str(_url))
     http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
     response = http.request('GET', _url,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
@@ -1523,8 +1498,7 @@ def list_systems_fde():
         print('Zero (0) response')
     if len(jdata) == 1:
         print(str(jdata))
-        if DEBUG:
-            print('I have spoken.') #Kuiil
+        print('I have spoken.') #Kuiil
         return
 
     for data in jdata['results']:

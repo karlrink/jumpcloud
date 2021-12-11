@@ -14,8 +14,13 @@ Run from source
 ./src/jumpcloud/jumpcloud.py
 ```
 
+Install via pip
 ```
 pip install jumpcloud
+```
+
+Run command
+```
 export JUMPCLOUD_API_KEY=XXXXXXXXXXX
 jumpcloud --help
 ```
