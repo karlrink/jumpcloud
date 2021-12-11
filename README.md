@@ -6,7 +6,7 @@ https://jumpcloud.com
 https://pypi.org/project/jumpcloud  
 https://gitlab.com/krink/jumpcloud  
 
-[![Package Version](https://img.shields.io/pypi/v/db-api-server.svg)](https://pypi.python.org/pypi/db-api-server/)  
+[![Package Version](https://img.shields.io/pypi/v/jumpcloud.svg)](https://pypi.python.org/pypi/jumpcloud/)  
 [![Python Versions](https://img.shields.io/pypi/pyversions/pypistats.svg?logo=python&logoColor=FFE873)](https://pypi.org/project/pypistats/)  
 
 Run from source
