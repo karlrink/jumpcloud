@@ -1,5 +1,5 @@
 
 #pip3 install bandit
 
-bandit -r ../src/jumpcloud/jumpcloud.py
+python3 -m bandit -r ../src/jumpcloud/jumpcloud.py
 
