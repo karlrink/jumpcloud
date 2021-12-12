@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '2.0.0-PRE-20211211-2'
+__version__ = '2.0.0-PRE-20211211-3'
 
 import sys
 import os
@@ -37,7 +37,6 @@ def usage():
       get-systems-users [system_id]
       get-systems-memberof [system_id]
       delete-system [system_id]
-      add-systems-remoteip-awssg [system_id] [awssg_id]
 
       list-users [json|suspended|locked|password-expired|not-activated|ldap-bind|mfa]
       get-user-email [user_id]
@@ -85,43 +84,14 @@ def usage():
 
       update-system [system_id] [key] [value]
 
+      add-systems-remoteip-awssg [system_id] [awssg_id] [port]
+
       events [startDate] [endDate] 
       Note: Dates must be formatted as RFC3339: "2020-01-15T16:20:01Z"
     """)
     print('Version: ' + str(__version__))
     sys.exit(0)
 
-CONTENT_TYPE = 'application/json' # str |  (default application/json)
-ACCEPT_TYPE = 'application/json' # str |  (default application/json)
-#limit=100 # int | (optional) (default 100) (100 max)
-#skip=0 # int | The offset into the records to return. (optional) (default 0)
-
-#def systeminsights_os_version(system_id=None):
-#    """get: api v2 systeminsights system_id os_version."""
-#    skip = 0
-#    limit = 100
-#
-#    jumpcloud_url = "https://console.jumpcloud.com/api/v2/systeminsights"
-#
-#    if system_id:
-#        system_id = ''.join(system_id)
-#        _url = jumpcloud_url + "/" + str(system_id) + "/os_version"
-#    else:
-#        _url = jumpcloud_url + "/os_version?limit=" + str(limit) + "&skip=" + str(skip)
-#
-#    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-#    response = http.request('GET', _url,
-#                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-#                                     'Content-Type': CONTENT_TYPE,
-#                                     'Accept': ACCEPT_TYPE})
-#
-#    count = len(json.loads(response.data.decode('utf-8')))
-#    print(json.dumps(json.loads(response.data.decode('utf-8')), sort_keys=False, indent=4))
-#    print(str(count))
-#
-#    #and after 100...
-#    #is also limited by systeminsights being enabled
-#    return True
 
 def systeminsights_os_version(system_id=None):
     """get: api v2 systeminsights system_id os_version."""
@@ -177,11 +147,12 @@ def delete_command_results(command_id):
     _url = "https://console.jumpcloud.com/api/commandresults/" + str(command_id)
     response = requests.delete(_url,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': CONTENT_TYPE,
-                                     'Accept': ACCEPT_TYPE})
+                                     'Content-Type': 'application/json',
+                                     'Accept': 'application/json'})
     print(response)
     return response
 #QA1
+
 
 def print_systems_users_json(system_id=None):
     """print: systems users json."""
@@ -221,14 +192,15 @@ def set_systems_memberof(system_id, group_id, verbose=True):
     encoded_body = json.dumps(data).encode('utf-8')
     response = requests.post(_url,
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                    'Content-Type': CONTENT_TYPE,
-                                    'Accept': ACCEPT_TYPE},
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'},
                            body=encoded_body)
 
     if verbose:
         print(str(response.status), str(response.json()))
     return str(response.status), str(response.json())
 #QA2
+
 
 def set_users_memberof(user_id, system_id, verbose=True):
     """post: api v2 systems system_id assocations."""
@@ -240,8 +212,8 @@ def set_users_memberof(user_id, system_id, verbose=True):
     encoded_body = json.dumps(data).encode('utf-8')
     response = requests.post(_url,
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                    'Content-Type': CONTENT_TYPE,
-                                    'Accept': ACCEPT_TYPE},
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'},
                            body=encoded_body)
 
     if verbose:
@@ -262,8 +234,8 @@ def set_users_memberof_admin(user_id, system_id, verbose=True):
     encoded_body = json.dumps(data).encode('utf-8')
     response = requests.post(_url,
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                    'Content-Type': CONTENT_TYPE,
-                                    'Accept': ACCEPT_TYPE},
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'},
                            body=encoded_body)
 
     if verbose:
@@ -282,8 +254,8 @@ def del_users_memberof(user_id, system_id, verbose=True):
     encoded_body = json.dumps(data).encode('utf-8')
     response = requests.post(_url,
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                    'Content-Type': CONTENT_TYPE,
-                                    'Accept': ACCEPT_TYPE},
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'},
                            body=encoded_body)
 
     if verbose:
@@ -581,14 +553,15 @@ def mod_command(command_id=None, _op=None, system_id=None): #POST/api/v2/command
     print(encoded_body)
     response = requests.post(_url,
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                    'Content-Type': CONTENT_TYPE,
-                                    'Accept': ACCEPT_TYPE},
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'},
                            body=encoded_body)
 
     print(str(response.status))
     print(response.json())
     return True
 #QA3
+
 
 #https://docs.jumpcloud.com/2.0/traits/filter
 #https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/
@@ -674,7 +647,6 @@ def get_app(name=None): #GET /systeminsights/apps
         skip += 100
         response = get_systeminsights_app_json(name, skip, limit)
         responselist = responselist + response
-
     return responselist
 
 
@@ -742,7 +714,7 @@ def run_trigger(trigger=None):
     encoded_body = json.dumps({})
     response = requests.post(_url,
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                    'Content-Type': CONTENT_TYPE},
+                                    'Content-Type': 'application/json'},
                            body=encoded_body)
     print(response)
     print(response.json())
@@ -769,8 +741,8 @@ def update_system(system_id=None, key=None, value=None):
 
     response = requests.put(_url,
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                    'Content-Type': CONTENT_TYPE,
-                                    'Accept': ACCEPT_TYPE},
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'},
                            body=encoded_body)
     print(response.json())
     return response
@@ -834,7 +806,6 @@ def get_user_bindings_json(system_id=None):
         _url += "?limit=" + str(limit) + "&skip=" + str(skip)
         response = get_response_json(_url)
         resultlist.extend(response)
-
     return resultlist
 
 
@@ -879,16 +850,15 @@ def get_systems_remoteip(system_id=None, verbose=True):
     return jdata['remoteIP']
 
 
-def add_systems_remoteip_awssg(system_id, awssg_id):
+def add_systems_remoteip_awssg(system_id, awssg_id, port=3389):
     """print: aws cli add remote ip."""
     remote_ip = get_systems_remoteip(system_id, verbose=False)
     print(remote_ip)
     print(awssg_id)
 
     #from subprocess import Popen, PIPE, STDOUT
-
     cmd = 'aws ec2 authorize-security-group-ingress --group-id '+str(awssg_id)
-    cmd += ' --protocol tcp --port 3389 --cidr '+str(remote_ip)+'/32'
+    cmd += ' --protocol tcp --port '+str(port)+' --cidr '+str(remote_ip)+'/32'
 
     #proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     with Popen(cmd.split(), stdout=PIPE, stderr=PIPE) as proc:
@@ -901,7 +871,7 @@ def add_systems_remoteip_awssg(system_id, awssg_id):
     for __e in err:
         print('err: '+str(__e.decode('utf-8')))
 
-    return True
+    return out, err
 
 
 def get_systems_json_single(system_id=None):
@@ -1079,8 +1049,8 @@ def get_response_json(_url):
     """get: url: return json."""
     response = requests.get(_url,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': CONTENT_TYPE,
-                                     'Accept': ACCEPT_TYPE})
+                                     'Content-Type': 'application/json',
+                                     'Accept': 'application/json'})
     return response.json()
 
 
@@ -1477,8 +1447,8 @@ def delete_system(system_id=None):
 
     response = requests.delete(_url,
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': CONTENT_TYPE,
-                                     'Accept': ACCEPT_TYPE})
+                                     'Content-Type': 'application/json',
+                                     'Accept': 'application/json'})
     print(response)
     return response
 #QA1
@@ -1596,7 +1566,7 @@ def main():
             elif sys.argv[1] == "events" or sys.argv[1] == "get-command":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3])
             elif sys.argv[1] == "add-systems-remoteip-awssg":
-                options[sys.argv[1]](sys.argv[2],sys.argv[3])
+                options[sys.argv[1]](sys.argv[2],sys.argv[3],sys.argv[4])
             elif sys.argv[1] == "update-system" or sys.argv[1] == "mod-command":
                 options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
             elif sys.argv[1] == "set-systems-memberof" or sys.argv[1] == "set-users-memberof" \
