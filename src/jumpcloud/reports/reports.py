@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '0009'
+__version__ = '20211212'
 
 import sys
 import os
@@ -14,10 +14,15 @@ from collections import defaultdict
 import smtplib
 import ssl
 
-import jumpcloud
-
-sys.dont_write_bytecode = True
+#sys.dont_write_bytecode = True
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+try:
+    import jumpcloud
+except ModuleNotFoundError as error:
+    print('ModuleNotFoundError ' + str(error))
+    sys.exit(1)
+
 
 def usage():
     """self: usage."""
@@ -33,11 +38,8 @@ def usage():
         report|send systems
 
     """)
-
         #check app_offenses
         #check username_policy
-
-#---------------------------------------------------------------------------
 
 #import config
 config = dict(
@@ -52,6 +54,7 @@ config = dict(
 blacklistsoftware = [ 'Slack', 'Skype'
 ]
 
+
 def systems_no_group_report_text():
     """systems_no_group_report_text: return str."""
     report = ''
@@ -65,15 +68,8 @@ def systems_no_group_report_text():
             hostname = jumpcloud.get_systems_hostname(system_id)
             systems_no_group[system_id] = hostname
 
-    report += 'The following systems are not identified \n'
+    report += 'The following systems are not identified. systems_no_group \n'
     report += json.dumps(systems_no_group, sort_keys=True, indent=4)
-    report += '\n'
-    report += """AICPA.org, Trust Services Criteria (TSC)
-    Logical and Physical Access Controls
-    CC6.1 - The entity implements logical access security software, infrastructure, and architectures 
-    over protected information assets to protect them from security events to meet the entity's objectives.
-      - Identifies and Manages the Inventory of Information Assets. The entity identifies, inventories, classifies, and manages information assets.
-    """
     return report
 
 
@@ -122,6 +118,7 @@ def systems_no_group_set_default():
     print(set_group)
     return True
 
+
 def get_systems_no_group_osdct():
     """get_systems_no_group_osdct: return dict."""
     systems_no_group = {}
@@ -134,7 +131,6 @@ def get_systems_no_group_osdct():
     return systems_no_group
 
 
-#---------------------------------------------------------------------------
 def get_fde():
     """get_fde: return dict."""
     systems_fde_dict = {}
@@ -188,16 +184,6 @@ def fde_report_text():
 
     report += 'The following sysytems are "Unconfigured" \n'
     report += json.dumps(systems_none, sort_keys=True, indent=4)
-    report += '\n'
-
-    report += """AICPA.org, Trust Services Criteria (TSC)
-    Logical and Physical Access Controls
-    CC6.1 - The entity implements logical access security software, infrastructure, and architectures
-    over protected information assets to protect them from security events to meet the entity's objectives.
-      - Uses Encryption to Protect Data.  The entity uses encryption to supplement other measures used to protect data-at-rest,
-                                          when such protections are deemed appropriate based on assessed risk.
-      - Protects Encryption Keys.  Processes are in place to protect encryption keys during generation, storage, use, and destruction.
-    """
     return report
 
 
@@ -212,7 +198,6 @@ def send_fde():
     send_ses_email(receivers, subject, report)
     return True
 
-#---------------------------------------------------------------------------
 
 def get_users_mfa():
     """get_users_mfa: return dict."""
@@ -253,24 +238,9 @@ def mfa_report_text():
         #exclusion  = mfa_dict['exclusion']
         if str(configured) == 'False':
             report += '    ' + user_id + ' ' + email + ' (MFA:' + str(configured) + ')\n'
-    report += '} \n'
-
-    report += """AICPA.org, Trust Services Criteria (TSC)
-    Common Criteria Related to Logical and Physical Access Controls
-    CC5.1 - External access by personnel is permitted only through a two-factor (for example, a swipe card and a password)
-            encrypted virtual private network (VPN) connection. 
-    CC5.3 - Two-factor authentication and use of encrypted VPN channels help to ensure that only valid external users 
-            gain remote and local access to IT system components.
-    CC5.4 - When possible, formal role-based access controls to limit access to the system and infrastructure components 
-            are created and enforced by the access control system. When it is not possible, 
-            authorized user IDs with two-factor authentication are used.
-
-    Multi-Factor authentication (MFA) means you need more than one credential to login to systems, applications, or other digital assets.  
-    MFA, or sometimes referred to as 2FA or Two Factor Authentication, generally requires one of the credentials to be 
-    something you know; like your username and password, and the second credential to be 
-    something that you have; such as a code sent to your smartphone. 
-    """
+    report += '}'
     return report
+
 
 def send_mfa():
     """send_mfa: return True."""
@@ -280,11 +250,9 @@ def send_mfa():
     send_ses_email(receivers, subject, report)
     return True
 
-#---------------------------------------------------------------------------
+
 def report_systems_root_ssh():
     """report_systems_root_ssh: return str."""
-    report = 'The following systems ALLOW Root SSH Login \n'
-
     systems_root_ssh_dict = {}
     jdata = jumpcloud.get_systems_json()
     for data in jdata['results']:
@@ -294,15 +262,8 @@ def report_systems_root_ssh():
         if root_ssh == 'true':
             systems_root_ssh_dict[system_id] = str(hostname)
 
+    report = 'The following systems ALLOW Root SSH Login \n'
     report += json.dumps(systems_root_ssh_dict, indent=4)
-    report += '\n'
-    report += """AICPA.org, Trust Services Criteria (TSC)
-    Logical and Physical Access Controls
-    CC6.1 - The entity implements logical access security software, infrastructure, and architectures 
-    over protected information assets to protect them from security events to meet the entity's objectives.
-      - Identifies and Authenticates Users.  Persons, infrastructure and software are identified and authenticated 
-                                             prior to accessing information assets, whether locally or remotely.
-    """
     return report
 
 
@@ -344,7 +305,6 @@ def send_systems_report():
     return True
 
 
-#---------------------------------------------------------------------------
 def users_report():
     """users_report: return str."""
     report = 'jumpcloud users report. \n'
@@ -366,19 +326,8 @@ def users_report():
     report += json.dumps(jumpcloud.list_users_not_activated(_print=False), indent=4)
     report += '\nThe following users are ldap_bind \n'
     report += json.dumps(jumpcloud.list_users_ldap_bind(_print=False), indent=4)
-    report += '\n'
-#report += """AICPA.org, Trust Services Criteria (TSC)
-#Logical and Physical Access Controls
-#CC6.3 - The entity authorizes, modifies, or removes access to data, software, functions,
-#and other protected information assets
-#based on roles, responsibilities, or the system design and changes,
-#giving consideration to the concepts of least privilege
-#and segregation of duties, to meet the entity’s objectives.
-#  - Removes Access to Protected Information Assets.  Processes are in place to remove access
-# to protected information assets
-#    when an individual no longer requires access.
-#"""
     return report
+
 
 def send_users_report():
     """send_users_report: return True."""
@@ -388,7 +337,7 @@ def send_users_report():
     send_ses_email(receivers, subject, report)
     return True
 
-#---------------------------------------------------------------------------
+
 def send_ses_email(receivers, subject, message):
     """send_ses_email: return True."""
     sender_email = config['smtp_from']
@@ -410,8 +359,8 @@ def send_ses_email(receivers, subject, message):
         server.ehlo()
         server.login(smtp_user, smtp_pass)
         server.sendmail(sender_email, receivers, msg)
-    print('emailto: ' + str(receivers))
-    print('msg: ' + str(msg))
+    #print('emailto: ' + str(receivers))
+    #print('msg: ' + str(msg))
     return True
 
 
@@ -481,6 +430,7 @@ def check_app_offenses():
     #systems_users_jdata []
     #----------------------------------------------------
 
+
 def main():
     """main: app."""
     if sys.argv[1:]:
@@ -528,9 +478,9 @@ def main():
     else:
         usage()
 
+
 # check systems with root ssh
 # check passwd for unauth users
 # check group for sudoers
-
 if __name__ == '__main__':
     main()
