@@ -43,7 +43,6 @@ Usage: jumpcloud.py option
       get-systems-users [system_id]
       get-systems-memberof [system_id]
       delete-system [system_id]
-      add-systems-remoteip-awssg [system_id] [awssg_id]
 
       list-users [json|suspended|locked|password-expired|not-activated|ldap-bind|mfa]
       get-user-email [user_id]
@@ -91,10 +90,12 @@ Usage: jumpcloud.py option
 
       update-system [system_id] [key] [value]
 
-      events [startDate] [endDate]
-      Note: Dates must be formatted as RFC3339: "2020-01-15T16:20:01Z"
+      add-systems-remoteip-awssg [system_id] [awssg_id] [port]
 
-Version: 2.0.0-PRE-20211211-2
+      events [startDate] [endDate] 
+      Note: Dates must be formatted as RFC3339: "2020-01-15T16:20:01Z"
+    
+Version: 2.0.0-PRE-20211211-3
 ```
 
 ---   
