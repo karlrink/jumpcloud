@@ -92,10 +92,10 @@ Usage: jumpcloud.py option
 
       add-systems-remoteip-awssg [system_id] [awssg_id] [port]
 
-      events [startDate] [endDate] 
+      events [startDate] [endDate]
       Note: Dates must be formatted as RFC3339: "2020-01-15T16:20:01Z"
-    
-Version: 2.0.0-PRE-20211211-3
+
+Version: 2.0-🎄
 ```
 
 ---   

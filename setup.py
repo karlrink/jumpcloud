@@ -11,7 +11,7 @@ setup(
     entry_points = {
         "console_scripts": ['jumpcloud = jumpcloud.jumpcloud:main']
         },
-    version = '2.0.0-0-DEV0',
+    version = '2.0-🎄',
     description = "jumpcloud command for jumpcloud.com",
     long_description = "Python command line tool for administration of jumpcloud.com api.",
     author = "Karl Rink",

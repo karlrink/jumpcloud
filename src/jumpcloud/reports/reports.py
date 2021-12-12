@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '20211212'
+__version__ = '20211212-🎄'
 
 import sys
 import os
@@ -14,7 +14,6 @@ from collections import defaultdict
 import smtplib
 import ssl
 
-#sys.dont_write_bytecode = True
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
@@ -22,7 +21,6 @@ try:
 except ModuleNotFoundError as error:
     print('ModuleNotFoundError ' + str(error))
     sys.exit(1)
-
 
 def usage():
     """self: usage."""
@@ -40,6 +38,7 @@ def usage():
     """)
         #check app_offenses
         #check username_policy
+
 
 #import config
 config = dict(

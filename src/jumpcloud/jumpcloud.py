@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '2.0.0-PRE-20211211-3'
+__version__ = '2.0-🎄'
 
 import sys
 import os
