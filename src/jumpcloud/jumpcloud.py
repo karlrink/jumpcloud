@@ -830,7 +830,8 @@ def get_systems_hostname(system_id=None):
     """return: str get_systems_json_single hostname."""
     system_id = ''.join(system_id)
     jdata = get_systems_json_single(system_id)
-    return jdata['hostname']
+    #return str(jdata['hostname'])
+    return str(jdata.get('hostname', None))
 
 
 def print_systems_hostname(system_id=None):
