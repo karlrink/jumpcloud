@@ -6,6 +6,7 @@ https://jumpcloud.com
 https://pypi.org/project/jumpcloud  
 https://gitlab.com/krink/jumpcloud  
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e37c117f09064e7ea5d54f6f4fb208b0)](https://app.codacy.com/gh/karlrink/jumpcloud?utm_source=github.com&utm_medium=referral&utm_content=karlrink/jumpcloud&utm_campaign=Badge_Grade_Settings)
 [![Package Version](https://img.shields.io/pypi/v/jumpcloud.svg)](https://pypi.python.org/pypi/jumpcloud/)  
 [![Python Versions](https://img.shields.io/pypi/pyversions/pypistats.svg?logo=python&logoColor=FFE873)](https://pypi.org/project/pypistats/)  
 
