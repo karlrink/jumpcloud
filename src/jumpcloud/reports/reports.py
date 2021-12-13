@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '20211212-0-DEV1'
+__version__ = '20211213-1'
 
 import sys
 import os
@@ -34,9 +34,9 @@ def usage():
         systems-root-ssh  [email]
         systems-fde       [email]
         systems-no-group  [email] 
+        systems           [email]
         users-mfa         [email]
         users             [email]
-        systems           [email]
 
         get-iplocation ip
         set-default systems-no-group
@@ -103,7 +103,7 @@ def systems_no_group_report_text():
             hostname = jumpcloud.get_systems_hostname(system_id)
             systems_no_group[system_id] = hostname
 
-    report += 'The following systems are not identified. systems_no_group \n'
+    report += '# Systems are not identified. systems_no_group \n'
     report += json.dumps(systems_no_group, sort_keys=True, indent=4)
     return report
 
@@ -209,15 +209,15 @@ def fde_report_text():
                 continue
 
 
-    report += 'The following systems have FDE with recovery key managment \n'
+    report += '# Systems have FDE with recovery key managment \n'
     report += json.dumps(systems_compliant, sort_keys=True, indent=4)
     report += '\n'
 
-    report += 'The following sysytems have FDE, but no recovery key \n'
+    report += '# Systems have FDE, but no recovery key \n'
     report += json.dumps(systems_active_nokey, sort_keys=True, indent=4)
     report += '\n'
 
-    report += 'The following sysytems are "Unconfigured" \n'
+    report += '# Systems are "Unconfigured" \n'
     report += json.dumps(systems_none, sort_keys=True, indent=4)
     return report
 
@@ -251,7 +251,7 @@ def mfa_report_text():
     report = ''
     jdata = jumpcloud.get_systemusers_json()
 
-    report += 'The following users have MFA/2FA configured \n'
+    report += '# Users have MFA/2FA configured \n'
     report += '{ \n'
     for data in jdata['results']:
         user_id = data.get('_id')
@@ -263,7 +263,7 @@ def mfa_report_text():
             report += '    ' + user_id + ' ' + email + ' (MFA:' + str(configured) + ')\n'
     report += '} \n'
 
-    report += 'The following users DO NOT have MFA/2FA \n'
+    report += '# Users DO NOT have MFA/2FA \n'
     report += '{ \n'
     for data in jdata['results']:
         user_id = data.get('_id')
@@ -297,7 +297,7 @@ def report_systems_root_ssh():
         if root_ssh == 'true':
             systems_root_ssh_dict[system_id] = str(hostname)
 
-    report = 'The following systems ALLOW Root SSH Login \n'
+    report = '# Systems ALLOW Root SSH Login \n'
     report += json.dumps(systems_root_ssh_dict, indent=4)
     return report
 
@@ -313,8 +313,7 @@ def send_systems_root_ssh():
 
 def systems_report():
     """systems_report: return str."""
-    #report = 'jumpcloud systems report. \n'
-    report = ''
+    report = '# Jumpcloud systems \n'
     jdata = jumpcloud.get_systems_json()
     totalcount = jdata['totalCount']
     report += '{\n'
@@ -344,7 +343,7 @@ def send_systems_report():
 
 def users_report():
     """users_report: return str."""
-    report = 'jumpcloud users report. \n'
+    report = '# Jumpcloud users \n'
     #totalCount
     jdata = jumpcloud.get_systemusers_json()
     #print(totalCount)
@@ -352,16 +351,16 @@ def users_report():
     report += '{\n'
     report += '    "Total Users Count": ' + str(totalcount) + '\n'
     report += '}\n'
-    report += 'The following users are suspended \n'
+    report += '# Users are suspended \n'
     #report += str(jumpcloud.list_users_suspended())
     report += json.dumps(jumpcloud.list_users_suspended(_print=False), indent=4)
-    report += '\nThe following users are locked \n'
+    report += '\n# Users are locked \n'
     report += json.dumps(jumpcloud.list_users_locked(_print=False), indent=4)
-    report += '\nThe following users are password_expired \n'
+    report += '\n# Users are password_expired \n'
     report += json.dumps(jumpcloud.list_users_password_expired(_print=False), indent=4)
-    report += '\nThe following users are not_activated \n'
+    report += '\n# Users are not_activated \n'
     report += json.dumps(jumpcloud.list_users_not_activated(_print=False), indent=4)
-    report += '\nThe following users are ldap_bind \n'
+    report += '\n# Users are ldap_bind \n'
     report += json.dumps(jumpcloud.list_users_ldap_bind(_print=False), indent=4)
     return report
 
@@ -383,10 +382,14 @@ def send_email(receivers, subject, message):
     smtp_user    = config['smtp_user']
     smtp_pass    = config['smtp_pass']
 
-    reciever_emails = ",".join(receivers)
+    if type(receivers) == list:
+        reciever_emails = ",".join(receivers)
+    else:
+        reciever_emails = receivers
 
     header = f"From: {sender_email}\r\nTo: {reciever_emails}\r\n"
     header += f"Subject: {subject}\r\n\r\n"
+
     msg = header + message
 
     context = ssl.create_default_context()
