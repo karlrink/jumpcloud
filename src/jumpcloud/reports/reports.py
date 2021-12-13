@@ -5,14 +5,16 @@
 
 from __future__ import absolute_import
 
-__version__ = '20211212-0'
+__version__ = '20211212-0-DEV1'
 
 import sys
 import os
 import json
-from collections import defaultdict
 import smtplib
 import ssl
+from collections import defaultdict
+
+import requests
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -24,16 +26,20 @@ except ModuleNotFoundError as error:
 
 def usage():
     """self: usage."""
-    print("Usage: " + sys.argv[0] + " [option]")
+    print("Usage: " + sys.argv[0] + " option [email]")
     print("""
     options:
 
-        report|send systems_root_ssh
-        report|send systems_fde
-        report|send|set_default systems_no_group
-        report|send users_mfa
-        report|send users
-        report|send systems
+        systems-remote-ip [email]
+        systems-root-ssh  [email]
+        systems-fde       [email]
+        systems-no-group  [email] 
+        users-mfa         [email]
+        users             [email]
+        systems           [email]
+
+        get-iplocation ip
+        set-default systems-no-group
 
     """)
         #check app_offenses
@@ -52,6 +58,36 @@ config = dict(
 
 blacklistsoftware = [ 'Slack', 'Skype'
 ]
+
+
+def systems_remote_ip():
+    """systems_remote_ip: return str."""
+    report_str = ''
+
+    all_systems_id = jumpcloud.get_systems_id()
+
+    for system_id in all_systems_id:
+        remote_ip = jumpcloud.get_systems_remoteip(system_id, verbose=False)
+        remote_ip_json = get_iplocation(remote_ip)
+
+        country_name = remote_ip_json.get('country_name',None)
+        country_code2 = remote_ip_json.get('country_code2',None)
+        _isp = remote_ip_json.get('isp',None)
+
+        line_str = system_id + ' ' + remote_ip + ' ' + country_code2 + ' (' + country_name + ') ' + _isp
+        print(line_str)
+        report_str += line_str + '\n'
+
+    #report_str += '\n'
+    return report_str
+
+
+def get_iplocation(ipaddr):
+    """get: iplocation.net/?ip=."""
+    #https://api.iplocation.net/?ip=8.8.8.8
+    _url = "https://api.iplocation.net/?ip=" + str(ipaddr)
+    response = requests.get(_url)
+    return response.json()
 
 
 def systems_no_group_report_text():
@@ -80,7 +116,7 @@ def send_systems_no_group():
         return False
     receivers = list([config['smtp_to']])
     subject = 'Compliance: Systems Unidentified (no group assignment)'
-    send_ses_email(receivers, subject, report)
+    send_email(receivers, subject, report)
     return True
 
 
@@ -194,7 +230,7 @@ def send_fde():
         return False
     receivers = list([config['smtp_to']])
     subject = 'Compliance: Systems FDE (Full Disk Encryption)'
-    send_ses_email(receivers, subject, report)
+    send_email(receivers, subject, report)
     return True
 
 
@@ -246,7 +282,7 @@ def send_mfa():
     report = mfa_report_text()
     receivers = list([config['smtp_to']])
     subject = 'Compliance: Users MFA/2FA status'
-    send_ses_email(receivers, subject, report)
+    send_email(receivers, subject, report)
     return True
 
 
@@ -271,20 +307,21 @@ def send_systems_root_ssh():
     report = report_systems_root_ssh()
     receivers = list([config['smtp_to']])
     subject = 'Compliance: Systems with allowSshRootLogin'
-    send_ses_email(receivers, subject, report)
+    send_email(receivers, subject, report)
     return True
 
 
 def systems_report():
     """systems_report: return str."""
-    report = 'jumpcloud systems report. \n'
+    #report = 'jumpcloud systems report. \n'
+    report = ''
     jdata = jumpcloud.get_systems_json()
     totalcount = jdata['totalCount']
     report += '{\n'
     report += '    "Total Systems Count": ' + str(totalcount) + '\n'
     report += '}\n'
 
-    report += 'The following Operating Systems counts  \n'
+    report += '# Operating Systems count  \n'
     osdict = jumpcloud.list_systems_os(_print=False)
     #from collections import defaultdict
     dct = defaultdict(int)
@@ -295,12 +332,13 @@ def systems_report():
     report += json.dumps(dct, sort_keys=False, indent=4)
     return report
 
+
 def send_systems_report():
     """send_systems_report: return True."""
     report = systems_report()
     receivers = list([config['smtp_to']])
     subject = 'Compliance: Jumpcloud SYSTEMS Report'
-    send_ses_email(receivers, subject, report)
+    send_email(receivers, subject, report)
     return True
 
 
@@ -333,12 +371,12 @@ def send_users_report():
     report = users_report()
     receivers = list([config['smtp_to']])
     subject = 'Compliance: Jumpcloud USERS Report'
-    send_ses_email(receivers, subject, report)
+    send_email(receivers, subject, report)
     return True
 
 
-def send_ses_email(receivers, subject, message):
-    """send_ses_email: return True."""
+def send_email(receivers, subject, message):
+    """send_email: return True."""
     sender_email = config['smtp_from']
     smtp_server  = config['smtp_host']
     port         = config['smtp_port']
@@ -433,45 +471,88 @@ def check_app_offenses():
 def main():
     """main: app."""
     if sys.argv[1:]:
-        if sys.argv[1] == "report" and sys.argv[2] == "app_offenses":
+
+        try:
+            arg2 = sys.argv[2]
+        except IndexError:
+            arg2 = False
+
+        if sys.argv[1] == "app-offenses":
             offenders = check_app_offenses()
-            #print(str(offenders))
             print(json.dumps(offenders, sort_keys=True, indent=4))
-        elif sys.argv[1] == "report" and sys.argv[2] == "systems_root_ssh":
+
+        elif sys.argv[1] == "systems-root-ssh":
+            subject = "JumpCloud Systems that ALLOW Root SSH Login"
             report = report_systems_root_ssh()
-            #print(json.dumps(report, sort_keys=True, indent=4))
+            if arg2:
+                send = send_email(arg2, subject, report)
+                print(send)
+            print(subject)
             print(report)
-        elif sys.argv[1] == "send" and sys.argv[2] == "systems_root_ssh":
-            email = send_systems_root_ssh()
-            print(email)
-        elif sys.argv[1] == "report" and sys.argv[2] == "systems_fde":
+
+        elif sys.argv[1] == "systems-fde":
+            subject = "JumpCloud Systems FDE (Full Disk Encryption)"
             report = fde_report_text()
+            if arg2:
+                send = send_email(arg2, subject, report)
+                print(send)
+            print(subject)
             print(report)
-        elif sys.argv[1] == "send" and sys.argv[2] == "systems_fde":
-            email = send_fde()
-        elif sys.argv[1] == "report" and sys.argv[2] == "users_mfa":
+
+        elif sys.argv[1] == "users-mfa":
+            subject = "JumpCloud Users MFA/2FA status"
             report = mfa_report_text()
+            if arg2:
+                send = send_email(arg2, subject, report)
+                print(send)
+            print(subject)
             print(report)
-        elif sys.argv[1] == "send" and sys.argv[2] == "users_mfa":
-            email = send_mfa()
-        elif sys.argv[1] == "report" and sys.argv[2] == "users":
+
+        elif sys.argv[1] == "users":
+            subject = "JumpCloud Users report"
             report = users_report()
+            if arg2:
+                send = send_email(arg2, subject, report)
+                print(send)
+            print(subject)
             print(report)
-        elif sys.argv[1] == "send" and sys.argv[2] == "users":
-            email = send_users_report()
-        elif sys.argv[1] == "report" and sys.argv[2] == "systems":
+
+        elif sys.argv[1] == "systems":
+            subject = "JumpCloud Systems report"
             report = systems_report()
+            if arg2:
+                send = send_email(arg2, subject, report)
+                print(send)
+            print(subject)
             print(report)
-        elif sys.argv[1] == "send" and sys.argv[2] == "systems":
-            email = send_systems_report()
-        elif sys.argv[1] == "report" and sys.argv[2] == "systems_no_group":
+
+        elif sys.argv[1] == "systems-no-group":
+            subject = "JumpCloud Systems Unidentified (no group)"
             report = systems_no_group_report_text()
+            if arg2:
+                send = send_email(arg2, subject, report)
+                print(send)
+            print(subject)
             print(report)
-        elif sys.argv[1] == "send" and sys.argv[2] == "systems_no_group":
-            email = send_systems_no_group()
-        elif sys.argv[1] == "set_default" and sys.argv[2] == "systems_no_group":
+
+        elif sys.argv[1] == "systems-remote-ip":
+            subject = "JumpCloud Systems remote ip address"
+            print(subject)
+            report = systems_remote_ip()
+            if arg2:
+                send = send_email(arg2, subject, report)
+                print(send)
+            print(report)
+
+        elif sys.argv[1] == "get-iplocation":
+            subject = "IPLocation.net ip address api"
+            ip_addr = get_iplocation(arg2)
+            print(ip_addr)
+
+        elif sys.argv[1] == "set-default" and sys.argv[2] == "systems-no-group":
             set_default = systems_no_group_set_default()
             print(set_default)
+
         else:
             print('Unknown option')
     else:

@@ -1,0 +1,6 @@
+
+# pip3 install flake8
+
+python3 -m flake8 ../src/jumpcloud/jumpcloud.py
+
+

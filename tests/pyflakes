@@ -1,0 +1,8 @@
+
+# pip3 install pyflakes
+
+python3 -m pyflakes ../src/jumpcloud/jumpcloud.py
+python3 -m pyflakes ../src/jumpcloud/__init__.py
+python3 -m pyflakes ../src/jumpcloud/__main__.py
+python3 -m pyflakes ../src/jumpcloud/reports/reports.py
+
