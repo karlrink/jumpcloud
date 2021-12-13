@@ -2,25 +2,28 @@
 
 ## jumpcloud command for jumpcloud.com  
 
-https://jumpcloud.com  
-https://pypi.org/project/jumpcloud  
-https://gitlab.com/krink/jumpcloud  
+<https://jumpcloud.com>  
+<https://pypi.org/project/jumpcloud>  
+<https://gitlab.com/krink/jumpcloud>  
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/e37c117f09064e7ea5d54f6f4fb208b0)](https://app.codacy.com/gh/karlrink/jumpcloud?utm_source=github.com&utm_medium=referral&utm_content=karlrink/jumpcloud&utm_campaign=Badge_Grade_Settings)  
 [![Package Version](https://img.shields.io/pypi/v/jumpcloud.svg)](https://pypi.python.org/pypi/jumpcloud/)  
 [![Python Versions](https://img.shields.io/pypi/pyversions/pypistats.svg?logo=python&logoColor=FFE873)](https://pypi.org/project/pypistats/)  
 
 ### Run from source
+
 ```bash
 ./src/jumpcloud/jumpcloud.py
 ```
 
 ### Install via pip
+
 ```bash
 pip install jumpcloud
 ```
 
 ### Run command
+
 ```bash
 export JUMPCLOUD_API_KEY=XXXXXXXXXXX
 jumpcloud --help
@@ -98,8 +101,8 @@ Version: 2.0-🎄
 ```
 
 ### Run python3
+
 ```python3
 >>> import jumpcloud
 >>> jumpcloud.list_users()
 ```
-

@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '20211213-1'
+__version__ = '20211213-2'
 
 import sys
 import os
@@ -106,18 +106,6 @@ def systems_no_group_report_text():
     report += '# Systems are not identified. systems_no_group \n'
     report += json.dumps(systems_no_group, sort_keys=True, indent=4)
     return report
-
-
-def send_systems_no_group():
-    """send_systems_no_group: return True."""
-    report = systems_no_group_report_text()
-    if len(report) == 0:
-        print('No report: systems_no_group_report_text')
-        return False
-    receivers = list([config['smtp_to']])
-    subject = 'Compliance: Systems Unidentified (no group assignment)'
-    send_email(receivers, subject, report)
-    return True
 
 
 def systems_no_group_set_default():
@@ -222,30 +210,6 @@ def fde_report_text():
     return report
 
 
-def send_fde():
-    """send_fde: return True."""
-    report = fde_report_text()
-    if len(report) == 0:
-        print('No report: fde_report_text')
-        return False
-    receivers = list([config['smtp_to']])
-    subject = 'Compliance: Systems FDE (Full Disk Encryption)'
-    send_email(receivers, subject, report)
-    return True
-
-
-def get_users_mfa():
-    """get_users_mfa: return dict."""
-    users_mfa_dict = {}
-    jdata = jumpcloud.get_systemusers_json()
-    for data in jdata['results']:
-        user_id = data.get('_id')
-        #email  = data.get('email')
-        mfa_json = json.dumps(data.get('mfa', 'None'), sort_keys=True)
-        users_mfa_dict[user_id] = mfa_json
-    return users_mfa_dict
-
-
 def mfa_report_text():
     """mfa_report_text: return str."""
     report = ''
@@ -277,15 +241,6 @@ def mfa_report_text():
     return report
 
 
-def send_mfa():
-    """send_mfa: return True."""
-    report = mfa_report_text()
-    receivers = list([config['smtp_to']])
-    subject = 'Compliance: Users MFA/2FA status'
-    send_email(receivers, subject, report)
-    return True
-
-
 def report_systems_root_ssh():
     """report_systems_root_ssh: return str."""
     systems_root_ssh_dict = {}
@@ -300,15 +255,6 @@ def report_systems_root_ssh():
     report = '# Systems ALLOW Root SSH Login \n'
     report += json.dumps(systems_root_ssh_dict, indent=4)
     return report
-
-
-def send_systems_root_ssh():
-    """send_systems_root_ssh: return True."""
-    report = report_systems_root_ssh()
-    receivers = list([config['smtp_to']])
-    subject = 'Compliance: Systems with allowSshRootLogin'
-    send_email(receivers, subject, report)
-    return True
 
 
 def systems_report():
@@ -330,15 +276,6 @@ def systems_report():
 
     report += json.dumps(dct, sort_keys=False, indent=4)
     return report
-
-
-def send_systems_report():
-    """send_systems_report: return True."""
-    report = systems_report()
-    receivers = list([config['smtp_to']])
-    subject = 'Compliance: Jumpcloud SYSTEMS Report'
-    send_email(receivers, subject, report)
-    return True
 
 
 def users_report():
@@ -363,15 +300,6 @@ def users_report():
     report += '\n# Users are ldap_bind \n'
     report += json.dumps(jumpcloud.list_users_ldap_bind(_print=False), indent=4)
     return report
-
-
-def send_users_report():
-    """send_users_report: return True."""
-    report = users_report()
-    receivers = list([config['smtp_to']])
-    subject = 'Compliance: Jumpcloud USERS Report'
-    send_email(receivers, subject, report)
-    return True
 
 
 def send_email(receivers, subject, message):
@@ -402,11 +330,6 @@ def send_email(receivers, subject, message):
     #print('emailto: ' + str(receivers))
     #print('msg: ' + str(msg))
     return True
-
-
-def check_username_policy():
-    """check_username_policy: not implemented."""
-    pass
 
 
 def check_app_offenses():
