@@ -1,0 +1,29 @@
+
+% ./jumpcloud.py update-system 61b3a4268246741bbd8c5448 allowSshRootLogin false
+61b3a4268246741bbd8c5448
+allowSshRootLogin
+false
+{"allowSshRootLogin": "false"}
+Traceback (most recent call last):
+  File "./jumpcloud.py", line 1592, in <module>
+    main()
+  File "./jumpcloud.py", line 1572, in main
+    options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
+  File "./jumpcloud.py", line 742, in update_system
+    response = requests.put(_url,
+  File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages/requests/api.py", line 134, in put
+    return request('put', url, data=data, **kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages/requests/api.py", line 61, in request
+    return session.request(method=method, url=url, **kwargs)
+TypeError: request() got an unexpected keyword argument 'body'
+🎄 karl.rink@Karl-MacBook-Pro jumpcloud % 
+
+🎄 karl.rink@Karl-MacBook-Pro jumpcloud % ./jumpcloud-1.1.2.py update_system 61b3a4268246741bbd8c5448 allowSshRootLogin false
+61b3a4268246741bbd8c5448
+allowSshRootLogin
+false
+{"allowSshRootLogin": "false"}
+{'displayName': 'admin-us-west-1c', 'allowSshPasswordAuthentication': False, 'allowSshRootLogin': False, 'allowMultiFactorAuthentication': False, 'allowPublicKeyAuthentication': True, 'agentBoundMessages': [], 'systemInsights': {'state': 'enabled'}, '_id': '61b3a4268246741bbd8c5448'}
+🎄 karl.rink@Karl-MacBook-Pro jumpcloud %
+
+
