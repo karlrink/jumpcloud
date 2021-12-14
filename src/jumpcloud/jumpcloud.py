@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '2.0.0'
+__version__ = '2.0.0-20211214-0'
 
 import sys
 import os
@@ -728,13 +728,12 @@ def update_system(system_id=None, key=None, value=None):
     print(system_id)
 
     key    = ''.join(key)
-    print(key)
+    #print(key)
 
     value    = ''.join(value)
-    print(value)
+    #print(value)
 
     encoded_body = json.dumps({ key : value })
-
     print(encoded_body)
 
     _url = "https://console.jumpcloud.com/api/systems/" + str(system_id)
@@ -743,13 +742,13 @@ def update_system(system_id=None, key=None, value=None):
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                     'Content-Type': 'application/json',
                                     'Accept': 'application/json'},
-                           body=encoded_body)
+                           data=encoded_body)
+                           #QA4-DONE
     print(response.json())
     return response
 #https://docs.jumpcloud.com/1.0/authentication-and-authorization/system-context
 #https://docs.jumpcloud.com/1.0/systems/list-an-individual-system
 #https://github.com/TheJumpCloud/SystemContextAPI/blob/master/examples/instance-shutdown-initd
-#QA4
 
 
 def get_system_bindings_json(user_id=None):
