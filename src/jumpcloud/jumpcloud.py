@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '2.0.0-20211214-0'
+__version__ = '2.0.0-20211217-0'
 
 import sys
 import os
@@ -725,7 +725,7 @@ def run_trigger(trigger=None):
 def update_system(system_id=None, key=None, value=None):
     """put: api systems systems_id."""
     system_id = ''.join(system_id)
-    print(system_id)
+    #print(system_id)
 
     key    = ''.join(key)
     #print(key)
@@ -734,7 +734,7 @@ def update_system(system_id=None, key=None, value=None):
     #print(value)
 
     encoded_body = json.dumps({ key : value })
-    print(encoded_body)
+    #print(encoded_body)
 
     _url = "https://console.jumpcloud.com/api/systems/" + str(system_id)
 
