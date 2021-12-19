@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '2.0.0-20211218-0'
+__version__ = '2.0.0-20211218-2'
 
 import sys
 import os
@@ -21,6 +21,7 @@ if sys.version_info[0] < 3:
 if os.environ.get('JUMPCLOUD_API_KEY') is None:
     print("JUMPCLOUD_API_KEY=None")
     sys.exit(1)
+
 
 def usage():
     """self: usage."""
@@ -86,7 +87,7 @@ def usage():
 
       add-systems-remoteip-awssg [system_id] [awssg_id] [port]
 
-      events [startDate] [endDate] 
+      events [startDate] [endDate]
       Note: Dates must be formatted as RFC3339: "2020-01-15T16:20:01Z"
     """)
     print('Version: ' + str(__version__))
@@ -146,12 +147,13 @@ def delete_command_results(command_id):
     command_id = ''.join(command_id)
     _url = "https://console.jumpcloud.com/api/commandresults/" + str(command_id)
     response = requests.delete(_url,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': 'application/json',
-                                     'Accept': 'application/json'})
+                               headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json'})
+    # QA1-DONE
     print(response)
-    return response
-#QA1
+    print(response.json())
+    return response.json()
 
 
 def print_systems_users_json(system_id=None):
@@ -182,8 +184,8 @@ def get_systems_memberof_json(system_id=None):
     return response_json
 
 
-#https://docs.jumpcloud.com/2.0/system-group-members-and-membership/
-#manage-the-members-of-a-system-group
+# https://docs.jumpcloud.com/2.0/system-group-members-and-membership/
+# manage-the-members-of-a-system-group
 def set_systems_memberof(system_id, group_id, verbose=True):
     """post: api v2 systemgroups group_id members."""
     _url = "https://console.jumpcloud.com/api/v2/systemgroups/" + str(group_id) + "/members"
@@ -191,11 +193,11 @@ def set_systems_memberof(system_id, group_id, verbose=True):
     data = {'op': 'add', 'type': 'system', 'id': system_id}
     encoded_body = json.dumps(data).encode('utf-8')
     response = requests.post(_url,
-                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'},
-                           data=encoded_body)
-                           #QA2-DONE
+                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                      'Content-Type': 'application/json',
+                                      'Accept': 'application/json'},
+                             data=encoded_body)
+    # QA2-DONE
     if verbose:
         print(str(response), str(response.json()))
     return str(response), str(response.json())
@@ -203,18 +205,18 @@ def set_systems_memberof(system_id, group_id, verbose=True):
 
 def set_users_memberof(user_id, system_id, verbose=True):
     """post: api v2 systems system_id assocations."""
-    #https://docs.jumpcloud.com/2.0/systems/manage-associations-of-a-system
+    # https://docs.jumpcloud.com/2.0/systems/manage-associations-of-a-system
 
     _url = "https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/associations"
 
     data = {'op': 'add', 'type': 'user', 'id': user_id}
     encoded_body = json.dumps(data).encode('utf-8')
     response = requests.post(_url,
-                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'},
-                           data=encoded_body)
-                           #QA2-DONE
+                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                      'Content-Type': 'application/json',
+                                      'Accept': 'application/json'},
+                             data=encoded_body)
+    # QA2-DONE
     if verbose:
         print(str(response), str(response.json()))
     return str(response), str(response.json())
@@ -222,20 +224,20 @@ def set_users_memberof(user_id, system_id, verbose=True):
 
 def set_users_memberof_admin(user_id, system_id, verbose=True):
     """post: api v2 systems sysetem_id associations add sudo."""
-    #https://docs.jumpcloud.com/2.0/systems/manage-associations-of-a-system
+    # https://docs.jumpcloud.com/2.0/systems/manage-associations-of-a-system
 
     _url = "https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/associations"
 
     data = {'op': 'add', 'type': 'user', 'id': user_id,
-            'attributes': {'sudo':{'enabled':True, 'withoutPassword': False}}
+            'attributes': {'sudo': {'enabled': True, 'withoutPassword': False}}
             }
     encoded_body = json.dumps(data).encode('utf-8')
     response = requests.post(_url,
-                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'},
-                           data=encoded_body)
-                           #QA2-DONE
+                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                      'Content-Type': 'application/json',
+                                      'Accept': 'application/json'},
+                             data=encoded_body)
+    # QA2-DONE
     if verbose:
         print(str(response), str(response.json()))
     return str(response), str(response.json())
@@ -243,18 +245,18 @@ def set_users_memberof_admin(user_id, system_id, verbose=True):
 
 def del_users_memberof(user_id, system_id, verbose=True):
     """post: api v2 systems system_id assocations remove user_id."""
-    #https://docs.jumpcloud.com/2.0/systems/manage-associations-of-a-system
+    # https://docs.jumpcloud.com/2.0/systems/manage-associations-of-a-system
 
     _url = "https://console.jumpcloud.com/api/v2/systems/" + str(system_id) + "/associations"
 
     data = {'op': 'remove', 'type': 'user', 'id': user_id}
     encoded_body = json.dumps(data).encode('utf-8')
     response = requests.post(_url,
-                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'},
-                           data=encoded_body)
-                           #QA2-DONE
+                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                      'Content-Type': 'application/json',
+                                      'Accept': 'application/json'},
+                             data=encoded_body)
+    # QA2-DONE
     if verbose:
         print(str(response), str(response.json()))
     return str(response), str(response.json())
@@ -292,10 +294,10 @@ def get_systems_users(system_id=None):
     return True
 
 
-#https://docs.jumpcloud.com/2.0/user-groups/list-all-users-groups
-#https://github.com/TheJumpCloud/jcapi-python/tree/master/jcapiv2
-#List all User Groups
-#GET /usergroups
+# https://docs.jumpcloud.com/2.0/user-groups/list-all-users-groups
+# https://github.com/TheJumpCloud/jcapi-python/tree/master/jcapiv2
+# List all User Groups
+# GET /usergroups
 def list_usergroups_json():
     """print: get_usergroups_json."""
     jdata = get_usergroups_json(group_id=None)
@@ -306,7 +308,7 @@ def list_usergroups():
     """print: get_usergroups_json."""
     jdata = get_usergroups_json(group_id=None)
     for line in jdata:
-        print(str(line['id']) + ' "' + str(line['name']) + '"' )
+        print(str(line['id']) + ' "' + str(line['name']) + '"')
 
 
 def get_usergroups_json(group_id=None, skip=0, limit=100):
@@ -365,12 +367,13 @@ def systeminsights_firefox_addons():
     return response_json
 
 
-def systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
+# GET /systeminsights/{system_id}/apps
+def systeminsights_apps(system_id=None):
     """get: get_systeminsights_list_apps_json."""
     if system_id:
         system_id = ''.join(system_id)
 
-    count=0
+    count = 0
     skip = 0
     limit = 100
 
@@ -378,7 +381,7 @@ def systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
     print(json.dumps(response, sort_keys=False, indent=4))
 
     if len(response) == 1:
-        print('I have spoken.') #Kuiil
+        print('I have spoken.')  # Kuiil
         return
 
     count += len(response)
@@ -394,7 +397,7 @@ def systeminsights_apps(system_id=None): #GET /systeminsights/{system_id}/apps
     print('Count: ' + str(count))
 
 
-#GET /systeminsights/{system_id}/apps
+# GET /systeminsights/{system_id}/apps
 def get_systeminsights_list_apps_json(system_id=None, skip=0, limit=100):
     """get: api v2 systeminsights system_id apps."""
     jumpcloud_url = "https://console.jumpcloud.com/api/v2/systeminsights"
@@ -408,7 +411,8 @@ def get_systeminsights_list_apps_json(system_id=None, skip=0, limit=100):
     return response_json
 
 
-def systeminsights_programs(system_id=None): #GET /systeminsights/{system_id}/programs
+# GET /systeminsights/{system_id}/programs
+def systeminsights_programs(system_id=None):
     """get: get_systeminsights_list_programs_json."""
     if len(system_id) != 0:
         system_id = ''.join(system_id)
@@ -423,7 +427,7 @@ def systeminsights_programs(system_id=None): #GET /systeminsights/{system_id}/pr
     print(json.dumps(response, sort_keys=False, indent=4))
 
     if len(response) == 1:
-        print('I have spoken.') #Kuiil
+        print('I have spoken.')  # Kuiil
         return
 
     count += len(response)
@@ -439,7 +443,7 @@ def systeminsights_programs(system_id=None): #GET /systeminsights/{system_id}/pr
     print('Count: ' + str(count))
 
 
-#GET /systeminsights/{system_id}/programs
+# GET /systeminsights/{system_id}/programs
 def get_systeminsights_list_programs_json(system_id=None, skip=0, limit=100):
     """get: api v2 systeminsights programs."""
     jumpcloud_url = "https://console.jumpcloud.com/api/v2/systeminsights"
@@ -453,7 +457,8 @@ def get_systeminsights_list_programs_json(system_id=None, skip=0, limit=100):
     return response_json
 
 
-def get_commands_json(command_id=None): #GET/api/commands/{id} #api.v1
+# GET/api/commands/{id} #api.v1
+def get_commands_json(command_id=None):
     """get: api commands command_id."""
     if command_id:
         command_id = ''.join(command_id)
@@ -479,13 +484,13 @@ def list_commands():
         print(_line)
 
 
-#GET/api/v2/commands/{id}/[associations?,systems,systemgroups]
+# GET/api/v2/commands/{id}/[associations?,systems,systemgroups]
 def get_commands_api2_json(command_id=None, segment=None):
     """get: api v2 commands command_id."""
     if command_id:
         command_id = ''.join(command_id)
 
-    segments = ['associations','systems','systemgroups']
+    segments = ['associations', 'systems', 'systemgroups']
 
     if not segment in segments:
         print("Unknown option: " + str(segment))
@@ -497,7 +502,7 @@ def get_commands_api2_json(command_id=None, segment=None):
         param = ""
 
     limit = 100
-    skip  = 0
+    skip = 0
 
     jumpcloud_url = "https://console.jumpcloud.com/api/v2/commands"
 
@@ -528,12 +533,13 @@ def list_commands_api2(command_id=None, segment=None):
     print(json.dumps(jdata, sort_keys=True, indent=4))
 
 
-def mod_command(command_id=None, _op=None, system_id=None): #POST/api/v2/commands/{id}/associations
+# POST /api/v2/commands/{id}/associations
+def mod_command(command_id=None, _op=None, system_id=None):
     """post: api v2 commands command_id associations."""
     if command_id:
         command_id = ''.join(command_id)
 
-    ops = ['add','remove']
+    ops = ['add', 'remove']
 
     if not _op in ops:
         print("Unknown option: " + str(_op))
@@ -548,21 +554,20 @@ def mod_command(command_id=None, _op=None, system_id=None): #POST/api/v2/command
     encoded_body = json.dumps(data).encode('utf-8')
     print(encoded_body)
     response = requests.post(_url,
-                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'},
-                           data=encoded_body)
-                           #QA3-DONE
-    #print(str(response.status))
+                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                      'Content-Type': 'application/json',
+                                      'Accept': 'application/json'},
+                             data=encoded_body)
+    # QA3-DONE
     print(str(response))
     print(response.json())
     return True
 
 
-#https://docs.jumpcloud.com/2.0/traits/filter
-#https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/
-#apps?limit=100&filter=bundle_name:eq:ControlStrip
-#GET /systeminsights/{system_id}/apps
+# https://docs.jumpcloud.com/2.0/traits/filter
+# https://console.jumpcloud.com/api/v2/systeminsights/5df3efcdf2d66c6f6a287136/
+# apps?limit=100&filter=bundle_name:eq:ControlStrip
+# GET /systeminsights/{system_id}/apps
 def list_systeminsights_apps(system_id=None):
     """get: get_systeminsights_apps_json."""
     system_id = ''.join(system_id)
@@ -586,7 +591,7 @@ def list_systeminsights_apps(system_id=None):
         print(line_str)
 
 
-#GET /systeminsights/{system_id}/apps
+# GET /systeminsights/{system_id}/apps
 def get_systeminsights_apps_json(system_id=None, skip=0, limit=100):
     """get: api v2 systeminsights system_id apps."""
     system_id = ''.join(system_id)
@@ -596,7 +601,8 @@ def get_systeminsights_apps_json(system_id=None, skip=0, limit=100):
     return response_json
 
 
-def list_systeminsights_programs(system_id=None): #GET /systeminsights/{system_id}/programs
+# GET /systeminsights/{system_id}/programs
+def list_systeminsights_programs(system_id=None):
     """get: get_systeminsights_programs_json."""
     system_id = ''.join(system_id)
 
@@ -619,7 +625,7 @@ def list_systeminsights_programs(system_id=None): #GET /systeminsights/{system_i
         print(line_str)
 
 
-#GET /systeminsights/{system_id}/programs
+# GET /systeminsights/{system_id}/programs
 def get_systeminsights_programs_json(system_id=None, skip=0, limit=100):
     """get: api v2 systeminsights system_id programs."""
     system_id = ''.join(system_id)
@@ -630,8 +636,9 @@ def get_systeminsights_programs_json(system_id=None, skip=0, limit=100):
     return response_json
 
 
+# GET /systeminsights/apps
 # api/v2/systeminsights/apps?limit = 100&skip = 0&filter=bundle_name:eq:Maps
-def get_app(name=None): #GET /systeminsights/apps
+def get_app(name=None):
     """get: get_systeminsights_app_json."""
     skip = 0
     limit = 100
@@ -650,16 +657,17 @@ def print_get_app(name=None):
     """print: get_app(name)."""
     name = ''.join(name)
     responselist = get_app(name)
-    count=0
+    count = 0
     for line in responselist:
         count += 1
-        line_str = line['system_id']  + ' ' + line['name']
+        line_str = line['system_id'] + ' ' + line['name']
         line_str += ' (' + line['bundle_name'] + ') Version: ' + line['bundle_short_version']
         print(line_str)
 
 
+# GET /systeminsights/apps
 # api/v2/systeminsights/apps?limit=100&skip=0&filter=bundle_name:eq:Maps
-def get_systeminsights_app_json(name=None, skip=0, limit=100): #GET /systeminsights/apps
+def get_systeminsights_app_json(name=None, skip=0, limit=100):
     """get: api v2 systeminsights apps."""
     jumpcloud_url = "https://console.jumpcloud.com/api/v2/systeminsights/apps"
     _url = jumpcloud_url + "?limit=" + str(limit) + "&skip="
@@ -668,12 +676,13 @@ def get_systeminsights_app_json(name=None, skip=0, limit=100): #GET /systeminsig
     return response_json
 
 
+# GET /systeminsights/programs
 # api/v2/systeminsights/programs?limit = 100&skip = 0&filter=name:eq:Microsoft Teams
-def get_program(name=None): #GET /systeminsights/programs
+def get_program(name=None):
     """get: get_systeminsights_program_json."""
     name = ''.join(name)
 
-    count=0
+    count = 0
     skip = 0
     limit = 100
 
@@ -687,13 +696,14 @@ def get_program(name=None): #GET /systeminsights/programs
 
     for line in responselist:
         count += 1
-        line_str = line['system_id']  + ' ' + line['name']
+        line_str = line['system_id'] + ' ' + line['name']
         line_str += ' (' + line['publisher'] + ') Version: ' + line['version']
         print(line_str)
 
 
+# GET /systeminsights/programs
 # api/v2/systeminsights/programs?limit=100&skip=0&filter=name:eq:Microsoft Teams
-def get_systeminsights_program_json(name=None, skip=0, limit=100): #GET /systeminsights/programs
+def get_systeminsights_program_json(name=None, skip=0, limit=100):
     """get: api v2 systeminsights programs."""
     jumpcloud_url = "https://console.jumpcloud.com/api/v2/systeminsights/programs"
     _url = jumpcloud_url + "?limit=" + str(limit) + "&skip=" + str(skip)
@@ -709,10 +719,10 @@ def run_trigger(trigger=None):
     _url = "https://console.jumpcloud.com/api/command/trigger/" + str(trigger)
     encoded_body = json.dumps({})
     response = requests.post(_url,
-                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                    'Content-Type': 'application/json'},
-                           data=encoded_body)
-                           #QA4-DONE
+                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                      'Content-Type': 'application/json'},
+                             data=encoded_body)
+    # QA4-DONE
     print(response)
     print(response.json())
     return response
@@ -721,30 +731,25 @@ def run_trigger(trigger=None):
 def update_system(system_id=None, key=None, value=None):
     """put: api systems systems_id."""
     system_id = ''.join(system_id)
-    #print(system_id)
 
-    key    = ''.join(key)
-    #print(key)
+    key = ''.join(key)
+    value = ''.join(value)
 
-    value    = ''.join(value)
-    #print(value)
-
-    encoded_body = json.dumps({ key : value })
-    #print(encoded_body)
+    encoded_body = json.dumps({key: value})
 
     _url = "https://console.jumpcloud.com/api/systems/" + str(system_id)
 
     response = requests.put(_url,
-                           headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'},
-                           data=encoded_body)
-                           #QA4-DONE
+                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                     'Content-Type': 'application/json',
+                                     'Accept': 'application/json'},
+                            data=encoded_body)
+    # QA4-DONE
     print(response.json())
     return response
-#https://docs.jumpcloud.com/1.0/authentication-and-authorization/system-context
-#https://docs.jumpcloud.com/1.0/systems/list-an-individual-system
-#https://github.com/TheJumpCloud/SystemContextAPI/blob/master/examples/instance-shutdown-initd
+# https://docs.jumpcloud.com/1.0/authentication-and-authorization/system-context
+# https://docs.jumpcloud.com/1.0/systems/list-an-individual-system
+# https://github.com/TheJumpCloud/SystemContextAPI/blob/master/examples/instance-shutdown-initd
 
 
 def get_system_bindings_json(user_id=None):
@@ -776,16 +781,14 @@ def list_system_bindings(user_id=None):
     """print: get_system_bindings_json hostname."""
     user_id = ''.join(user_id)
     data = get_system_bindings_json(user_id)
-    #print(data)
-    #print(str(type(data)))
     for line in data:
         hostname = get_systems_hostname(line['id'])
         print(line['id'] + ' ' + str(hostname))
 
 
-#https://docs.jumpcloud.com/2.0/systems/list-the-users-bound-to-a-system
-#List the Users bound to a System
-#GET/systems/{system_id}/users
+# GET/systems/{system_id}/users
+# List the Users bound to a System
+# https://docs.jumpcloud.com/2.0/systems/list-the-users-bound-to-a-system
 def get_user_bindings_json(system_id=None):
     """get: api v2 systems system_id users."""
     skip = 0
@@ -825,7 +828,6 @@ def get_systems_hostname(system_id=None):
     """return: str get_systems_json_single hostname."""
     system_id = ''.join(system_id)
     jdata = get_systems_json_single(system_id)
-    #return str(jdata['hostname'])
     return str(jdata.get('hostname', None))
 
 
@@ -836,7 +838,6 @@ def print_systems_hostname(system_id=None):
     print(jdata['hostname'])
 
 
-#def get_systems_remoteip(system_id=None, verbose=True) -> None:
 def get_systems_remoteip(system_id=None, verbose=True):
     """return: str get_systems_json_single remoteIP."""
     system_id = ''.join(system_id)
@@ -852,11 +853,11 @@ def add_systems_remoteip_awssg(system_id, awssg_id, port=3389):
     print(remote_ip)
     print(awssg_id)
 
-    #from subprocess import Popen, PIPE, STDOUT
+    # from subprocess import Popen, PIPE, STDOUT
     cmd = 'aws ec2 authorize-security-group-ingress --group-id '+str(awssg_id)
     cmd += ' --protocol tcp --port '+str(port)+' --cidr '+str(remote_ip)+'/32'
 
-    #proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    # proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     with Popen(cmd.split(), stdout=PIPE, stderr=PIPE) as proc:
         out = proc.stdout.readlines()
         err = proc.stderr.readlines()
@@ -890,16 +891,16 @@ def get_systems_json_response(skip, limit):
 def get_systems_json():
     """return: json get_systems_json_response."""
     skip = 0
-    data = get_systems_json_response(skip, limit = 100)
+    data = get_systems_json_response(skip, limit=100)
     totalcount = data['totalCount']
     resultlist = data['results']
 
     while len(data['results']) > 0:
         skip += 100
-        data = get_systems_json_response(skip, limit = 100)
+        data = get_systems_json_response(skip, limit=100)
         resultlist.extend(data['results'])
 
-    dictdata = { 'totalCount': totalcount, 'results': resultlist }
+    dictdata = {'totalCount': totalcount, 'results': resultlist}
     jdata = json.dumps(dictdata)
     return json.loads(jdata)
 
@@ -917,7 +918,6 @@ def print_user_email(user_id=None):
     if user_id:
         user_id = ''.join(user_id)
         jdata = get_systemusers_json_single(user_id)
-        #print(jdata)
         print(jdata['email'])
     else:
         print('None')
@@ -941,8 +941,8 @@ def print_systemgroups_name(group_id=None):
         print('None')
 
 
-#https://docs.jumpcloud.com/2.0/system-group-members-and-membership/
-#list-system-groups-group-membership
+# https://docs.jumpcloud.com/2.0/system-group-members-and-membership/
+# list-system-groups-group-membership
 def list_systemgroups_membership(group_id=None, skip=0, limit=100):
     """get: api v2 systemgroups group_id membership."""
     group_id = ''.join(group_id)
@@ -1023,22 +1023,9 @@ def get_systemusers_json():
         data = get_systemusers_json_multi(skip, limit=100)
         resultlist.extend(data['results'])
 
-    dictdata = { 'totalCount': totalcount, 'results': resultlist }
+    dictdata = {'totalCount': totalcount, 'results': resultlist}
     jdata = json.dumps(dictdata)
     return json.loads(jdata)
-
-
-#def get_systemusers_json_multi(skip, limit):
-#    """get: api systemusers json multi."""
-#    _url = "https://console.jumpcloud.com/api/systemusers"
-#    _url += "?skip=" + str(skip) + '&limit=' + str(limit)
-#
-#    http = urllib3.PoolManager(assert_hostname=False, cert_reqs='CERT_NONE')
-#    response = http.request('GET', _url,
-#                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-#                                     'Content-Type': CONTENT_TYPE,
-#                                     'Accept': ACCEPT_TYPE})
-#    return json.loads(response.data.decode('utf-8'))
 
 
 def get_response_json(_url):
@@ -1193,7 +1180,7 @@ def list_systems_json(system_id=None):
     print(json.dumps(jdata, sort_keys=True, indent=4))
 
 
-#def list_systems_id():
+# def list_systems_id():
 def list_systems_id(skip=0):
     """print: get_systems_id_json system_id."""
     skip = 0
@@ -1219,13 +1206,13 @@ def get_systems_id():
     """return: idList get_systems_id_json."""
     idlist = []
     skip = 0
-    jdata = get_systems_id_json(skip, limit = 100)
+    jdata = get_systems_id_json(skip, limit=100)
     for data in jdata['results']:
         idlist.append(data.get('_id'))
 
     while len(jdata['results']) > 0:
         skip += 100
-        jdata = get_systems_id_json(skip, limit = 100)
+        jdata = get_systems_id_json(skip, limit=100)
         for data in jdata['results']:
             idlist.append(data.get('_id'))
 
@@ -1242,7 +1229,7 @@ def list_systeminsights_hardware():
             print(str(system_id))
         for line in response:
             memgb = round(int(line['physical_memory']) / 1024 / 1024 / 1024)
-            _line =  str(system_id) + ' ' + line['computer_name'] + ' (' + line['hostname'] + ') '
+            _line = str(system_id) + ' ' + line['computer_name'] + ' (' + line['hostname'] + ') '
             _line += line['hardware_model'] + ' (' + line['hardware_vendor'] + ') '
             _line += line['cpu_type'] + ' (' + str(line['cpu_physical_cores']) + ') '
             _line += line['cpu_brand'] + ' ' + str(line['physical_memory'])
@@ -1256,14 +1243,12 @@ def list_systeminsights_hardware_csv():
     idlist = get_systems_id()
 
     for system_id in idlist:
-        #print(system_id)
         response = get_systeminsights_system_info_json(system_id, skip=0, limit=100)
         if len(response) == 0:
             print(str(system_id))
         for line in response:
             memgb = round(int(line['physical_memory']) / 1024 / 1024 / 1024)
-            #print(line)
-            _line =  str(system_id) + ',' + line['computer_name'] + ',(' + line['hostname'] + '),'
+            _line = str(system_id) + ',' + line['computer_name'] + ',(' + line['hostname'] + '),'
             _line += str(line['hardware_model']).replace(",", " ")
             _line += ',(' + line['hardware_vendor'] + '),'
             _line += line['cpu_type'] + ',(' + str(line['cpu_physical_cores']) + '),'
@@ -1275,7 +1260,6 @@ def list_systeminsights_hardware_csv():
 
 def list_systeminsights_hardware_json():
     """print: get_systeminsights_system_info_json."""
-    #count = 0
     skip = 0
     limit = 100
 
@@ -1284,7 +1268,7 @@ def list_systeminsights_hardware_json():
     for system_id in idlist:
         response = get_systeminsights_system_info_json(system_id, limit, skip)
         if len(response) == 0:
-            response = {  'system_id' : system_id  }
+            response = {'system_id': system_id}
         print(json.dumps(response, sort_keys=False, indent=4))
 
 
@@ -1295,10 +1279,10 @@ def get_systeminsights_system_info(system_id=None):
     print(json.dumps(jdata, sort_keys=False, indent=4))
 
 
-#List System Insights System Info
-#GET /systeminsights/system_info
-#Valid filter fields are system_id and cpu_subtype.
-#https://docs.jumpcloud.com/2.0/system-insights/list-system-insights-system-info
+# GET /systeminsights/system_info
+# List System Insights System Info
+# Valid filter fields are system_id and cpu_subtype.
+# https://docs.jumpcloud.com/2.0/system-insights/list-system-insights-system-info
 def get_systeminsights_system_info_json(system_id=None, limit=None, skip=None):
     """get: api v2 systeminsights system_info limit skip filter system_id."""
     skip = 0
@@ -1318,7 +1302,7 @@ def list_systems():
     for data in jdata['results']:
         print(str(data.get('_id')) + ' "'
               + str(data.get('displayName')) + '" ('
-              + str(data.get('hostname'))  + ') '
+              + str(data.get('hostname')) + ') '
               + str(data.get('os')) + ' '
               + str(data.get('version')) + ' '
               + str(data.get('arch')))
@@ -1394,7 +1378,7 @@ def list_systems_state():
     for data in jdata['results']:
         _line = str(data.get('_id')) + ' "' + str(data.get('displayName'))
         _line += '" (' + str(data.get('hostname'))
-        _line += ') '+ str(data.get('lastContact')) + ' active: '
+        _line += ') ' + str(data.get('lastContact')) + ' active: '
         _line += str(json.dumps(data.get('active')))
         print(_line)
 
@@ -1406,7 +1390,7 @@ def list_systems_fde():
         print('Zero (0) response')
     if len(jdata) == 1:
         print(str(jdata))
-        print('I have spoken.') #Kuiil
+        print('I have spoken.')  # Kuiil
         return
 
     for data in jdata['results']:
@@ -1437,25 +1421,25 @@ def delete_system(system_id=None):
         system_id = ''.join(system_id)
     else:
         print('system_id required')
-        return {'delete':False, 'system_id':None}
+        return {'delete': False, 'system_id': None}
 
     _url = "https://console.jumpcloud.com/api/systems/" + str(system_id)
 
     response = requests.delete(_url,
-                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
-                                     'Content-Type': 'application/json',
-                                     'Accept': 'application/json'})
-                            #QA1-DONE
+                               headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json'})
+    # QA1-DONE
     print(response)
     print(response.json())
     return response
 
 
-#https://support.jumpcloud.com/support/s/article/jumpcloud-events-api1
+# https://support.jumpcloud.com/support/s/article/jumpcloud-events-api1
 def get_events_json(startdate=None, enddate=None):
-    """get: events.""" # i think this url is depricated.
+    """get: events."""  # i think this url is depricated.
     startdate = ''.join(startdate)
-    enddate =   ''.join(enddate)
+    enddate = ''.join(enddate)
     jumpcloud_url = "https://events.jumpcloud.com/events"
     _url = jumpcloud_url + "?startDate=" + str(startdate) + '&endDate=' + str(enddate)
     response_json = get_response_json(_url)
@@ -1469,88 +1453,89 @@ def events(start=None, end=None):
 
 
 options = {
-  'list-systems'                    : list_systems,
-  'list-systems-id'                 : list_systems_id,
-  'list-systems-hostname'           : list_systems_hostname,
-  'list-systems-serial'             : list_systems_serial,
-  'list-systems-json'               : list_systems_json,
-  'get-systems-json'                : list_systems_json,
-  'get-systems-remoteip'            : get_systems_remoteip,
-  'add-systems-remoteip-awssg'      : add_systems_remoteip_awssg,
-  'list-systems-os'                 : list_systems_os,
-  'list-systems-agent'              : list_systems_agent,
-  'list-systems-os-version'         : list_systems_os_version,
-  'list-systeminsights-hardware'    : list_systeminsights_hardware,
-  'list-systeminsights-hardware-json' : list_systeminsights_hardware_json,
-  'list-systeminsights-hardware-csv'  : list_systeminsights_hardware_csv,
-  'list-systems-insights'           : list_systems_insights,
-  'list-systems-state'              : list_systems_state,
-  'list-systems-fde'                : list_systems_fde,
-  'list-systems-root-ssh'           : list_systems_root_ssh,
-  'delete-system'                   : delete_system,
-  'systeminsights-os-version'       : systeminsights_os_version,
-  'list-usergroups'                 : list_usergroups,
-  'list-usergroups-json'            : list_usergroups_json,
-  'list-usergroups-members'         : list_usergroups_members,
-  'list-usergroups-details'         : list_usergroups_details,
-  'list-systemgroups'               : list_systemgroups,
-  'list-systemgroups-json'          : list_systemgroups_json,
-  'list-systemgroups-membership'    : list_systemgroups_membership,
-  'list-users'                      : list_users,
-  'list-users-json'                 : list_users_json,
-  'list-users-mfa'                  : list_users_mfa,
-  'list-users-suspended'            : list_users_suspended,
-  'list-users-locked'               : list_users_locked,
-  'list-users-password-expired'     : list_users_password_expired,
-  'list-users-not-activated'        : list_users_not_activated,
-  'list-users-ldap-bind'            : list_users_ldap_bind,
-  'list-commands'                   : list_commands,
-  'list-commands-json'              : list_commands_json,
-  'get-command'                     : list_commands_api2,
-  'mod-command'                     : mod_command,
-  'systeminsights-apps'             : systeminsights_apps,
-  'systeminsights-programs'         : systeminsights_programs,
-  'systeminsights-browser-plugins'  : systeminsights_browser_plugins,
-  'systeminsights-firefox-addons'   : systeminsights_firefox_addons,
-  'list-system-bindings'            : list_system_bindings,
-  'list-system-bindings-json'       : list_system_bindings_json,
-  'list-user-bindings'              : list_user_bindings,
-  'list-user-bindings-json'         : list_user_bindings_json,
-  'get-systems-users'               : get_systems_users,
-  'get-systems-os'                  : get_systems_os,
-  'get-systems-memberof'            : print_systems_memberof,
-  'set-systems-memberof'            : set_systems_memberof,
-  'set-users-memberof'              : set_users_memberof,
-  'set-users-memberof-admin'        : set_users_memberof_admin,
-  'del-users-memberof'              : del_users_memberof,
-  'get-systems-users-json'          : print_systems_users_json,
-  'get-systems-hostname'            : print_systems_hostname,
-  'get-user-email'                  : print_user_email,
-  'get-systemgroups-name'           : print_systemgroups_name,
-  'update-system'                   : update_system,
-  'list-systeminsights-apps'        : list_systeminsights_apps,
-  'list-systeminsights-programs'    : list_systeminsights_programs,
-  'get-app'                         : print_get_app,
-  'get-program'                     : get_program,
-  'get-systeminsights-system-info'  : get_systeminsights_system_info,
-  'list-command-results'            : list_command_results,
-  'delete-command-results'          : delete_command_results,
-  'events'                          : events,
-  'trigger'                         : run_trigger,
+  'list-systems': list_systems,
+  'list-systems-id': list_systems_id,
+  'list-systems-hostname': list_systems_hostname,
+  'list-systems-serial': list_systems_serial,
+  'list-systems-json': list_systems_json,
+  'get-systems-json': list_systems_json,
+  'get-systems-remoteip': get_systems_remoteip,
+  'add-systems-remoteip-awssg': add_systems_remoteip_awssg,
+  'list-systems-os': list_systems_os,
+  'list-systems-agent': list_systems_agent,
+  'list-systems-os-version': list_systems_os_version,
+  'list-systeminsights-hardware': list_systeminsights_hardware,
+  'list-systeminsights-hardware-json': list_systeminsights_hardware_json,
+  'list-systeminsights-hardware-csv': list_systeminsights_hardware_csv,
+  'list-systems-insights': list_systems_insights,
+  'list-systems-state': list_systems_state,
+  'list-systems-fde': list_systems_fde,
+  'list-systems-root-ssh': list_systems_root_ssh,
+  'delete-system': delete_system,
+  'systeminsights-os-version': systeminsights_os_version,
+  'list-usergroups': list_usergroups,
+  'list-usergroups-json': list_usergroups_json,
+  'list-usergroups-members': list_usergroups_members,
+  'list-usergroups-details': list_usergroups_details,
+  'list-systemgroups': list_systemgroups,
+  'list-systemgroups-json': list_systemgroups_json,
+  'list-systemgroups-membership': list_systemgroups_membership,
+  'list-users': list_users,
+  'list-users-json': list_users_json,
+  'list-users-mfa': list_users_mfa,
+  'list-users-suspended': list_users_suspended,
+  'list-users-locked': list_users_locked,
+  'list-users-password-expired': list_users_password_expired,
+  'list-users-not-activated': list_users_not_activated,
+  'list-users-ldap-bind': list_users_ldap_bind,
+  'list-commands': list_commands,
+  'list-commands-json': list_commands_json,
+  'get-command': list_commands_api2,
+  'mod-command': mod_command,
+  'systeminsights-apps': systeminsights_apps,
+  'systeminsights-programs': systeminsights_programs,
+  'systeminsights-browser-plugins': systeminsights_browser_plugins,
+  'systeminsights-firefox-addons': systeminsights_firefox_addons,
+  'list-system-bindings': list_system_bindings,
+  'list-system-bindings-json': list_system_bindings_json,
+  'list-user-bindings': list_user_bindings,
+  'list-user-bindings-json': list_user_bindings_json,
+  'get-systems-users': get_systems_users,
+  'get-systems-os': get_systems_os,
+  'get-systems-memberof': print_systems_memberof,
+  'set-systems-memberof': set_systems_memberof,
+  'set-users-memberof': set_users_memberof,
+  'set-users-memberof-admin': set_users_memberof_admin,
+  'del-users-memberof': del_users_memberof,
+  'get-systems-users-json': print_systems_users_json,
+  'get-systems-hostname': print_systems_hostname,
+  'get-user-email': print_user_email,
+  'get-systemgroups-name': print_systemgroups_name,
+  'update-system': update_system,
+  'list-systeminsights-apps': list_systeminsights_apps,
+  'list-systeminsights-programs': list_systeminsights_programs,
+  'get-app': print_get_app,
+  'get-program': get_program,
+  'get-systeminsights-system-info': get_systeminsights_system_info,
+  'list-command-results': list_command_results,
+  'delete-command-results': delete_command_results,
+  'events': events,
+  'trigger': run_trigger,
 }
 
-args1 = ['list-systems','list-users','list-commands','list-systeminsights-hardware',
+args1 = ['list-systems', 'list-users', 'list-commands', 'list-systeminsights-hardware',
          'list-systemgroups']
 
-args2 = ['trigger','systeminsights-os-version','systeminsights-apps',
-         'systeminsights-programs','get-systems-json','get-systems-users',
-         'get-systems-hostname','get-user-email','get-systems-remoteip',
-         'list-systems-id','list-usergroups-members','list-usergroups-details',
-         'list-systemgroups-membership','list-systeminsights-apps','list-systeminsights-programs',
-         'get-systeminsights-system-info','get-app','get-program','list-system-bindings',
-         'list-user-bindings','list-user-bindings-json','list-system-bindings-json',
-         'get-systems-users-json','delete-system','get-systems-memberof','get-systemgroups-name',
-         'list-command-results','delete-command-results','get-systems-os']
+args2 = ['trigger', 'systeminsights-os-version', 'systeminsights-apps',
+         'systeminsights-programs', 'get-systems-json', 'get-systems-users',
+         'get-systems-hostname', 'get-user-email', 'get-systems-remoteip',
+         'list-systems-id', 'list-usergroups-members', 'list-usergroups-details',
+         'list-systemgroups-membership', 'list-systeminsights-apps', 'list-systeminsights-programs',
+         'get-systeminsights-system-info', 'get-app', 'get-program', 'list-system-bindings',
+         'list-user-bindings', 'list-user-bindings-json', 'list-system-bindings-json',
+         'get-systems-users-json', 'delete-system', 'get-systems-memberof', 'get-systemgroups-name',
+         'list-command-results', 'delete-command-results', 'get-systems-os']
+
 
 def main():
     """main: app."""
@@ -1561,16 +1546,16 @@ def main():
             elif sys.argv[1] == "--version":
                 print(__version__)
             elif sys.argv[1] == "events" or sys.argv[1] == "get-command":
-                options[sys.argv[1]](sys.argv[2],sys.argv[3])
+                options[sys.argv[1]](sys.argv[2], sys.argv[3])
             elif sys.argv[1] == "add-systems-remoteip-awssg":
-                options[sys.argv[1]](sys.argv[2],sys.argv[3],sys.argv[4])
+                options[sys.argv[1]](sys.argv[2], sys.argv[3], sys.argv[4])
             elif sys.argv[1] == "update-system" or sys.argv[1] == "mod-command":
-                options[sys.argv[1]](sys.argv[2],sys.argv[3], sys.argv[4])
+                options[sys.argv[1]](sys.argv[2], sys.argv[3], sys.argv[4])
             elif sys.argv[1] == "set-systems-memberof" or sys.argv[1] == "set-users-memberof" \
                     or sys.argv[1] == "set-users-memberof-admin":
-                options[sys.argv[1]](sys.argv[2],sys.argv[3])
+                options[sys.argv[1]](sys.argv[2], sys.argv[3])
             elif sys.argv[1] == "del-users-memberof":
-                options[sys.argv[1]](sys.argv[2],sys.argv[3])
+                options[sys.argv[1]](sys.argv[2], sys.argv[3])
             elif len(sys.argv) > 2 and sys.argv[1] in args1:
                 options[str(sys.argv[1] + '-' + sys.argv[2])]()
             elif sys.argv[1] in args2:
