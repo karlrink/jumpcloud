@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '2.0.0-20211217-0'
+__version__ = '2.0.0-20211218-0'
 
 import sys
 import os
@@ -51,7 +51,7 @@ def usage():
 
       set-systems-memberof system_id group_id
       set-users-memberof user_id system_id
-      set-users-memberof_admin user_id system_id
+      set-users-memberof-admin user_id system_id
       del-users-memberof user_id system_id
 
       list-systeminsights-hardware [json|csv]
@@ -194,12 +194,11 @@ def set_systems_memberof(system_id, group_id, verbose=True):
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                     'Content-Type': 'application/json',
                                     'Accept': 'application/json'},
-                           body=encoded_body)
-
+                           data=encoded_body)
+                           #QA2-DONE
     if verbose:
-        print(str(response.status), str(response.json()))
-    return str(response.status), str(response.json())
-#QA2
+        print(str(response), str(response.json()))
+    return str(response), str(response.json())
 
 
 def set_users_memberof(user_id, system_id, verbose=True):
@@ -214,12 +213,11 @@ def set_users_memberof(user_id, system_id, verbose=True):
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                     'Content-Type': 'application/json',
                                     'Accept': 'application/json'},
-                           body=encoded_body)
-
+                           data=encoded_body)
+                           #QA2-DONE
     if verbose:
-        print(str(response.status), str(response.json()))
-    return str(response.status), str(response.json())
-#QA2
+        print(str(response), str(response.json()))
+    return str(response), str(response.json())
 
 
 def set_users_memberof_admin(user_id, system_id, verbose=True):
@@ -236,12 +234,11 @@ def set_users_memberof_admin(user_id, system_id, verbose=True):
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                     'Content-Type': 'application/json',
                                     'Accept': 'application/json'},
-                           body=encoded_body)
-
+                           data=encoded_body)
+                           #QA2-DONE
     if verbose:
-        print(str(response.status), str(response.json()))
-    return str(response.status), str(response.json())
-#QA2
+        print(str(response), str(response.json()))
+    return str(response), str(response.json())
 
 
 def del_users_memberof(user_id, system_id, verbose=True):
@@ -256,12 +253,11 @@ def del_users_memberof(user_id, system_id, verbose=True):
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                     'Content-Type': 'application/json',
                                     'Accept': 'application/json'},
-                           body=encoded_body)
-
+                           data=encoded_body)
+                           #QA2-DONE
     if verbose:
-        print(str(response.status), str(response.json()))
-    return str(response.status), str(response.json())
-#QA2
+        print(str(response), str(response.json()))
+    return str(response), str(response.json())
 
 
 def print_systems_memberof(system_id=None):
@@ -555,12 +551,12 @@ def mod_command(command_id=None, _op=None, system_id=None): #POST/api/v2/command
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                     'Content-Type': 'application/json',
                                     'Accept': 'application/json'},
-                           body=encoded_body)
-
-    print(str(response.status))
+                           data=encoded_body)
+                           #QA3-DONE
+    #print(str(response.status))
+    print(str(response))
     print(response.json())
     return True
-#QA3
 
 
 #https://docs.jumpcloud.com/2.0/traits/filter
@@ -715,11 +711,11 @@ def run_trigger(trigger=None):
     response = requests.post(_url,
                            headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                     'Content-Type': 'application/json'},
-                           body=encoded_body)
+                           data=encoded_body)
+                           #QA4-DONE
     print(response)
     print(response.json())
     return response
-#QA4
 
 
 def update_system(system_id=None, key=None, value=None):
@@ -1449,9 +1445,10 @@ def delete_system(system_id=None):
                             headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                      'Content-Type': 'application/json',
                                      'Accept': 'application/json'})
+                            #QA1-DONE
     print(response)
+    print(response.json())
     return response
-#QA1
 
 
 #https://support.jumpcloud.com/support/s/article/jumpcloud-events-api1
