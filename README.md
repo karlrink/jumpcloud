@@ -1,4 +1,4 @@
-# jumpcloud #
+# JumpCloud #
 
 ## jumpcloud command for jumpcloud.com ##
 
