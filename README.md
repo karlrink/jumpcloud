@@ -1,6 +1,6 @@
-# jumpcloud  
+# jumpcloud #  
 
-## jumpcloud command for jumpcloud.com  
+## jumpcloud command for jumpcloud.com ## 
 
 <https://jumpcloud.com>  
 <https://pypi.org/project/jumpcloud>  
@@ -10,19 +10,19 @@
 [![Package Version](https://img.shields.io/pypi/v/jumpcloud.svg)](https://pypi.python.org/pypi/jumpcloud/)  
 [![Python Versions](https://img.shields.io/pypi/pyversions/pypistats.svg?logo=python&logoColor=FFE873)](https://pypi.org/project/pypistats/)  
 
-### Run from source
+### Run from source ###  
 
 ```bash
 ./src/jumpcloud/jumpcloud.py
 ```
 
-### Install via pip
+### Install via pip ###  
 
 ```bash
 pip install jumpcloud
 ```
 
-### Run command
+### Run command ###  
 
 ```bash
 export JUMPCLOUD_API_KEY=XXXXXXXXXXX
@@ -100,9 +100,10 @@ Usage: jumpcloud.py option
 Version: 2.0-🎄
 ```
 
-### Run python3
+### Run python3 ###  
 
 ```python3
 >>> import jumpcloud
 >>> jumpcloud.list_users()
 ```
+

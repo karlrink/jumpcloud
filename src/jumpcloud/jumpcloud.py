@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '2.0.0-20211218-2'
+__version__ = '2.0.0-20211218-3'
 
 import sys
 import os
@@ -150,7 +150,6 @@ def delete_command_results(command_id):
                                headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                         'Content-Type': 'application/json',
                                         'Accept': 'application/json'})
-    # QA1-DONE
     print(response)
     print(response.json())
     return response.json()
@@ -197,7 +196,6 @@ def set_systems_memberof(system_id, group_id, verbose=True):
                                       'Content-Type': 'application/json',
                                       'Accept': 'application/json'},
                              data=encoded_body)
-    # QA2-DONE
     if verbose:
         print(str(response), str(response.json()))
     return str(response), str(response.json())
@@ -216,7 +214,6 @@ def set_users_memberof(user_id, system_id, verbose=True):
                                       'Content-Type': 'application/json',
                                       'Accept': 'application/json'},
                              data=encoded_body)
-    # QA2-DONE
     if verbose:
         print(str(response), str(response.json()))
     return str(response), str(response.json())
@@ -237,7 +234,6 @@ def set_users_memberof_admin(user_id, system_id, verbose=True):
                                       'Content-Type': 'application/json',
                                       'Accept': 'application/json'},
                              data=encoded_body)
-    # QA2-DONE
     if verbose:
         print(str(response), str(response.json()))
     return str(response), str(response.json())
@@ -256,7 +252,6 @@ def del_users_memberof(user_id, system_id, verbose=True):
                                       'Content-Type': 'application/json',
                                       'Accept': 'application/json'},
                              data=encoded_body)
-    # QA2-DONE
     if verbose:
         print(str(response), str(response.json()))
     return str(response), str(response.json())
@@ -558,7 +553,6 @@ def mod_command(command_id=None, _op=None, system_id=None):
                                       'Content-Type': 'application/json',
                                       'Accept': 'application/json'},
                              data=encoded_body)
-    # QA3-DONE
     print(str(response))
     print(response.json())
     return True
@@ -722,7 +716,6 @@ def run_trigger(trigger=None):
                              headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                       'Content-Type': 'application/json'},
                              data=encoded_body)
-    # QA4-DONE
     print(response)
     print(response.json())
     return response
@@ -744,7 +737,6 @@ def update_system(system_id=None, key=None, value=None):
                                      'Content-Type': 'application/json',
                                      'Accept': 'application/json'},
                             data=encoded_body)
-    # QA4-DONE
     print(response.json())
     return response
 # https://docs.jumpcloud.com/1.0/authentication-and-authorization/system-context
@@ -1429,7 +1421,6 @@ def delete_system(system_id=None):
                                headers={'x-api-key': os.environ.get('JUMPCLOUD_API_KEY'),
                                         'Content-Type': 'application/json',
                                         'Accept': 'application/json'})
-    # QA1-DONE
     print(response)
     print(response.json())
     return response
