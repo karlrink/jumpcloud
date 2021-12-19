@@ -97,7 +97,7 @@ Usage: jumpcloud.py option
       events [startDate] [endDate]
       Note: Dates must be formatted as RFC3339: "2020-01-15T16:20:01Z"
 
-Version: 2.0-🎄
+Version: 2.0.1
 ```
 
 ### Run python3 ###
