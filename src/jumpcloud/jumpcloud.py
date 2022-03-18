@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '2.0.1'
+__version__ = '2.0.1-a'
 
 import sys
 import os
@@ -1257,12 +1257,33 @@ def list_systeminsights_hardware_json():
 
     idlist = get_systems_id()
 
-    for system_id in idlist:
-        response = get_systeminsights_system_info_json(system_id, limit, skip)
-        if len(response) == 0:
-            response = {'system_id': system_id}
-        print(json.dumps(response, sort_keys=False, indent=4))
+    print('[')
 
+    count = len(idlist)
+    #print('total count ' + str(count))
+
+    for index, system_id in enumerate(idlist):
+
+        #print(index)
+
+        count -= 1 
+
+        response = get_systeminsights_system_info_json(system_id, limit, skip)
+
+        #print('len of response ' + str(len(response)))
+        #print('count ' + str(count))
+
+        if len(response) == 0:
+            print(json.dumps({'system_id': system_id, 'status': '0'}, sort_keys=False, indent=2))
+        else:
+            print(json.dumps(response[0], sort_keys=False, indent=2))
+
+        if count > 0:
+            print(',')
+
+
+    print(']')
+ 
 
 def get_systeminsights_system_info(system_id=None):
     """print: get_systeminsights_system_info_json system_id."""
